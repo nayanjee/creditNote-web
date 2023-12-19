@@ -1,0 +1,332 @@
+<div class="app-page-title">
+  <div class="page-title-wrapper">
+    <div class="page-title-heading">
+      <div class="page-title-icon">
+        <i class="icon {{icon}}"></i>
+      </div>
+      <div>
+        {{heading}}
+        <div class="page-title-subheading">
+          {{subheading}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    <!-- <form class="form" [formGroup]="myForm" (ngSubmit)="onHeaderSubmit()" autocomplete="off"> -->
+    <div class="row">
+      <div class="col-md-3">
+        <div class="position-relative mb-3 required">
+          <label for="stockiest" class="form-label fb">Stockiest</label>
+          <select id="stockiest" class="form-select" style="display: none;">
+            <option value="" disabled hidden selected> -- Stockiest -- </option>
+            <option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
+              {{stockiest.organization | titlecase}}
+            </option>
+          </select>
+          <span id="err_stockiest" class="text-danger" style="display: none;"></span>
+          <div id="stockiest_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="position-relative mb-3 required">
+          <label for="type" class="form-label fb">Claim Type</label>
+          <select id="type" class="form-select">
+            <option value="" disabled selected> -- Claim Type -- </option>
+            <option *ngFor="let type of types" [value]="type.id">
+              {{type.name | titlecase}}
+            </option>
+          </select>
+          <span id="err_type" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="position-relative mb-3 required">
+          <label for="month" class="form-label fb">Month</label>
+          <select id="month" class="form-select" (change)="validateMonth()">
+            <option value="" disabled selected> -- Month -- </option>
+            <option *ngFor="let month of months" [value]="month.id">
+              {{month.name}}
+            </option>
+          </select>
+          <span id="err_month" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="position-relative mb-3 required">
+          <label for="year" class="form-label fb">Year</label>
+          <select id="year" class="form-select" (change)="validateMonth()">
+            <option value="" disabled selected> -- Year -- </option>
+            <option *ngFor="let year of years" [value]="year.id">
+              {{year.name}}
+            </option>
+          </select>
+          <span id="err_year" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+    </div>
+    <!-- </form> -->
+
+    <div class="row">
+      <div class="col-md-12">
+        <hr />
+      </div>
+    </div>
+
+    <div class="row">
+      <form [formGroup]="claimForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data" autocomplete="off">
+        <div class="row">
+          <div class="col-sm-12 col-md-12">
+            <div class="table-responsive">
+              <table class="table" id="table1">
+                <tr>
+                  <td class="td-head">Attachments</td>
+                  <td class="td-head">Reference No</td>
+                  <td class="td-head">Batch</td>
+                  <td class="td-head">Division</td>
+                  <td class="td-head">Product</td>
+                  <td class="td-head">Material</td>
+                  <td class="td-head">Particulars</td>
+                  <td class="td-head">Category</td>
+                  <td class="td-head">Distributor Invoice No</td>
+                  <td class="td-head">Distributor Invoice QTY</td>
+                  <td class="td-head">Stockiest Invoice No</td>
+                  <td class="td-head">Stockiest Invoice QTY</td>
+                  <td class="td-head">Remn. STK Invoice QTY</td>
+                  <td class="td-head">MRP</td>
+                  <td class="td-head">PTS</td>
+                  <td class="td-head">Billing Rate</td>
+                  <td class="td-head">Margin (%)</td>
+                  <td class="td-head">Free QTY</td>
+                  <td class="td-head">Sale QTY</td>
+                  <td class="td-head">Difference</td>
+                  <td class="td-head">Total Diff.</td>
+                  <td class="td-head">Amount</td>
+                  <td class="td-head">Total Sale QTY</td>
+                  <td class="td-head">PTD</td>
+                  <td class="td-head">Total PTD Amount</td>
+                  <!-- <td class="td-head">Image</td> -->
+                  <td class="td-head">Options</td>
+                </tr>
+
+                
+                <div class="row" *ngIf="loading">
+                  <div class="col-md-12 tc" style="color: red;">
+                    <img src="./../../assets/images/btn_loader.gif"> <br /> Loading... Please wait
+                  </div>
+                </div>
+
+                <!-- ADD MORE FUNCTIONALITY -->
+                <div formArrayName="claims">
+                  <tr *ngFor="let claim of claims().controls; let i=index" [formGroupName]="i">
+                    <td class="tc">
+                      <input type="file" class="file-input" [accept]="requiredFileType"
+                        (change)="onFileSelected($event, i)" #fileUpload multiple style="display: none;">
+                      <i class="pe-7s-upload" placement="bottom" ngbTooltip="Upload" (click)="fileUpload.click()" style="float:left;"></i>
+
+                      <div *ngIf="fileNames[i]">
+                        <span *ngFor="let fn of fileNames[i]">
+                          <i class="pe-7s-paperclip" placement="bottom" ngbTooltip="{{fn.originalname}}" (click)="viewPopup(details, fn)"></i>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="invoice" id="invoice_{{i}}"
+                        [tabIndex]="(10*i)+11" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="batch" id="batch_{{i}}"
+                        (keyup)="searchBatch($event, i)" [tabIndex]="(10*i)+12" />
+
+                      <img style="float:right;" id="batch_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
+
+                      <div class="suggestions" id="batch_suggestion_{{i}}" (click)="batchSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="division" id="division_{{i}}" readonly />
+
+                      <!-- <input type="text" class="form-control" formControlName="division" id="division_{{i}}"
+                        (keyup)="searchDivision($event, i)" [tabIndex]="(10*i)+13" />
+
+                      <img style="float:right;" id="division_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
+
+                      <div class="suggestions" id="division_suggestion_{{i}}" (click)="divisionSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div> -->
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}" readonly />
+
+                      <!-- <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
+                        (keyup)="searchProduct($event, i)" [tabIndex]="(10*i)+14" />
+
+                      <img style="float:right;" id="product_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                      <div class="suggestions" id="product_suggestion_{{i}}" (click)="productSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div> -->
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="material" id="material_{{i}}"
+                      [tabIndex]="(10*i)+15" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="particulars" id="particulars_{{i}}"
+                      (keyup)="searchParticulars($event, i)" [tabIndex]="(10*i)+15" />
+                      
+                      <img style="float:right;" id="particulars_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                      <div class="suggestions" id="particulars_suggestion_{{i}}" (click)="particularsSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="category" id="category_{{i}}"
+                      (keyup)="searchCategory($event, i)" [tabIndex]="(10*i)+15" />
+                      
+                      <img style="float:right;" id="category_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                      <div class="suggestions" id="category_suggestion_{{i}}" (click)="categorySelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="distInvoice" id="distInvoice_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="distInvQty" id="distInvQty_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="stkInvoice" id="stkInvoice_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="stkInvoiceQty" id="stkInvoiceQty_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="stkRemnQty" id="stkRemnQty_{{i}}" readonly />
+                      <input type="hidden" formControlName="hdnStkRemnQty" id="hdn_stkRemnQty_{{i}}" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="mrp" id="mrp_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="pts" id="pts_{{i}}" readonly />
+                      <input type="hidden" id="ptr_{{i}}" />
+                      <input type="hidden" id="ptd_{{i}}" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="billingRate" id="billingRate_{{i}}"
+                        (keyup)="changeCalculation($event, i, 'billingRate')" [tabIndex]="(10*i)+16" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="margin" id="margin_{{i}}" (keyup)="changeMargin($event, i)" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="freeQuantity" id="freeQuantity_{{i}}"
+                        (keyup)="changeCalculation($event, i, 'freeQuantity')" [tabIndex]="(10*i)+17" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="saleQuantity" id="saleQuantity_{{i}}"
+                        (blur)="checkQuantity($event, i)" [tabIndex]="(10*i)+18" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="difference" id="difference_{{i}}"
+                        readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="totalDifference"
+                        id="totalDifference_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am tc" formControlName="amount" id="amount_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="totalSaleQuantity" id="totalSaleQuantity_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am tc" formControlName="ptd" id="ptd_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am tc" formControlName="totalPtdAmt" id="totalPtdAmt_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd tc">
+                      <span title="Approve" style="color:green;">
+                        <i class="vsm-icon pe-7s-check"></i>
+                      </span>
+                      <span title="Unapprove" style="color:red;">
+                        <i class="vsm-icon pe-7s-close-circle"></i>
+                      </span>
+
+                      <!-- <span title="Add to this invoice" [tabIndex]="(10*i)+20" (click)="addSameInvoice(i)" (keyup.enter)="addSameInvoice(i)">
+                        <i class="vsm-icon pe-7s-copy-file"></i>
+                      </span> -->
+
+                      <!-- <span title="Delete this row" style="color:red;">
+                        <i class="vsm-icon pe-7s-trash" (click)="removeClaim(i)"></i>
+                      </span> -->
+
+                      <input type="hidden" class="count" value="{{i}}">
+                    </td>
+                  </tr>
+
+                </div>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 tar">
+            <!-- <button type="button" class="mt-1 btn btn-info m_lr" (click)="addNewInvoice()" [tabIndex]="100000">Add New
+              Invoice</button> -->
+            <button *ngIf="!btnLoader" type="submit" class="mt-1 btn btn-success m_lr" style="padding: 6px 30px;">Save as Draft</button>
+            <button *ngIf="btnLoader" type="button" class="mt-1 btn btn-transition m_lr"
+              style="color: #033C73; border-color: #73A839; cursor:inherit; font-weight: 600;">
+              <span class="me-2 opacity-7"><img src="./../../assets/images/btn_loader.gif"></span>
+              <span class="me-1">Please Wait ...</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <ng-template #details let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Attachment of invoice</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12 tc" style="min-height: 200px;">
+            <pdf-viewer *ngIf="pdfSource" [src]="pdfSource" [original-size]="false"></pdf-viewer>
+            <img *ngIf="!pdfSource" src="{{apiURL}}/uploads/files/{{clickedFile.filename}}" style="max-width: 100%;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="mt-1 btn btn-warning" (click)="newTab(clickedFile)" style="padding: 6px 30px;">Open
+          in new tab</button>
+
+        <button type="button" class="mt-1 btn btn-danger" (click)="confirmBoxDeleteFile(clickedFile)"
+          style="padding: 6px 30px;">Delete</button>
+
+        <button type="button" class="btn btn-secondary" (click)="c('Close click')"
+          style="padding: 6px 30px;">Close</button>
+      </div>
+    </ng-template>

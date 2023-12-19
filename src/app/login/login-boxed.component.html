@@ -1,0 +1,87 @@
+<div class="h-100 bg-plum-plate bg-animation">
+  <div class="d-flex h-100 justify-content-center align-items-center">
+    <div class="mx-auto app-login-box col-md-8">
+      <div class="app-logo-inverse mx-auto mb-3"></div>
+      <div class="modal-dialog w-100 mx-auto">
+        <div class="modal-content">
+          <div class="modal-body">
+            <div class="h5 modal-title text-center">
+              <h4 class="mt-2" style="margin-bottom: 20px;">
+                <span>Login to Your Account.</span>
+              </h4>
+              <div id="errmsg" style="color: red; font-size: 15px; margin-bottom: 15px; display: none;"></div>
+            </div>
+
+            <div class="position-relative form-check form-check-inline">
+              <label class="form-label form-check-label">
+                <input name="logType" type="radio" class="form-check-input radio" value="3"
+                  (change)="radioChange($event)" checked>
+                Stockist
+              </label>
+            </div>
+            <div class="position-relative form-check form-check-inline">
+              <label class="form-label form-check-label">
+                <input name="logType" type="radio" class="form-check-input radio" value="2"
+                  (change)="radioChange($event)">
+                Field Officer
+              </label>
+            </div>
+            <div class="position-relative form-check form-check-inline">
+              <label class="form-label form-check-label">
+                <input name="logType" type="radio" class="form-check-input radio" value="1"
+                  (change)="radioChange($event)">
+                Head Office
+              </label>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="employee">
+              <div class="mb-3">
+                <div>
+                  <input id="email" type="email" formControlName="email" placeholder="Email address" required=""
+                    class="form-control shadow-sm">
+                  <div class="invalid-feedback" id="err-email"></div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div>
+                  <input id="password" type="password" formControlName="password" placeholder="Password" required=""
+                    class="form-control shadow-sm text-primary">
+                  <div class="invalid-feedback" id="err-pass"></div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div>
+                  <select id="portal" class="form-select form-control" (change)="changePortal($event)" style="display: none;">
+                    <option value="" disabled hidden selected>Select Portal</option>
+                    <option *ngFor="let portal of portals" [value]="portal.slug">
+                      {{portal.name | titlecase}}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" id="err-portal"></div>
+                </div>
+              </div>
+
+              <div class="modal-footer clearfix" style="background: #ffffff;">
+                <div class="float-end">
+                  <button *ngIf="!submitted" type="submit" class="mb-2 me-2 btn-transition btn btn-primary">Login to
+                    Dashboard</button>
+
+                  <button *ngIf="submitted" type="button" class="mb-2 me-2 btn-transition btn"
+                    style="color: #033C73; border-color: #033C73; cursor:inherit;">
+                    <span class="me-2 opacity-7"><img src="./../../assets/images/btn_loader.gif"></span>
+                    <span class="me-1">Login to Dashboard</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="text-center text-white opacity-8 mt-3">
+        Copyright © La Renon Healthcare Pvt. Ltd. 2023
+      </div>
+    </div>
+  </div>
+</div>

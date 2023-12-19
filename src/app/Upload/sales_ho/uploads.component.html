@@ -1,0 +1,46 @@
+<div class="app-page-title">
+  <div class="page-title-wrapper">
+    <div class="page-title-heading">
+      <div class="page-title-icon">
+        <i class="icon {{icon}}"></i>
+      </div>
+      <div>
+        {{heading}}
+        <div class="page-title-subheading">
+          {{subheading}}
+        </div>
+      </div>
+    </div>
+    <!-- <div class="page-title-actions">
+      <button type="button" class="btn-shadow d-inline-flex align-items-center btn btn-success">
+        <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
+        Create New
+      </button>
+    </div> -->
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-4">
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input type="file" name="file" id="file">
+        </form>
+      </div>
+
+      <div class="col-md-8">
+        <!-- Message -->
+        <div id='message'>Uploaded successfully</div>
+        <div id='error'>Something went wrong. Please try again or refresh the page.</div>
+      </div>
+
+      <div class="col-md-12">
+        <!-- Preview -->
+        <div id='preview' style="margin-top: 15px;"></div>
+      </div>
+
+      <!-- <p *ngIf="isLoading">Loading.....</p> -->
+    </div>
+  </div>
+</div>

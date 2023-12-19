@@ -1,0 +1,101 @@
+<div [class]="'app-sidebar sidebar-shadow ' + (config$ | async).sidebarTheme" (mouseover)="sidebarHover()"
+  (mouseout)="sidebarHover()">
+  <div class="app-header__logo">
+    <div class="logo-src"></div>
+    <div class="header__pane ms-auto">
+      <button type="button" class="hamburger close-sidebar-btn hamburger--elastic"
+        [ngClass]="{'is-active' : globals.toggleSidebar}" (click)="toggleSidebar()">
+        <span class="hamburger-box">
+          <span class="hamburger-inner"></span>
+        </span>
+      </button>
+    </div>
+  </div>
+  <div class="app-sidebar-content">
+    <div class="app-sidebar-scroll">
+      <perfect-scrollbar [autoPropagation]="true">
+        <div class="v-sidebar-menu vsm-default">
+          <div class="vsm-list">
+            <div class="vsm-item">
+              <a routerLink="/dashboard" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-home"></i>
+                <span class="vsm-title">Dashboard</span>
+              </a>
+            </div>
+
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(1)">
+              <a routerLink="/stockiest/createClaim" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-news-paper"></i>
+                <span class="vsm-title">Create Claim</span>
+              </a>
+            </div>
+
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(2)">
+              <a routerLink="/stockiest/draftClaim" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-notebook"></i>
+                <span class="vsm-title">Draft Claim</span>
+              </a>
+            </div>
+
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(7)">
+              <a routerLink="/stockiest/acceptance" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-sun"></i>
+                <span class="vsm-title">Claim Acceptance</span>
+              </a>
+            </div>
+
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
+              <a routerLink="/stockiest/claimStatus" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-check"></i>
+                <span class="vsm-title">Approved/InProgress Claim</span>
+              </a>
+            </div>
+            
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(4)">
+              <a routerLink="/headoffice/stockiestClaim" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-id"></i>
+                <span class="vsm-title">Stockiest Claim</span>
+              </a>
+            </div>
+
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(5)">
+              <a routerLink="/headoffice/claimStatus" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-check"></i>
+                <span class="vsm-title">Claim Status</span>
+              </a>
+            </div>
+            
+            <!-- <ngb-accordion [destroyOnHide]="false" [closeOthers]="true" [activeIds]="extraParameter">
+              <ngb-panel id="ownersMenu">
+                <ng-template ngbPanelHeader>
+                  <button ngbPanelToggle class="vsm-link">
+                    <i class="vsm-icon pe-7s-upload"></i>
+                    <span class="vsm-title">Upload Data</span>
+                    <i class="vsm-arrow"></i>
+                  </button>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                  <div class="vsm-dropdown">
+                    <div class="vsm-list">
+                      <div class="vsm-item">
+                        <a routerLink="/upload/salesHo" routerLinkActive="active-item" [routerLinkActiveOptions]="{exact: true}" class="vsm-link">
+                          <span class="vsm-title">Sales HO (2000)</span>
+                        </a>
+                      </div>
+                      <div class="vsm-item">
+                        <a routerLink="/upload/salesDist" routerLinkActive="active-item" [routerLinkActiveOptions]="{exact: true}" class="vsm-link">
+                          <span class="vsm-title">Sales Dist. (9000)</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-panel>
+            </ngb-accordion> -->
+
+          </div>
+        </div>
+      </perfect-scrollbar>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,250 @@
+<div class="app-page-title">
+  <div class="page-title-wrapper">
+    <div class="page-title-heading">
+      <div class="page-title-icon">
+        <i class="icon {{icon}}"></i>
+      </div>
+      <div>
+        {{heading}}
+        <div class="page-title-subheading">
+          {{subheading}}
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <div style="text-align: right;" *ngIf="loggedInUser.permissions.includes(6)">
+    <button type="button" class="btn btn-warning" (click)="exportToExcel()">ExportToExcel</button>
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    <!-- <form class="form" [formGroup]="myForm" (ngSubmit)="onHeaderSubmit()" autocomplete="off"> -->
+    <div class="row row-cols-7">
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="stockiest" class="form-label fb">Stockiest *</label>
+          <select id="stockiest" class="form-select" style="display: none;">
+            <option value="" disabled hidden selected> -- Stockiest -- </option>
+            <option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
+              {{stockiest.organization | titlecase}} - {{stockiest.customerId}}
+            </option>
+          </select>
+          <span id="err_stockiest" class="text-danger" style="display: none;"></span>
+          <div id="stockiest_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="type" class="form-label fb">Claim Type</label>
+          <select id="type" class="form-select">
+            <option value="" selected> -- All -- </option>
+            <option *ngFor="let type of types" [value]="type.id">
+              {{type.name | titlecase}}
+            </option>
+          </select>
+          <span id="err_type" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="division" class="form-label fb">Division</label>
+          <select id="division" class="form-select">
+            <option value="" selected> -- All -- </option>
+            <option *ngFor="let division of divisions" [value]="division.name">
+              {{division.name | titlecase}}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="month" class="form-label fb">Month *</label>
+          <select id="month" class="form-select">
+            <option value="" disabled selected> -- Month -- </option>
+            <option *ngFor="let month of months" [value]="month.id">
+              {{month.name}}
+            </option>
+          </select>
+          <span id="err_month" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="year" class="form-label fb">Year *</label>
+          <select id="year" class="form-select">
+            <option value="" disabled selected> -- Year -- </option>
+            <option *ngFor="let year of years" [value]="year.id">
+              {{year.name}}
+            </option>
+          </select>
+          <span id="err_year" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="status" class="form-label fb">Status *</label>
+          <select id="status" class="form-select">
+            <option value="" disabled selected> -- Status -- </option>
+            <option value="approved">Approved</option>
+            <option value="unapproved">UnApproved</option>
+            <option value="inprogress">Inprogress</option>
+          </select>
+          <span id="err_status" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="position-relative" style="text-align: center;">
+          <button type="button" class="btn btn-info" style="margin: 28px 3px 0 3px;" (click)="getData()">Search</button>
+          <button type="button" class="btn btn-warning" style="margin: 28px 3px 0 3px;" (click)="clear()">Clear</button>
+        </div>
+      </div>
+      
+    </div>
+    <!-- </form> -->
+
+    <div class="row">
+      <div class="col-md-12">
+        <hr />
+      </div>
+      <div *ngIf="loading" class="col-md-12 tc" style="color: red;">
+        <img src="./../../assets/images/btn_loader.gif"> <br /> Loading... Please wait
+      </div>
+      <div *ngIf="!showData" class="col-md-12 tc" style="color: red;">
+        No record found!
+      </div>
+    </div>
+
+    <div *ngIf="!loading && showData" class="mytable">
+      <table>
+        <thead>
+          <tr>
+            <th class="border-right" style="width: 100px;">Claim Type</th>
+            <th class="border-right" style="width: 90px;">Invoice</th>
+            <th class="border-right" style="width: 90px;">Batch</th>
+            <th class="border-right" style="width: 140px;">Division</th>
+            <th class="border-right" style="width: 200px;">Product</th>
+            <!-- <th class="border-right" style="width: 165px;">Particulars</th> -->
+            <th class="border-right" style="width: 65px;">MRP</th>
+            <th class="border-right" style="width: 65px;">PTS</th>
+            <th class="border-right" style="width: 80px;">Billing Rate</th>
+            <th class="border-right" style="width: 60px;">Margin</th>
+            <th class="border-right" style="width: 70px;">Free QTY</th>
+            <th class="border-right" style="width: 70px;">Sale QTY</th>
+            <th class="border-right" style="width: 75px;">Difference</th>
+            <th class="border-right" style="width: 75px;">Total Diff.</th>
+            <th class="border-right" style="width: 80px;">Amount</th>
+            <th class="border-right" style="width: 80px;">Attachments</th>
+            <!-- <th class="border-right" style="width: 80px;">Options</th> -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-bottom" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
+            <td class="border-right">{{record.claimType | titlecase}}</td>
+            <td class="border-right">{{record.invoice}}</td>
+            <td class="border-right">{{record.batch}}</td>
+            <td class="border-right tal">{{record.divisionName | titlecase}}</td>
+            <td class="border-right tal">{{record.materialName | titlecase}}</td>
+            <!-- <td class="border-right tal">{{record.particulars | titlecase}}</td> -->
+            <td class="border-right">{{record.mrp | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.pts | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.billingRate | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.margin}}</td>
+            <td class="border-right">{{record.freeQuantity | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.saleQuantity | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.difference | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.totalDifference | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.amount | number : '1.2-2'}}</td>
+            <td class="border-right att_{{record.invoice}}">
+              <div *ngIf="record.files">
+                <span *ngFor="let fn of record.files" style="margin:0 2px;">
+                  <i class="pe-7s-paperclip fb" placement="bottom" ngbTooltip="{{fn.originalFilename}}"
+                    (click)="viewPopup(details, fn, record.invoice, record._id)"></i>
+                </span>
+              </div>
+              <div class="attch {{record.invoice}}" style="display: none;"> Upload Invoice
+                <!-- <i class="vsm-icon pe-7s-cloud-upload option-tr attch {{record.invoice}}" style="display: none; color: red;"></i> -->
+              </div>
+            </td>
+            <!-- <td class="border-right">
+              <span title="Upload Invoice" class="option-span" style="color: #6610f2;">
+                <i class="vsm-icon pe-7s-cloud-upload option-tr" (click)="uploadwPopup(uploads, record._id)"></i>
+              </span>
+              <span title="Edit" class="option-span">
+                <a href="stockiest/updateClaim/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
+              </span>
+              <span title="Delete" class="option-span" style="color: red">
+                <i class="vsm-icon pe-7s-trash option-tr" (click)="confirmBoxDelete(record._id)"></i>
+              </span>
+            </td> -->
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && showData" class="row" style="margin-top: 15px;">
+      <div class="col-md-6" style="padding-top: 10px; font-weight: 600;">
+        Records: {{tempRecords.length}}
+      </div>
+      <div class="col-md-6 tar">
+        <!-- <button *ngIf="!btnLoader" type="submit" class="mt-1 btn btn-success m_lr" style="padding: 6px 30px;"
+          (click)="postClaim()">Post Claim</button>
+        <button *ngIf="btnLoader" type="button" class="mt-1 btn btn-transition m_lr"
+          style="color: #033C73; border-color: #73A839; cursor:inherit; font-weight: 600;">
+          <span class="me-2 opacity-7"><img src="./../../assets/images/btn_loader.gif"></span>
+          <span class="me-1">Post Claim</span>
+        </button> -->
+      </div>
+    </div>
+
+    <ng-template #details let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Attachment of invoice `{{clickedFile.invoice}}`</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12 tc" style="min-height: 200px;">
+            <pdf-viewer *ngIf="pdfSource" [src]="pdfSource" [original-size]="false"></pdf-viewer>
+            <img *ngIf="!pdfSource" src="{{apiURL}}/uploads/files/{{clickedFile.filename}}" style="max-width: 100%;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="mt-1 btn btn-warning" (click)="newTab(clickedFile)" style="padding: 6px 30px;">Open
+          in new tab</button>
+
+        <button type="button" class="mt-1 btn btn-danger" (click)="confirmBoxDeleteFile(clickedFile)"
+          style="padding: 6px 30px;">Delete</button>
+
+        <button type="button" class="btn btn-secondary" (click)="c('Close click')"
+          style="padding: 6px 30px;">Close</button>
+      </div>
+    </ng-template>
+
+    <ng-template #uploads let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Upload on invoice</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12 tc">
+            <input type="file" class="file-input" [accept]="requiredFileType"
+              (change)="onFileSelected($event, uploadFile)" #fileUpload multiple>
+            <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
+              [tabIndex]="9">Attach File</button> -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="mt-1 btn btn-success" (click)="confirmBoxDeleteFile(clickedFile)"
+          style="padding: 6px 30px;">Upload</button>
+
+        <button type="button" class="btn btn-secondary" (click)="c('Close click')"
+          style="padding: 6px 30px;">Close</button>
+      </div>
+    </ng-template>
