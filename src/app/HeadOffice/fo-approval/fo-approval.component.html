@@ -116,6 +116,7 @@
         <div class="table-responsive">
           <table class="table" id="table1">
             <tr>
+              <th class="td-head">SNo.</th>
               <th class="td-head">Status</th>
               <th class="td-head">Attachment</th>
               <th class="td-head">Claim Type</th>
@@ -127,38 +128,36 @@
               <th class="td-head">MRP</th>
               <th class="td-head">PTS</th>
               <th class="td-head">Billing Rate</th>
-              <th class="td-head">Margin</th>
+              <!-- <th class="td-head">Margin</th> -->
               <th class="td-head">Free QTY</th>
               <th class="td-head">Sale QTY</th>
               <th class="td-head">Difference</th>
               <th class="td-head">Total Diff.</th>
               <th class="td-head">Amount</th>
-              <th class="td-head">Particulars</th>
-              <th class="td-head">Category</th>
-              <th class="td-head">Supply Proof</th>
-              <th class="td-head">Pur. Order</th>
               <th class="td-head">Actions</th>
             </tr>
             <tr class="border-bottom tc" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
+              <td class="border-right tc">{{i + 1}}</td>
               <td class="border-right tc">
-                <!-- <div *ngIf="record.isApproved" id="def_approvedIcon_{{record._id}}" title="Approved"
+                <!-- <div *ngIf="record.isFoApproved" id="def_approvedIcon_{{record._id}}" title="Approved"
                   class="wpseo-score-icon good"></div>
-                <div *ngIf="record.isUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Un-Approved"
+                <div *ngIf="record.isFoUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Un-Approved"
                   class="wpseo-score-icon bad"></div>
 
                 <div id="approvedIcon_{{record._id}}" title="Approved" class="wpseo-score-icon good"
                   style="display: none;"></div>
                 <div id="unapprovedIcon_{{record._id}}" title="Un-Approved" class="wpseo-score-icon bad"
                   style="display: none;"></div> -->
+                
 
-                <i *ngIf="record.isFoApproved" title="Accepted by FO" class="pe-7s-check icon-gradient bg-grow-early-np npicon"></i>
-                <i *ngIf="record.isFoUnapproved" title="Rejected by FO" class="pe-7s-check icon-gradient bg-ripe-malin-np npicon"></i>
+                <i *ngIf="record.isFoApproved" id="def_approvedIcon_{{record._id}}" title="Accepted" class="pe-7s-check icon-gradient bg-grow-early-np npicon"></i>
+                <i *ngIf="record.isFoUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Rejected" class="pe-7s-check icon-gradient bg-ripe-malin-np npicon"></i>
 
-                <i id="approvedIcon_{{record._id}}" title="Accepted by FO" class="pe-7s-star icon-gradient bg-grow-early-np npicon" style="display: none;"></i>
-                <i id="unapprovedIcon_{{record._id}}" title="Rejected by FO" class="pe-7s-star icon-gradient bg-ripe-malin-np npicon" style="display: none;"></i>
-              
-                <i *ngIf="record.isApproved" id="def_approvedIcon_{{record._id}}" title="Accepted by HO" class="pe-7s-star icon-gradient bg-grow-early-np npicon"></i>
-                <i *ngIf="record.isUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Rejected by HO" class="pe-7s-star icon-gradient bg-ripe-malin-np npicon"></i>
+                <i id="approvedIcon_{{record._id}}" title="Accepted" class="pe-7s-check icon-gradient bg-grow-early-np npicon" style="display: none;"></i>
+                <i id="unapprovedIcon_{{record._id}}" title="Rejected" class="pe-7s-check icon-gradient bg-ripe-malin-np npicon" style="display: none;"></i>
+
+                <!-- <i title="star" class="pe-7s-star icon-gradient bg-grow-early-np npicon"></i>
+                <i title="star" class="pe-7s-star icon-gradient bg-ripe-malin-np npicon"></i> -->
               </td>
               <td class="border-right">
                 <div *ngIf="record.files">
@@ -167,11 +166,6 @@
                       (click)="viewPopup(details, fn, record.invoice, record._id)"></i>
                   </span>
                 </div>
-
-                <!-- <div class="attch {{record.invoice}}" style="display: none;">Upload Invoice</div> -->
-
-                <!-- <div title="Approved" class="wpseo-score-icon"></div>
-                <div title="Un-Approved" class="wpseo-score-icon"></div> -->
               </td>
               <td class="border-right tc">{{record.claimType | titlecase}}</td>
               <td class="border-right tc">{{record.invoice}}</td>
@@ -182,102 +176,20 @@
               <td class="border-right tc">{{record.mrp | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.pts | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.billingRate | number : '1.2-2'}}</td>
-              <td class="border-right tc">{{record.margin}}</td>
+              <!-- <td class="border-right tc">{{record.margin}}</td> -->
               <td class="border-right tc">{{record.freeQuantity | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.saleQuantity}}</td>
               <td class="border-right tc">{{record.difference | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.totalDifference | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.amount | number : '1.2-2'}}</td>
-              <td class="border-right">
-                <div class="inputcontainer">
-                  <input type="text" class="form-control tc" id="particulars_{{record._id}}"
-                    value="{{record.particulars}}" (keyup)="searchParticulars($event, record._id)"
-                    placeholder="Enter Particulars" style="width:160px;" />
-                  <div class="icon-container" id="particulars_loader_{{record._id}}">
-                    <i class="loader"></i>
-                  </div>
-                </div>
-
-                <div class="suggestions" id="particulars_suggestion_{{record._id}}"
-                  (click)="particularsSelection($event, record._id)" style="display: none;">
-                  <ul></ul>
-                </div>
-              </td>
-              <td class="border-right">
-                <div class="inputcontainer">
-                  <input type="text" class="form-control tc" id="category_{{record._id}}" value="{{record.category}}"
-                    (keyup)="searchCategory($event, record._id)" placeholder="Enter Category" style="width:120px;" />
-                  <div class="icon-container" id="category_loader_{{record._id}}">
-                    <i class="loader"></i>
-                  </div>
-                </div>
-
-                <div class="suggestions" id="category_suggestion_{{record._id}}"
-                  (click)="categorySelection($event, record._id)" style="display: none;">
-                  <ul></ul>
-                </div>
-              </td>
-              <td class="border-right">
-                <div class="position-relative" style="padding: 0px;">
-                  <select id="sproof_{{record._id}}" class="form-select">
-                    <option value="" disabled selected> - - </option>
-                    <option *ngIf="record.supplyProof == 'yes'" value="yes" selected>Yes</option>
-                    <option *ngIf="record.supplyProof != 'yes'" value="yes">Yes</option>
-                    <option *ngIf="record.supplyProof == 'no'" value="no" selected>No</option>
-                    <option *ngIf="record.supplyProof != 'no'" value="no">No</option>
-                  </select>
-                  <div class="icon-container" id="sproof_loader_{{record._id}}">
-                    <i class="loader"></i>
-                  </div>
-                </div>
-              </td>
-              <td class="border-right">
-                <div class="position-relative" style="padding: 0px;">
-                  <select id="porder_{{record._id}}" class="form-select">
-                    <option value="" disabled selected> - - </option>
-                    <option *ngIf="record.purchaseOrder == 'yes'" value="yes" selected>Yes</option>
-                    <option *ngIf="record.purchaseOrder != 'yes'" value="yes">Yes</option>
-                    <option *ngIf="record.purchaseOrder == 'no'" value="no" selected>No</option>
-                    <option *ngIf="record.purchaseOrder != 'no'" value="no">No</option>
-                    <option *ngIf="record.purchaseOrder == 'na'" value="na" selected>N/A</option>
-                    <option *ngIf="record.purchaseOrder != 'na'" value="na">N/A</option>
-                  </select>
-                  <div class="icon-container" id="porder_loader_{{record._id}}">
-                    <i class="loader"></i>
-                  </div>
-                </div>
-              </td>
+              
               <td class="tc">
                 <span class="option-icon pe-7s-check iconpe_green" title="Accept"
-                  (click)="validateApproval(record, 'Approve')"></span>
+                  (click)="validateFoApproval(record, 'Approve')"></span>
                 <span class="option-icon pe-7s-close-circle iconpe_red" title="Reject"
-                  (click)="validateApproval(record, 'Unapprove')"></span>
+                  (click)="validateFoApproval(record, 'Unapprove')"></span>
                 <span class="option-icon pe-7s-edit iconpe_blue" title="Edit" (click)="editRecord(record)"></span>
-                <span class="option-icon pe-7s-global iconpe_purp" title="Cancel" (click)="validateApproval(record, 'Cancel')"></span>
-
-                <!-- <span title="Approve" (click)="validateApproval(record, 'Approve')" style="padding: 0 3px; cursor: pointer;">
-                  <img src="assets/images/accept.png">
-                </span>
-                <span title="Unapprove" (click)="validateApproval(record, 'Unapprove')" style="padding: 0 3px; cursor: pointer;">
-                  <img src="assets/images/cancel.png">
-                </span>
-                <span title="Edit" (click)="editRecord(record)" style="padding: 0 3px; cursor: pointer;">
-                  <img src="assets/images/edit.png">
-                </span> -->
-
-                <!-- <a href="/headoffice/claimApproval/{{record.claimMonth}}/{{record.customerId}}/{{record.claimYear}}/{{record.claimType}}/{{record.invoice}}" alt="Proceed for approval" title="Proceed for approval">
-                <img src="assets/images/approval.png">
-              </a> -->
-
-                <!-- <span title="Upload Invoice" class="option-span" style="color: #6610f2;">
-                <i class="vsm-icon pe-7s-cloud-upload option-tr" (click)="uploadwPopup(uploads, record._id)"></i>
-              </span>
-              <span title="Edit" class="option-span">
-                <a href="stockiest/updateClaim/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
-              </span>
-              <span title="Delete" class="option-span" style="color: red">
-                <i class="vsm-icon pe-7s-trash option-tr" (click)="confirmBoxDelete(record._id)"></i>
-              </span> -->
+                <span class="option-icon pe-7s-global iconpe_purp" title="Cancel" (click)="validateFoApproval(record, 'Cancel')"></span>
               </td>
             </tr>
           </table>
@@ -521,6 +433,53 @@
           <input type="hidden" class="form-control grf-am" id="edit_error" value="0" />
           <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateClaim()"> Update </button>
           <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeEditModal()"> Close </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comment/Reason for unapproved popup -->
+    <div id="myModalComment" class="modal">
+      <div class="modal-content" style="width: 380px; margin:auto;">
+        <div class="modal-header" style="padding: 5px 15px;">
+          <h2 style="font-size: 20px;">Reason for rejection</h2>
+          <span class="close" (click)="closeCommentModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding-top: 22px;">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="position-relative mb-3 required">
+                <!-- <label for="edit_stockiest" class="form-label fb">Stockiest</label> -->
+                <textarea id="comments" name="comments" rows="4" cols="50"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 5px 15px;">
+          <button type="button" class="btn btn-success" [tabIndex]="12" (click)="rejectClaim()"> Submit </button>
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeCommentModal()"> Close </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comment/Reason for unapproved popup -->
+    <div id="updateModalComment" class="modal">
+      <div class="modal-content" style="width: 380px; margin:auto;">
+        <div class="modal-header" style="padding: 5px 15px;">
+          <h2 style="font-size: 20px;">Reason for update</h2>
+          <span class="close" (click)="closeUpdateCommentModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding-top: 22px;">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="position-relative mb-3 required">
+                <textarea id="update_comments" name="update_comments" rows="4" cols="50"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 5px 15px;">
+          <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateCommentClaim()"> Update Now </button>
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeUpdateCommentModal()"> Close </button>
         </div>
       </div>
     </div>

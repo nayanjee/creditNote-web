@@ -86,13 +86,13 @@
               <table class="table" id="table1">
                 <tr>
                   <td class="td-head required"><label class="form-label grid-label">Invoice No</label></td>
-                  <td class="td-head required"><label class="form-label grid-label">Batch</label></td>
                   <td class="td-head">Division</td>
                   <td class="td-head"><label class="form-label grid-label">Product</label></td>
+                  <td class="td-head required"><label class="form-label grid-label">Batch</label></td>
                   <!-- <td class="td-head">Particulars</td> -->
                   <td class="td-head">MRP</td>
                   <td class="td-head">PTS</td>
-                  <td class="td-head">Margin (%)</td>
+                  <!-- <td class="td-head">Margin (%)</td> -->
                   <td class="td-head required"><label class="form-label grid-label">Billing Rate</label></td>
                   <td class="td-head required"><label class="form-label grid-label">Free QTY</label></td>
                   <td class="td-head required"><label class="form-label grid-label">Sale QTY</label></td>
@@ -105,11 +105,43 @@
                 </tr>
 
                 <!-- DEFAULT / FIRST ROW OF THE COLUMNS -->
-                <tr>
+                <tr style="position: relative;">
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_invoice" id="invoice_def"
                       [tabIndex]="1" />
                   </td>
+                  
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_division" id="division_def"
+                      (keyup)="searchDivision($event, -1)" [tabIndex]="2" />
+
+                    <img style="float:right;" id="division_loader_def" src="./../../../assets/images/btn_loader.gif"
+                      style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                    <div class="suggestions" id="division_suggestion_def" (click)="divisionSelection($event, -1)"
+                      style="display: none;">
+                      <ul></ul>
+                    </div>
+
+                    <input type="hidden" class="form-control" formControlName="def_divisionId" id="division_id_def" />
+                    <input type="hidden" class="form-control" formControlName="def_plantId" id="plant_id_def" />
+                  </td>
+                  
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_product" id="product_def"
+                      (keyup)="searchProduct($event, -1)" [tabIndex]="3" />
+
+                    <img style="float:right;" id="product_loader_def" src="./../../../assets/images/btn_loader.gif"
+                      style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                    <div class="suggestions" id="product_suggestion_def" (click)="productSelection($event, -1)"
+                      style="display: none;">
+                      <ul></ul>
+                    </div>
+
+                    <input type="hidden" class="form-control" formControlName="def_productId" id="product_id_def" />
+                  </td>
+
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_batch" id="batch_def"
                       (keyup)="searchBatch($event, -1)" [tabIndex]="2" />
@@ -121,12 +153,6 @@
                       style="display: none;">
                       <ul></ul>
                     </div>
-                  </td>
-                  <td class="tdpd1">
-                    <input type="text" class="form-control" formControlName="def_division" id="division_def" readonly />
-                  </td>
-                  <td class="tdpd1">
-                    <input type="text" class="form-control" formControlName="def_product" id="product_def" readonly />
                   </td>
 
                   <!-- <td class="tdpd1">
@@ -166,9 +192,9 @@
                     <input type="hidden" id="ptr_def" />
                     <input type="hidden" id="ptd_def" />
                   </td>
-                  <td class="tdpd1">
+                  <!-- <td class="tdpd1">
                     <input type="text" class="form-control tc" formControlName="def_margin" id="margin_def" readonly />
-                  </td>
+                  </td> -->
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_billingRate"
                       id="billingRate_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="6" />
@@ -215,11 +241,45 @@
                 </tr>
 
                 <!-- ADD MORE FUNCTIONALITY -->
-                <div formArrayName="claims">
+                <div formArrayName="claims" style="position:relative;"> 
                   <tr *ngFor="let claim of claims().controls; let i=index" [formGroupName]="i">
                     <td class="tdpd">
                       <input type="text" class="form-control grf-am" formControlName="invoice" id="invoice_{{i}}"
                         [tabIndex]="(10*i)+11" />
+                    </td>
+                    <td class="tdpd">
+                      <!-- <input type="text" class="form-control" formControlName="division" id="division_{{i}}" readonly /> -->
+
+                      <input type="text" class="form-control" formControlName="division" id="division_{{i}}"
+                        (keyup)="searchDivision($event, i)" [tabIndex]="(10*i)+13" />
+
+                      <img style="float:right;" id="division_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
+
+                      <div class="suggestions" id="division_suggestion_{{i}}" (click)="divisionSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+
+                      <input type="hidden" class="form-control" formControlName="divisionId" id="division_id_{{i}}" />
+                      <input type="hidden" class="form-control" formControlName="plantId" id="plant_id_{{i}}" />
+                    </td>
+                    <td class="tdpd">
+                      <!-- <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
+                        readonly /> -->
+
+                      <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
+                        (keyup)="searchProduct($event, i)" [tabIndex]="(10*i)+14" />
+
+                      <img style="float:right;" id="product_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                      <div class="suggestions" id="product_suggestion_{{i}}" (click)="productSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+
+                      <input type="hidden" class="form-control" formControlName="productId" id="product_id_{{i}}" />
                     </td>
                     <td class="tdpd">
                       <input type="text" class="form-control grf-am" formControlName="batch" id="batch_{{i}}"
@@ -233,35 +293,6 @@
                         <ul></ul>
                       </div>
                     </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control" formControlName="division" id="division_{{i}}" readonly />
-
-                      <!-- <input type="text" class="form-control" formControlName="division" id="division_{{i}}"
-                        (keyup)="searchDivision($event, i)" [tabIndex]="(10*i)+13" />
-
-                      <img style="float:right;" id="division_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
-                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
-
-                      <div class="suggestions" id="division_suggestion_{{i}}" (click)="divisionSelection($event, i)"
-                        style="display: none;">
-                        <ul></ul>
-                      </div> -->
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
-                        readonly />
-
-                      <!-- <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
-                        (keyup)="searchProduct($event, i)" [tabIndex]="(10*i)+14" />
-
-                      <img style="float:right;" id="product_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
-                        style="position: absolute; margin: -35px 0 0 65px; display: none;" />
-
-                      <div class="suggestions" id="product_suggestion_{{i}}" (click)="productSelection($event, i)"
-                        style="display: none;">
-                        <ul></ul>
-                      </div> -->
-                    </td>
                     <!-- <td class="tdpd">
                       <input type="text" class="form-control" formControlName="particulars" id="particulars_{{i}}"
                         [tabIndex]="(10*i)+15" />
@@ -274,9 +305,9 @@
                       <input type="hidden" id="ptr_{{i}}" />
                       <input type="hidden" id="ptd_{{i}}" />
                     </td>
-                    <td class="tdpd">
+                    <!-- <td class="tdpd">
                       <input type="text" class="form-control tc" formControlName="margin" id="margin_{{i}}" readonly />
-                    </td>
+                    </td> -->
                     <td class="tdpd">
                       <input type="text" class="form-control grf-am" formControlName="billingRate"
                         id="billingRate_{{i}}" (keyup)="changeCalculation($event, i)" [tabIndex]="(10*i)+16" />
@@ -329,6 +360,11 @@
                   </tr>
 
                 </div>
+
+                <!-- <tr>
+                  <td rowspan="16"></td>
+                </tr> -->
+                <div style="height: 108px;">&nbsp;</div>
               </table>
             </div>
           </div>

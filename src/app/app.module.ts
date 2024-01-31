@@ -56,13 +56,15 @@ import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.comp
 
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
+import { FoApprovalComponent } from './HeadOffice/fo-approval/fo-approval.component';
 import { StatusClaimComponent } from './HeadOffice/status-claim/status-claim.component';
 
 import { UploadHoComponent } from './Upload/sales_ho/uploads.component';
 import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
 
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { NgxMaskModule, IConfig } from 'ngx-mask'
+import { NgxMaskModule, IConfig } from 'ngx-mask';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
@@ -94,6 +96,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ClaimStatusComponent,
     StatusClaimComponent,
     ClaimApprovalComponent,
+    FoApprovalComponent,
     UploadHoComponent,
     UploadDistComponent
   ],
@@ -111,6 +114,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ReactiveFormsModule,
     HttpClientModule,
     PdfViewerModule,
+    NgSelectModule,
     NgxDatatableModule,
     NgxMaskModule.forRoot()
   ],
