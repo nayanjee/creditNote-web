@@ -1,0 +1,96 @@
+<div class="app-page-title">
+  <div class="page-title-wrapper">
+    <div class="page-title-heading">
+      <div class="page-title-icon">
+        <i class="icon {{icon}}"></i>
+      </div>
+      <div>
+        {{heading}}
+        <div class="page-title-subheading">
+          {{subheading}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off">
+      <div class="position-relative row mb-3">
+        <label for="username" class="form-label col-sm-2 col-form-label">Name</label>
+        <div class="col-sm-10">
+          <input class="form-control grf-def" formControlName="username" id="username" placeholder="Name" type="text">
+        </div>
+      </div>
+      <div class="position-relative row mb-3">
+        <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
+        <div class="col-sm-10">
+          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email" >
+        </div>
+      </div>
+      
+      <div class="position-relative row mb-3">
+        <label for="userTypes" class="form-label col-sm-2 col-form-label">User Type</label>
+        <div class="col-sm-10">
+          <ng-select
+            formControlName="userType"            
+            placeholder="Please Select"              
+            [(ngModel)]="selectedusertype">
+            <ng-option *ngFor="let utype of userTypes" [value]="utype.id">{{utype.name}}</ng-option>
+            </ng-select>
+        </div>
+      </div>
+      <div class="position-relative row mb-3">
+        <label for="stockiestes" class="form-label col-sm-2 col-form-label">Stockiest</label>
+        <div class="col-sm-10">
+          <!-- <ng-select
+            [items]="stockiestes"
+            [multiple]="true"
+            bindLabel="organization"
+            [selectableGroup]="true"
+            [closeOnSelect]="false"
+            
+            bindValue="_id"
+            [(ngModel)]="selectedStockiest" [ngModelOptions]="{standalone: true}">
+            </ng-select> -->
+            <ng-select
+            formControlName="stockiest"            
+            [multiple]="true"
+            placeholder="Please Select"              
+            [(ngModel)]="selectedStockiest">
+            <ng-option *ngFor="let stockiest of stockiestes" [value]="stockiest._id">{{stockiest.organization}} ({{stockiest.customerId}}) </ng-option>
+            </ng-select>
+        </div>
+      </div>
+      <div class="position-relative row mb-3">
+        <label for="accesspermissions" class="form-label col-sm-2 col-form-label">Access Permission</label>
+        <div class="col-sm-10">
+          
+          <select class="form-control grf-def" formControlName="accesspermission" id="accesspermission">
+            <option value="1">Head Office</option>
+            <option value="2">Field Officer</option>
+            <option value="3">Stockiest</option>
+
+          </select>
+        </div>
+      </div>
+      <div class="position-relative row mb-3">
+        <label for="status" class="form-label col-sm-2 col-form-label">Status</label>
+        <div class="col-sm-10">
+          <select class="form-control grf-def" formControlName="status" id="status">
+            <option value="1">Active</option>
+            <option value="2">In-Active</option>
+           
+
+          </select>
+        </div>
+      </div>
+      <div class="position-relative row form-check">
+        <div class="col-sm-10 offset-sm-2">
+          <button class="mt-1 btn btn-primary">Submit</button>
+        </div>
+      </div>
+      
+    </form>
+  </div>
+</div>

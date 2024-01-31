@@ -64,6 +64,12 @@
                 <span class="vsm-title">Claim Status</span>
               </a>
             </div>
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
+              <a routerLink="users/listUser" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-users"></i>
+                <span class="vsm-title">Users</span>
+              </a>
+            </div>
             
             <!-- <ngb-accordion [destroyOnHide]="false" [closeOthers]="true" [activeIds]="extraParameter">
               <ngb-panel id="ownersMenu">
