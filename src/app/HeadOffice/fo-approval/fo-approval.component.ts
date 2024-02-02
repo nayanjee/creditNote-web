@@ -1595,21 +1595,6 @@ export class FoApprovalComponent implements OnInit {
       isUnapproved: false,
       updateComment: $('#update_comments').val()
     }
-    console.log(reqData);
-
-    /* const allocatedQty: any = await this.getAllocatedQuantity(reqData._id);
-    if (allocatedQty.length) {
-      allocatedQty.forEach(async element => {
-        const reqData2 = {
-          billDocNumber: element['stkInvoiceNo'],
-          billToParty: reqData.customerId,
-          batch: reqData.batch,
-          allocatedQty: element['allocatedQty'],
-          claimId: reqData._id
-        }
-        const findUpdateRemaining: any = await this.findUpdateRemaining(reqData2);
-      });
-    } */
 
     this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
       if (response.status === 200) {

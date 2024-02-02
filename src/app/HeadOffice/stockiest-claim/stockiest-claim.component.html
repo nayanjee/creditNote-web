@@ -116,6 +116,7 @@
         <div class="table-responsive">
           <table class="table" id="table1">
             <tr>
+              <th class="td-head">Sl.No.</th>
               <th class="td-head">Status</th>
               <th class="td-head">Attachment</th>
               <th class="td-head">Claim Type</th>
@@ -140,6 +141,7 @@
               <th class="td-head">Actions</th>
             </tr>
             <tr class="border-bottom tc" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
+              <td class="border-right tc">{{i+1}}</td>
               <td class="border-right tc">
                 <!-- <div *ngIf="record.isApproved" id="def_approvedIcon_{{record._id}}" title="Approved"
                   class="wpseo-score-icon good"></div>
@@ -521,6 +523,29 @@
           <input type="hidden" class="form-control grf-am" id="edit_error" value="0" />
           <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateClaim()"> Update </button>
           <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeEditModal()"> Close </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comment/Reason for update popup -->
+    <div id="updateModalComment" class="modal">
+      <div class="modal-content" style="width: 380px; margin:auto;">
+        <div class="modal-header" style="padding: 5px 15px;">
+          <h2 style="font-size: 20px;">Reason for update</h2>
+          <span class="close" (click)="closeUpdateCommentModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding-top: 22px;">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="position-relative mb-3 required">
+                <textarea id="update_comments" name="update_comments" rows="4" cols="50"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 5px 15px;">
+          <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateCommentClaim()"> Update Now </button>
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeUpdateCommentModal()"> Close </button>
         </div>
       </div>
     </div>

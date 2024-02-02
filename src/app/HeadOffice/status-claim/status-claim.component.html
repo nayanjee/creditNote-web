@@ -122,6 +122,7 @@
       <table>
         <thead>
           <tr>
+            <th class="border-right" style="width: 50px;">Sl.No.</th>
             <th class="border-right" style="width: 100px;">Claim Type</th>
             <th class="border-right" style="width: 90px;">Invoice</th>
             <th class="border-right" style="width: 90px;">Batch</th>
@@ -143,6 +144,7 @@
         </thead>
         <tbody>
           <tr class="border-bottom" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
+            <td class="border-right">{{i+1}}</td>
             <td class="border-right">{{record.claimType | titlecase}}</td>
             <td class="border-right">{{record.invoice}}</td>
             <td class="border-right">{{record.batch}}</td>

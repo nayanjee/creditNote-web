@@ -1572,7 +1572,11 @@ export class StockiestClaimComponent implements OnInit {
     if (error != 0) {
       this.toast('error', 'Something is wrong please fix before updating.');
     } else {
-      const reqData = {
+      $('#update_comments').val('');
+      var modal = document.getElementById("updateModalComment");
+      modal.style.display = "block";
+
+      /* const reqData = {
         _id: $('#edit_id').val(),
         customerId: $('#edit_stockiest').val(),
         claimType: $('#edit_type').val(),
@@ -1621,9 +1625,68 @@ export class StockiestClaimComponent implements OnInit {
         } else {
           this.toast('error', 'Something went wrong. Try refreshing the page or try again later.');
         }
+      }); */
+    }
+
+  }
+
+  closeUpdateCommentModal() {
+    var modal = document.getElementById("updateModalComment");
+    modal.style.display = "none";
+  }
+
+  async updateCommentClaim() {
+    const reqData = {
+      _id: $('#edit_id').val(),
+      customerId: $('#edit_stockiest').val(),
+      claimType: $('#edit_type').val(),
+      claimMonth: $('#edit_month').val(),
+      claimYear: $('#edit_year').val(),
+      invoice: $('#edit_invoice').val(),
+      batch: $('#edit_batch').val(),
+      divisionName: $('#edit_division').val(),
+      material: $('#edit_material').val(),
+      materialName: $('#edit_product').val(),
+      mrp: $('#edit_mrp').val(),
+      pts: $('#edit_pts').val(),
+      ptr: $('#edit_ptr').val(),
+      ptd: $('#edit_ptd').val(),
+      billingRate: $('#edit_billingRate').val(),
+      margin: $('#edit_margin').val(),
+      freeQuantity: $('#edit_freeQuantity').val(),
+      saleQuantity: $('#edit_saleQuantity').val(),
+      difference: $('#edit_difference').val(),
+      totalDifference: $('#edit_totalDifference').val(),
+      amount: $('#edit_amount').val(),
+      isApproved: false,
+      isUnapproved: false,
+      updateComment: $('#update_comments').val()
+    }
+
+    const allocatedQty: any = await this.getAllocatedQuantity(reqData._id);
+    if (allocatedQty.length) {
+      allocatedQty.forEach(async element => {
+        const reqData2 = {
+          billDocNumber: element['stkInvoiceNo'],
+          billToParty: reqData.customerId,
+          batch: reqData.batch,
+          allocatedQty: element['allocatedQty'],
+          claimId: reqData._id
+        }
+        const findUpdateRemaining: any = await this.findUpdateRemaining(reqData2);
       });
     }
 
+    this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        this.toast('success', 'Successfully updated.');
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        this.toast('error', 'Something went wrong. Try refreshing the page or try again later.');
+      }
+    });
   }
 
   private getDismissReason(reason: any): string {
