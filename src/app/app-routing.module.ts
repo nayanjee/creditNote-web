@@ -17,7 +17,7 @@ import { RegisterBoxedComponent } from './DemoPages/UserPages/register-boxed/reg
 import { ModalsComponent } from './DemoPages/Components/modals/modals.component';
 import { TooltipsPopoversComponent } from './DemoPages/Components/tooltips-popovers/tooltips-popovers.component';
 
-import { ChangePasswordComponent } from './change/password/change-password.component';
+import { ChangePasswordComponent } from './Change/password/change-password.component';
 
 import { AddClaimComponent } from './Stockiest/add-claim/add-claim.component';
 import { EditClaimComponent } from './Stockiest/edit-claim/edit-claim.component';
@@ -32,6 +32,10 @@ import { FoApprovalComponent } from './HeadOffice/fo-approval/fo-approval.compon
 import { UploadHoComponent } from './Upload/sales_ho/uploads.component';
 import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
 
+import { AddUserComponent } from './Users/add-user/add-user.component';
+import { ListUserComponent } from './Users/list-user/list-user.component';
+
+import { TestComponent } from './Test/test.component';
 const routes: Routes = [
   {
     path: '',
@@ -57,6 +61,11 @@ const routes: Routes = [
       // Components
       { path: 'components/modals', component: ModalsComponent, data: {extraParameter: 'componentsMenu'} },
       { path: 'components/tooltips-popovers', component: TooltipsPopoversComponent, data: {extraParameter: 'componentsMenu'} },
+
+      { path: 'users/addUser', component: AddUserComponent, data: {extraParameter: 'userElementMenu'} },
+      { path: 'users/listUser', component: ListUserComponent, data: {extraParameter: 'userElementMenu'} },
+
+      { path: 'test/test', component: TestComponent, data: {extraParameter: 'userElementMenu'} },
     ]
   },
   {

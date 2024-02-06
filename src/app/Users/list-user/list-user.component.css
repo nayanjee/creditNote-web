@@ -1,0 +1,127 @@
+.fb {
+    font-weight: 600;
+}
+
+.tc {
+    text-align: center;
+}
+
+.tar {
+    text-align: right;
+}
+
+.tdpd {
+    padding: 0px 2px 4px 2px !important;
+}
+
+.tdpd1 {
+    padding: 4px 2px 4px 2px !important;
+}
+
+.m8 {
+    margin: 8px 8px;
+}
+
+.pl4 {
+    padding-left: 4px;
+}
+
+.m_lr {
+    margin: 0 5px;
+}
+
+.grf-invalid {
+    border-color: #c71c22;
+}
+
+#stockiest_loader {
+    border: 1px solid #ced4da;
+    height: 35px;
+    border-radius: 5px;
+}
+
+.txtbox {
+    border: 1px solid #ced4da;
+    height: 35px;
+    border-radius: 5px;
+}
+
+.required label:after {
+    color: #e32;
+    content: ' *';
+    display: inline;
+}
+
+.btn-reset {
+    padding: 6px 15px;
+    margin: 0 3px;
+}
+
+.btn-header-submit {
+    margin: 0 3px;
+    padding: 6px 10px;
+}
+
+.btn-outline-focus:focus {
+    color: #fff;
+    background-color: #6610f2;
+    border-color: #6610f2;
+}
+
+.vsm-icon {
+    margin: 8px 2px 0 2px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.grid-label {
+    margin: 0px;
+    padding: 0px;
+}
+
+.pe-7s-paperclip {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 2px;
+    cursor: pointer;
+}
+
+
+
+/* Auto-suggestion CSS */
+.suggestions {
+    width: auto;
+    min-width: 150px;
+    background: #fff;
+    text-align: left;
+    position: absolute;
+    border: 1px solid #CCCCCC;
+    padding: 0px 0px 0px 5px;
+    /* display: none; */
+}
+
+ul {
+    display: none;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+ul.has-suggestions {
+    display: block;
+}
+
+ul li {
+    padding: 10px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+ul li:hover {
+    background-color: #e65c00;
+}
+
+/* EOF Auto-suggestion CSS */

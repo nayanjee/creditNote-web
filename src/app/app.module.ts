@@ -10,13 +10,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { LoadingBarRouterModule } from '@ngx-loading-bar/router';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+
 import { AppComponent } from './app.component';
 
 // BOOTSTRAP COMPONENTS
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { PERFECT_SCROLLBAR_CONFIG } from 'ngx-perfect-scrollbar';
-import { PdfViewerModule }  from  'ng2-pdf-viewer';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -47,7 +48,7 @@ import { RegisterBoxedComponent } from './DemoPages/UserPages/register-boxed/reg
 import { ModalsComponent } from './DemoPages/Components/modals/modals.component';
 import { TooltipsPopoversComponent } from './DemoPages/Components/tooltips-popovers/tooltips-popovers.component';
 
-import { ChangePasswordComponent } from './change/password/change-password.component';
+import { ChangePasswordComponent } from './Change/password/change-password.component';
 
 import { AddClaimComponent } from './Stockiest/add-claim/add-claim.component';
 import { EditClaimComponent } from './Stockiest/edit-claim/edit-claim.component';
@@ -64,7 +65,12 @@ import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
 
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { NgxMaskModule, IConfig } from 'ngx-mask';
+import { AddUserComponent } from './Users/add-user/add-user.component';
+import { ListUserComponent } from './Users/list-user/list-user.component';
+import { TestComponent } from './Test/test.component';
+
 import { NgSelectModule } from '@ng-select/ng-select';
+
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
@@ -98,7 +104,11 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ClaimApprovalComponent,
     FoApprovalComponent,
     UploadHoComponent,
-    UploadDistComponent
+    UploadDistComponent,
+    AddUserComponent,
+    ListUserComponent,
+    TestComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -116,17 +126,20 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     PdfViewerModule,
     NgSelectModule,
     NgxDatatableModule,
-    NgxMaskModule.forRoot()
+    NgSelectModule,
+    NgxMaskModule.forRoot(),
+
+
   ],
-  exports:[
+  exports: [
     NgxMaskModule
   ],
   providers: [
     {
       provide:
-      PERFECT_SCROLLBAR_CONFIG,
+        PERFECT_SCROLLBAR_CONFIG,
       useValue:
-      DEFAULT_PERFECT_SCROLLBAR_CONFIG,
+        DEFAULT_PERFECT_SCROLLBAR_CONFIG,
     },
     ConfigActions,
   ],
