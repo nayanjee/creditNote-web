@@ -17,7 +17,7 @@ import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { PERFECT_SCROLLBAR_CONFIG } from 'ngx-perfect-scrollbar';
-import { PdfViewerModule }  from  'ng2-pdf-viewer';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -57,6 +57,7 @@ import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.comp
 
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
+import { FoApprovalComponent } from './HeadOffice/fo-approval/fo-approval.component';
 import { StatusClaimComponent } from './HeadOffice/status-claim/status-claim.component';
 
 import { UploadHoComponent } from './Upload/sales_ho/uploads.component';
@@ -101,12 +102,13 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ClaimStatusComponent,
     StatusClaimComponent,
     ClaimApprovalComponent,
+    FoApprovalComponent,
     UploadHoComponent,
     UploadDistComponent,
     AddUserComponent,
     ListUserComponent,
     TestComponent,
-   
+
   ],
   imports: [
     BrowserModule,
@@ -122,21 +124,22 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ReactiveFormsModule,
     HttpClientModule,
     PdfViewerModule,
+    NgSelectModule,
     NgxDatatableModule,
     NgSelectModule,
     NgxMaskModule.forRoot(),
-    
-    
+
+
   ],
-  exports:[
+  exports: [
     NgxMaskModule
   ],
   providers: [
     {
       provide:
-      PERFECT_SCROLLBAR_CONFIG,
+        PERFECT_SCROLLBAR_CONFIG,
       useValue:
-      DEFAULT_PERFECT_SCROLLBAR_CONFIG,
+        DEFAULT_PERFECT_SCROLLBAR_CONFIG,
     },
     ConfigActions,
   ],

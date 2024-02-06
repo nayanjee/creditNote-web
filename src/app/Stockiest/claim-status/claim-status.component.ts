@@ -32,10 +32,13 @@ export class ClaimStatusComponent implements OnInit {
   showData = true;
   tempRecords: any = [];
   totalAmount: number = 0;
+  selectedYear: any;
+  selectedMonth: any;
 
   types: any = [
     { id: 'scheme', name: 'Scheme and Rate Difference' },
-    { id: 'sample', name: 'Sample Sales' }
+    { id: 'sample', name: 'Sample Sales' },
+    { id: 'special', name: 'Special Discount' }
   ];
   months: any = [
     { id: 1, name: '01 - January' },
@@ -121,9 +124,17 @@ export class ClaimStatusComponent implements OnInit {
 
     this.delay(1000).then(any => {
       // To show this data as predefined in the form
+      if (parseInt(currentMonth) - 1 <= 0) {
+        this.selectedYear = parseInt(currentYear) - 1;
+        this.selectedMonth = 12;
+       } else {
+        this.selectedYear = currentYear;
+        this.selectedMonth = parseInt(currentMonth) - 1;
+       }
+
       $('#type').val('scheme');
-      $('#month').val(parseInt(currentMonth) - 1);
-      $('#year').val(currentYear);
+      $('#month').val(this.selectedMonth);
+      $('#year').val(this.selectedYear);
 
       $("#stockiest").val($("#stockiest option:eq(1)").val());
       $('#stockiest_loader').hide();

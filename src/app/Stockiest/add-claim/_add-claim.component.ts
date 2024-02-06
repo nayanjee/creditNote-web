@@ -28,8 +28,7 @@ export class AddClaimComponent implements OnInit {
 
   types: any = [
     { id: 'scheme', name: 'Scheme and Rate Difference' },
-    { id: 'sample', name: 'Sample Sales' },
-    { id: 'special', name: 'Special Discount' }
+    { id: 'sample', name: 'Sample Sales' }
   ];
   months: any = [
     { id: 1, name: '01 - January' },
@@ -48,8 +47,6 @@ export class AddClaimComponent implements OnInit {
   years: any = [];
   currentYear: any;
   currentMonth: any;
-  selectedYear: any;
-  selectedMonth: any;
   batches: any = [];
   products: any = [];
   divisions: any = [];
@@ -68,6 +65,15 @@ export class AddClaimComponent implements OnInit {
     totalDifference: '0.00',
     amount: '0.00'
   };
+
+  selectedCar: number;
+
+    cars = [
+        { id: 1, name: 'Volvo' },
+        { id: 2, name: 'Saab' },
+        { id: 3, name: 'Opel' },
+        { id: 4, name: 'Audi' },
+    ];
 
   constructor(
     private router: Router,
@@ -121,17 +127,9 @@ export class AddClaimComponent implements OnInit {
     }); */
     this.delay(1000).then(any => {
       // To show this data as predefined in the form
-      if (parseInt(currentMonth) - 1 <= 0) {
-        this.selectedYear = parseInt(currentYear) - 1;
-        this.selectedMonth = 12;
-       } else {
-        this.selectedYear = currentYear;
-        this.selectedMonth = parseInt(currentMonth) - 1;
-       }
       $('#type').val('scheme');
-      $('#month').val(this.selectedMonth);
-      $('#year').val(this.selectedYear);
-
+      $('#month').val(parseInt(currentMonth) - 1);
+      $('#year').val(currentYear);
 
       $("#stockiest").val($("#stockiest option:eq(1)").val());
       $('#stockiest_loader').hide();
@@ -163,10 +161,7 @@ export class AddClaimComponent implements OnInit {
       def_invoice: '',
       def_batch: '',
       def_division: '',
-      def_divisionId: '',
-      def_plantId: '',
       def_product: '',
-      def_productId: '',
       def_particulars: '',
       def_mrp: this.defaultValue.mrp,
       def_pts: this.defaultValue.pts,
@@ -191,10 +186,7 @@ export class AddClaimComponent implements OnInit {
       invoice: '',
       batch: '',
       division: '',
-      divisionId: '',
-      plantId: '',
       product: '',
-      productId: '',
       particulars: '',
       mrp: this.defaultValue.mrp,
       pts: this.defaultValue.pts,
@@ -242,10 +234,7 @@ export class AddClaimComponent implements OnInit {
           invoice: $('#invoice_def').val(),
           batch: '',
           division: '',
-          divisionId: '',
-          plantId: '',
           product: '',
-          productId: '',
           particulars: '',
           mrp: this.defaultValue.mrp,
           pts: this.defaultValue.pts,
@@ -282,10 +271,7 @@ export class AddClaimComponent implements OnInit {
           invoice: $('#invoice_' + i).val(),
           batch: '',
           division: '',
-          divisionId: '',
-          plantId: '',
           product: '',
-          productId: '',
           particulars: '',
           mrp: this.defaultValue.mrp,
           pts: this.defaultValue.pts,
@@ -358,242 +344,38 @@ export class AddClaimComponent implements OnInit {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
   }
 
-  /***** Division key-up functionality *****/
-  searchDivision(e, i) {
-    const id = (i === -1) ? 'def' : i;
-    const inputVal = e.currentTarget.value;
-
-    $('#division_id_' + id).val('');
-    $('#plant_id_' + id).val('');
-    $('#product_' + id).val('');
-    $('#product_id_' + id).val('');
-    $('#batch_' + id).val('');
-    $('#mrp_' + id).val(Number(0).toFixed(2));
-    $('#pts_' + id).val(Number(0).toFixed(2));
-    $('#billingRate_' + id).val('');
-
-    this.changeCalculation(e, i);
-
-
-    
-    if (inputVal.length) {
-      $('#division_loader_' + id).show();
-      let results: any = [];
-      results = this.matchDivision(inputVal, i);
-
-      this.delay(10).then(any => {
-        this.divisionSuggestions(results, inputVal, i);
-      });
-    } else {
-      $('#division_suggestion_' + id).hide();
-    }
-  }
-
-  matchDivision(str, i) {
-    let results = [];
-    const val = str.toLowerCase();
-
-    results = this.divisions.filter(function (d) {
-      return d.name.toLowerCase().indexOf(val) > -1;
-    });
-
-    return results;
-  }
-
-  divisionSuggestions(results, inputVal, row) {
-    const id = (row === -1) ? 'def' : row;
-
-    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
-    suggestions.innerHTML = '';
-
-    if (results.length > 0) {
-      results.forEach((element, index) => {
-        // Match word from start
-        const match = element.name.match(new RegExp('^' + inputVal, 'i'));
-        if (match) {
-          suggestions.innerHTML += `<li>${match.input}</li>`;
-        }
-      });
-
-      suggestions.classList.add('has-suggestions');
-      $('#division_suggestion_' + id).show();
-      $('#division_loader_' + id).hide();
-    } else {
-      results = [];
-
-      // If no result remove all <li>
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('has-suggestions');
-      $('#division_suggestion_' + id).hide();
-      $('#division_loader_' + id).hide();
-    }
-  }
-
-  divisionSelection(e, row) {
-    const id = (row === -1) ? 'def' : row;
-    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
-
-    $('#division_' + id).val(e.target.innerText);
-    //$('#division_def').focus();
-
-    let results = [];
-    results = this.divisions.filter(function (d) {
-      return d.name.toLowerCase().indexOf(e.target.innerText.toLowerCase()) > -1;
-    });
-    
-    if (results.length > 1) {
-      console.log('...More then one division...', results);
-      $('#division_id_' + id).val('');
-      $('#plant_id_' + id).val('');
-    } else {
-      $('#division_id_' + id).val(results[0].division);
-      $('#plant_id_' + id).val(results[0].plant);
-    }
-
-    suggestions.innerHTML = '';
-    suggestions.classList.remove('has-suggestions');
-    $('#division_suggestion_' + id).hide();
-  }
-  /***** EOF Division key-up functionality *****/
-
-  /***** Product key-up functionality *****/
-  searchProduct(e, i) {
-    const id = (i === -1) ? 'def' : i;
-    const inputVal = e.currentTarget.value;
-
-    $('#product_id_' + id).val('');
-    $('#batch_' + id).val('');
-    $('#mrp_' + id).val(Number(0).toFixed(2));
-    $('#pts_' + id).val(Number(0).toFixed(2));
-    $('#billingRate_' + id).val('');
-
-    this.changeCalculation(e, i);
-
-    if (inputVal.length) {
-      $('#product_loader_' + id).show();
-
-      let results: any = [];
-      results = this.matchProduct(inputVal, i);
-      console.log('results---', results);
-
-      this.delay(10).then(any => {
-        this.productSuggestions(results, inputVal, i);
-      });
-    } else {
-      $('#product_suggestion_' + id).hide();
-    }
-  }
-
-  matchProduct(str, i) {
-    const id = (i === -1) ? 'def' : i;
-    const val = str.toLowerCase();
-    const plantId = $('#plant_id_' + id).val();
-    const divisionId = $('#division_id_' + id).val();
-    
-    let results = [];
-    results = this.products.filter(element => {
-      return  element.materialName.toLowerCase().indexOf(val) > -1 && 
-              element.division === Number(divisionId); /*  && 
-              element.plant === Number(plantId); */
-    });
-
-    return results;
-  }
-
-  productSuggestions(results, inputVal, row) {
-    const id = (row === -1) ? 'def' : row;
-
-    const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
-    suggestions.innerHTML = '';
-
-    if (results.length > 0) {
-      results.forEach((element, index) => {
-        // Match word from start
-        const match = element.materialName.match(new RegExp('^' + inputVal, 'i'));
-        if (match) {
-          suggestions.innerHTML += `<li>${match.input}</li>`;
-        }
-      });
-
-      suggestions.classList.add('has-suggestions');
-      $('#product_suggestion_' + id).show();
-
-      $('#product_loader_' + id).hide();
-    } else {
-      results = [];
-
-      // If no result remove all <li>
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('has-suggestions');
-      $('#product_suggestion_' + id).hide();
-
-      $('#product_loader_' + id).hide();
-    }
-  }
-
-  productSelection(e, row) {
-    let results = [];
-    const id = (row === -1) ? 'def' : row;
-
-    results = this.products.filter(function (d) {
-      //return d.materialName.toLowerCase().indexOf(e.target.innerText.toLowerCase()) > -1;
-      return d.materialName.toLowerCase() === e.target.innerText.toLowerCase()
-    });
-
-    if (results.length > 1) {
-      console.log('...More then one product...', results);
-      $('#product_' + id).val('');
-      $('#product_id_' + id).val('');
-    } else {
-      const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('has-suggestions');
-
-      $('#product_' + id).val(e.target.innerText);
-      $('#product_id_' + id).val(results[0].material);
-    }
-
-    $('#product_suggestion_' + id).hide();
-  }
-  /***** EOF Product key-up functionality *****/
-
   /***** Batch key-up functionality *****/
   searchBatch(e, i) {
-    const id = (i === -1) ? 'def' : i;
     const inputVal = e.currentTarget.value;
+
+    const id = (i === -1) ? 'def' : i;
 
     $('#mrp_' + id).val(Number(0).toFixed(2));
     $('#pts_' + id).val(Number(0).toFixed(2));
-    $('#billingRate_' + id).val('');
 
-    this.changeCalculation(e, i);
-    
-    if (inputVal.length) {
+    let results: any = [];
+    if (inputVal.length > 2) {
       $('#batch_loader_' + id).show();
-      let results: any = [];
+
       results = this.matchBatch(inputVal, i);
 
       this.delay(10).then(any => {
         this.batchSuggestions(results, inputVal, i);
       });
     } else {
+      const suggestions = document.querySelector('#batch_suggestion_' + id + ' ul');
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
       $('#batch_suggestion_' + id).hide();
     }
   }
 
   matchBatch(str, i) {
-    const id = (i === -1) ? 'def' : i;
-    const val = str.toLowerCase();
-    const divisionId = $('#division_id_' + id).val();
-    const productId = $('#product_id_' + id).val();
-    const plantId = $('#plant_id_' + id).val();
-    
     let results = [];
-    results = this.batches.filter(element => {
-      return  element.material === Number(productId) && 
-              element.division === Number(divisionId) && 
-              /* element.plant === Number(plantId) && */
-              element.batch.toLowerCase().indexOf(val) > -1;
+    const val = str.toLowerCase();
+
+    results = this.batches.filter(function (d) {
+      return d.batch.toLowerCase().indexOf(val) > -1;
     });
 
     return results;
@@ -661,6 +443,155 @@ export class AddClaimComponent implements OnInit {
   }
   /***** EOF Batch key-up functionality *****/
 
+
+  /***** Division key-up functionality *****/
+  searchDivision(e, i) {
+    const inputVal = e.currentTarget.value;
+
+    let results: any = [];
+    //if (inputVal.length > 2) {
+      const id = (i === -1) ? 'def' : i;
+      $('#division_loader_' + id).show();
+
+      results = this.matchDivision(inputVal, i);
+
+      this.delay(10).then(any => {
+        this.divisionSuggestions(results, inputVal, i);
+      });
+    //}
+  }
+
+  matchDivision(str, i) {
+    let results = [];
+    const val = str.toLowerCase();
+
+    results = this.divisions.filter(function (d) {
+      return d.name.toLowerCase().indexOf(val) > -1;
+    });
+
+    return results;
+  }
+
+  divisionSuggestions(results, inputVal, row) {
+    const id = (row === -1) ? 'def' : row;
+
+    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.name.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#division_suggestion_' + id).show();
+
+      $('#division_loader_' + id).hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#division_suggestion_' + id).hide();
+
+      $('#division_loader_' + id).hide();
+    }
+  }
+
+  divisionSelection(e, row) {
+    const id = (row === -1) ? 'def' : row;
+    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
+
+    $('#division_' + id).val(e.target.innerText);
+    //$('#division_def').focus();
+
+    suggestions.innerHTML = '';
+    suggestions.classList.remove('has-suggestions');
+
+    $('#division_suggestion_' + id).hide();
+  }
+  /***** EOF Division key-up functionality *****/
+
+
+  /***** Product key-up functionality *****/
+  searchProduct(e, i) {
+    const inputVal = e.currentTarget.value;
+
+    let results: any = [];
+    if (inputVal.length > 2) {
+      const id = (i === -1) ? 'def' : i;
+      $('#product_loader_' + id).show();
+
+      results = this.matchProduct(inputVal, i);
+      console.log(results);
+
+      this.delay(10).then(any => {
+        this.productSuggestions(results, inputVal, i);
+      });
+    }
+  }
+
+  matchProduct(str, i) {
+    let results = [];
+    const val = str.toLowerCase();
+
+    results = this.products.filter(function (d) {
+      return d.materialName.toLowerCase().indexOf(val) > -1;
+    });
+
+    return results;
+  }
+
+  productSuggestions(results, inputVal, row) {
+    const id = (row === -1) ? 'def' : row;
+
+    const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.materialName.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#product_suggestion_' + id).show();
+
+      $('#product_loader_' + id).hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#product_suggestion_' + id).hide();
+
+      $('#product_loader_' + id).hide();
+    }
+  }
+
+  productSelection(e, row) {
+    const id = (row === -1) ? 'def' : row;
+    const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
+
+    $('#product_' + id).val(e.target.innerText);
+    //$('#division_def').focus();
+
+    suggestions.innerHTML = '';
+    suggestions.classList.remove('has-suggestions');
+
+    $('#product_suggestion_' + id).hide();
+  }
+  /***** EOF Product key-up functionality *****/
+
   changeCalculation(e, row) {
     const rowId = (row === -1) ? 'def' : row;
 
@@ -680,6 +611,8 @@ export class AddClaimComponent implements OnInit {
     if (!reg.test(saleQuantity)) $('#saleQuantity_' + rowId).addClass('grf-invalid');
 
     if (billingRate == 0) {
+      // $('#margin_' + rowId).val(0);
+
       if (freeQuantity) {
         const pts = $('#pts_' + rowId).val();
         const difference = pts - billingRate;
@@ -695,6 +628,7 @@ export class AddClaimComponent implements OnInit {
         $('#amount_' + rowId).val(Number(0).toFixed(2));
       }
     } else {
+      // $('#margin_' + rowId).val(10);
       $('#freeQuantity_' + rowId).val('');
       $('#freeQuantity_' + rowId).attr('readonly', true);
 
@@ -747,7 +681,7 @@ export class AddClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
-          console.log('division---', this.divisions);
+          // console.log('division---', this.divisions);
         }
       }
     });
@@ -758,7 +692,6 @@ export class AddClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.products = response.data;
-          console.log('products---', this.products);
         }
       }
     });

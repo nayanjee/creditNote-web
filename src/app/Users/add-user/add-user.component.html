@@ -15,32 +15,82 @@
 </div>
 <div class="main-card mb-3 card">
   <div class="card-body">
-    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off">
-      <div class="position-relative row mb-3">
+    <form class="form" [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off" enctype="multipart/form-data">
+      <div class="position-relative row mb-3 required">
         <label for="username" class="form-label col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
-          <input class="form-control grf-def" formControlName="username" id="username" placeholder="Name" type="text">
+          <input class="form-control" formControlName="username" id="username" placeholder="Name" type="text"
+            [ngClass]="{ 'is-invalid': submitted && f.username.errors }" required>
+          <span class="text-danger" *ngIf="(f.username.touched || submitted) && f.username.errors?.required">
+            This field is required.
+          </span>
         </div>
       </div>
-      <div class="position-relative row mb-3">
+      <div class="position-relative row mb-3 required">
         <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
         <div class="col-sm-10">
-          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email" >
+          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email"
+            [ngClass]="{ 'is-invalid': submitted && f.email.errors }">
+          <span class="text-danger" *ngIf="(f.email.touched || submitted) && f.email.errors?.required">
+            This field is required.
+          </span>
         </div>
       </div>
-      
-      <div class="position-relative row mb-3">
+      <div class="position-relative row mb-3 required">
         <label for="userTypes" class="form-label col-sm-2 col-form-label">User Type</label>
         <div class="col-sm-10">
-          <ng-select
-            formControlName="userType"            
-            placeholder="Please Select"              
-            [(ngModel)]="selectedusertype">
+          <ng-select formControlName="userType" placeholder="Please Select" [(ngModel)]="selectedusertype">
             <ng-option *ngFor="let utype of userTypes" [value]="utype.id">{{utype.name}}</ng-option>
-            </ng-select>
+          </ng-select>
+          <span class="text-danger" *ngIf="(f.userType.touched || submitted) && f.userType.errors?.required">
+            This field is required.
+          </span>
+
         </div>
       </div>
-      <div class="position-relative row mb-3">
+
+      <div class="position-relative row mb-3 required">
+        <label for="divisions" class="form-label col-sm-2 col-form-label">Divisions</label>
+        <div class="col-sm-10">
+          <ng-select formControlName="division" [items]="divisions" bindLabel="name" bindValue="division"
+            [multiple]="true" groupBy="selectedAllDivisionGroup" [selectableGroupAsModel]="false"
+            [selectableGroup]="true" placeholder="Select Divisions">
+
+            <ng-template ng-optgroup-tmp let-item="item" let-item$="item$" let-index="index">
+              <input id="item-{{index}}" type="checkbox" [ngModel]="item$.selected"
+                [ngModelOptions]="{standalone: true}" /> Select All
+            </ng-template>
+          </ng-select>
+          <span class="text-danger" *ngIf="(f.division.touched || submitted) && f.division.errors?.required">
+            This field is required.
+          </span>
+
+        </div>
+      </div>
+      <div class="position-relative row mb-3 required">
+        <label for="distributors" class="form-label col-sm-2 col-form-label">Distributor</label>
+        <div class="col-sm-10">
+          <!-- <ng-select
+            [items]="stockiestes"
+            [multiple]="true"
+            bindLabel="organization"
+            [selectableGroup]="true"
+            [closeOnSelect]="false"
+            
+            bindValue="_id"
+            [(ngModel)]="selectedStockiest" [ngModelOptions]="{standalone: true}">
+            </ng-select> -->
+          <ng-select formControlName="distributor" [multiple]="true" placeholder="Please Select"
+            (change)="getDistributorStockist()" [(ngModel)]="selectedDistributor">
+            <ng-option *ngFor="let distributor of distributors" [value]="distributor.plant">{{distributor.organization}}
+              ({{distributor.plant}}) </ng-option>
+          </ng-select>
+          <span class="text-danger" *ngIf="(f.distributor.touched || submitted) && f.distributor.errors?.required">
+            This field is required.
+          </span>
+        </div>
+      </div>
+      <div class="position-relative row mb-3 required">
         <label for="stockiestes" class="form-label col-sm-2 col-form-label">Stockiest</label>
         <div class="col-sm-10">
           <!-- <ng-select
@@ -53,28 +103,31 @@
             bindValue="_id"
             [(ngModel)]="selectedStockiest" [ngModelOptions]="{standalone: true}">
             </ng-select> -->
-            <ng-select
-            formControlName="stockiest"            
-            [multiple]="true"
-            placeholder="Please Select"              
+          <ng-select formControlName="stockiest" [multiple]="true" placeholder="Please Select"
             [(ngModel)]="selectedStockiest">
-            <ng-option *ngFor="let stockiest of stockiestes" [value]="stockiest._id">{{stockiest.organization}} ({{stockiest.customerId}}) </ng-option>
-            </ng-select>
+            <ng-option *ngFor="let stockiest of stockiestes" [value]="stockiest.customerId"> ({{stockiest.plant}})
+              {{stockiest.organization}} ({{stockiest.customerId}}) </ng-option>
+          </ng-select>
+          <span class="text-danger" *ngIf="(f.stockiest.touched || submitted) && f.stockiest.errors?.required">
+            This field is required.
+          </span>
         </div>
       </div>
-      <div class="position-relative row mb-3">
+      <div class="position-relative row mb-3 required">
         <label for="accesspermissions" class="form-label col-sm-2 col-form-label">Access Permission</label>
         <div class="col-sm-10">
-          
-          <select class="form-control grf-def" formControlName="accesspermission" id="accesspermission">
-            <option value="1">Head Office</option>
-            <option value="2">Field Officer</option>
-            <option value="3">Stockiest</option>
 
-          </select>
+          <ng-select formControlName="permission" [multiple]="true" placeholder="Please Select"
+            [(ngModel)]="selectedPermission">
+            <ng-option *ngFor="let permission of accesspermissions" [value]="permission.permissionId">
+              {{permission.permissionName}} </ng-option>
+          </ng-select>
+          <span class="text-danger" *ngIf="(f.permission.touched || submitted) && f.permission.errors?.required">
+            This field is required.
+          </span>
         </div>
       </div>
-      <div class="position-relative row mb-3">
+      <!-- <div class="position-relative row mb-3">
         <label for="status" class="form-label col-sm-2 col-form-label">Status</label>
         <div class="col-sm-10">
           <select class="form-control grf-def" formControlName="status" id="status">
@@ -84,13 +137,13 @@
 
           </select>
         </div>
-      </div>
+      </div> -->
       <div class="position-relative row form-check">
         <div class="col-sm-10 offset-sm-2">
-          <button class="mt-1 btn btn-primary">Submit</button>
+          <button class="mt-1 btn btn-primary" type="submit">Submit</button>
         </div>
       </div>
-      
+
     </form>
   </div>
 </div>

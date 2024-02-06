@@ -38,11 +38,18 @@
             </div>
 
             <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(7)">
+              <a routerLink="/headoffice/foApproval" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-check"></i>
+                <span class="vsm-title">Approve Claim (FO)</span>
+              </a>
+            </div>
+
+            <!-- <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(7)">
               <a routerLink="/stockiest/acceptance" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-sun"></i>
                 <span class="vsm-title">Claim Acceptance</span>
               </a>
-            </div>
+            </div> -->
 
             <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
               <a routerLink="/stockiest/claimStatus" routerLinkActive="active-item" class="vsm-link">

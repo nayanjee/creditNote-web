@@ -27,6 +27,7 @@ import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.comp
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
 import { StatusClaimComponent } from './HeadOffice/status-claim/status-claim.component';
+import { FoApprovalComponent } from './HeadOffice/fo-approval/fo-approval.component';
 
 import { UploadHoComponent } from './Upload/sales_ho/uploads.component';
 import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
@@ -52,6 +53,7 @@ const routes: Routes = [
       { path: 'headoffice/stockiestClaim', component: StockiestClaimComponent, data: {extraParameter: 'hoElementsMenu'} },
       { path: 'headoffice/claimApproval/:month/:stockiest/:year/:type/:invoice', component: ClaimApprovalComponent, data: {extraParameter: 'hoElementsMenu'} },
       { path: 'headoffice/claimStatus', component: StatusClaimComponent, data: {extraParameter: 'hoElementsMenu'} },
+      { path: 'headoffice/foApproval', component: FoApprovalComponent, data: {extraParameter: 'hoElementsMenu'} },
 
       { path: 'upload/salesHo', component: UploadHoComponent, data: {extraParameter: 'uploadElementsMenu'} },
       { path: 'upload/salesDist', component: UploadDistComponent, data: {extraParameter: 'uploadElementsMenu'} },
