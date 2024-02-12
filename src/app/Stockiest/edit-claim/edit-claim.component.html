@@ -86,9 +86,9 @@
               <table class="table" id="table1">
                 <tr>
                   <td class="td-head required"><label class="form-label grid-label">Invoice No</label></td>
-                  <td class="td-head required"><label class="form-label grid-label">Batch</label></td>
                   <td class="td-head">Division</td>
                   <td class="td-head required"><label class="form-label grid-label">Product</label></td>
+                  <td class="td-head required"><label class="form-label grid-label">Batch</label></td>
                   <!-- <td class="td-head">Particulars</td> -->
                   <td class="td-head">MRP</td>
                   <td class="td-head">PTS</td>
@@ -111,6 +111,36 @@
                       [tabIndex]="1" />
                   </td>
                   <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_division" id="division_def"
+                      (keyup)="searchDivision($event, -1)" [tabIndex]="2" />
+
+                    <img style="float:right;" id="division_loader_def" src="./../../../assets/images/btn_loader.gif"
+                      style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                    <div class="suggestions" id="division_suggestion_def" (click)="divisionSelection($event, -1)"
+                      style="display: none;">
+                      <ul></ul>
+                    </div>
+
+                    <input type="hidden" class="form-control" formControlName="def_divisionId" id="division_id_def" />
+                    <input type="hidden" class="form-control" formControlName="def_plantId" id="plant_id_def" />
+                  </td>
+
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_product" id="product_def"
+                      (keyup)="searchProduct($event, -1)" [tabIndex]="3" />
+
+                    <img style="float:right;" id="product_loader_def" src="./../../../assets/images/btn_loader.gif"
+                      style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                    <div class="suggestions" id="product_suggestion_def" (click)="productSelection($event, -1)"
+                      style="display: none;">
+                      <ul></ul>
+                    </div>
+
+                    <input type="hidden" class="form-control" formControlName="def_productId" id="product_id_def" />
+                  </td>
+                  <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_batch" id="batch_def"
                       (keyup)="searchBatch($event, -1)" [tabIndex]="2" />
 
@@ -122,12 +152,12 @@
                       <ul></ul>
                     </div>
                   </td>
-                  <td class="tdpd1">
+                  <!-- <td class="tdpd1">
                     <input type="text" class="form-control" formControlName="def_division" id="division_def" readonly />
-                  </td>
-                  <td class="tdpd1">
+                  </td> -->
+                  <!-- <td class="tdpd1">
                     <input type="text" class="form-control" formControlName="def_product" id="product_def" readonly />
-                  </td>
+                  </td> -->
 
                   <!-- <td class="tdpd1">
                     <input type="text" class="form-control" formControlName="def_division" id="division_def"
@@ -169,16 +199,16 @@
                     <input type="text" class="form-control tc" formControlName="def_margin" id="margin_def" readonly />
                   </td>
                   <td class="tdpd1">
-                    <input type="text" class="form-control grf-def" formControlName="def_billingRate" id="billingRate_def"
-                      (keyup)="changeCalculation($event, -1)" [tabIndex]="6" />
+                    <input type="text" class="form-control grf-def" formControlName="def_billingRate"
+                      id="billingRate_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="6" />
                   </td>
                   <td class="tdpd1">
-                    <input type="text" class="form-control grf-def" formControlName="def_freeQuantity" id="freeQuantity_def"
-                      (keyup)="changeCalculation($event, -1)" [tabIndex]="7" />
+                    <input type="text" class="form-control grf-def" formControlName="def_freeQuantity"
+                      id="freeQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="7" />
                   </td>
                   <td class="tdpd1">
-                    <input type="text" class="form-control grf-def" formControlName="def_saleQuantity" id="saleQuantity_def"
-                      (keyup)="changeCalculation($event, -1)" [tabIndex]="8" />
+                    <input type="text" class="form-control grf-def" formControlName="def_saleQuantity"
+                      id="saleQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="8" />
                   </td>
                   <td class="tdpd1">
                     <input type="text" class="form-control tc" formControlName="def_difference" id="difference_def"
@@ -194,8 +224,8 @@
                   <td class="tc">
                     <input type="file" class="file-input" [accept]="requiredFileType"
                       (change)="onFileSelected($event, -1)" #fileUpload multiple style="display: none;">
-                    <button type="button" class="btn-transition btn btn-outline-focus"
-                      (click)="fileUpload.click()" [tabIndex]="9">Attach File</button>
+                    <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
+                      [tabIndex]="9">Attach File</button>
                   </td>
                   <td class="tc">
                     <div *ngIf="fileNames[-1]">
@@ -327,7 +357,8 @@
           <div class="col-md-12 tar">
             <!-- <button type="button" class="mt-1 btn btn-info m_lr" (click)="addNewInvoice()" [tabIndex]="100000">Add New
               Invoice</button> -->
-            <button *ngIf="!btnLoader" type="submit" class="mt-1 btn btn-success m_lr" style="padding: 6px 30px;">Save as Draft</button>
+            <button *ngIf="!btnLoader" type="submit" class="mt-1 btn btn-success m_lr" style="padding: 6px 30px;">Save
+              as Draft</button>
             <button *ngIf="btnLoader" type="button" class="mt-1 btn btn-transition m_lr"
               style="color: #033C73; border-color: #73A839; cursor:inherit; font-weight: 600;">
               <span class="me-2 opacity-7"><img src="./../../assets/images/btn_loader.gif"></span>

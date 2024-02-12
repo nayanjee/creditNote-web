@@ -87,9 +87,9 @@ export class EditClaimComponent implements OnInit {
 
     // Number of stockists aligned with the user
     this.alignedStockiest = JSON.parse(sessionData).stockiest;
-
-    this.getData();
     this.getStockiest();
+    this.getData();
+
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -138,7 +138,10 @@ export class EditClaimComponent implements OnInit {
       def_invoice: '',
       def_batch: '',
       def_division: '',
+      def_divisionId: '',
+      def_plantId: '',
       def_product: '',
+      def_productId: '',
       def_particulars: '',
       def_mrp: this.defaultValue.mrp,
       def_pts: this.defaultValue.pts,
@@ -324,38 +327,250 @@ export class EditClaimComponent implements OnInit {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
   }
 
-  /***** Batch key-up functionality *****/
-  searchBatch(e, i) {
+
+
+
+  /***** Division key-up functionality *****/
+  searchDivision(e, i) {
+    const id = (i === -1) ? 'def' : i;
     const inputVal = e.currentTarget.value;
 
+    $('#division_id_' + id).val('');
+    $('#plant_id_' + id).val('');
+    $('#product_' + id).val('');
+    $('#product_id_' + id).val('');
+    $('#batch_' + id).val('');
+    $('#mrp_' + id).val(Number(0).toFixed(2));
+    $('#pts_' + id).val(Number(0).toFixed(2));
+    $('#billingRate_' + id).val('');
+
+    this.changeCalculation(e, i);
+
+
+
+    if (inputVal.length) {
+      $('#division_loader_' + id).show();
+      let results: any = [];
+      results = this.matchDivision(inputVal, i);
+
+      this.delay(10).then(any => {
+        this.divisionSuggestions(results, inputVal, i);
+      });
+    } else {
+      $('#division_suggestion_' + id).hide();
+    }
+  }
+
+  matchDivision(str, i) {
+    let results = [];
+    const val = str.toLowerCase();
+
+    results = this.divisions.filter(function (d) {
+      return d.name.toLowerCase().indexOf(val) > -1;
+    });
+
+    return results;
+  }
+
+  divisionSuggestions(results, inputVal, row) {
+    const id = (row === -1) ? 'def' : row;
+
+    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.name.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#division_suggestion_' + id).show();
+      $('#division_loader_' + id).hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#division_suggestion_' + id).hide();
+      $('#division_loader_' + id).hide();
+    }
+  }
+
+  divisionSelection(e, row) {
+    const id = (row === -1) ? 'def' : row;
+    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
+
+    $('#division_' + id).val(e.target.innerText);
+    //$('#division_def').focus();
+
+    let results = [];
+    results = this.divisions.filter(function (d) {
+      return d.name.toLowerCase().indexOf(e.target.innerText.toLowerCase()) > -1;
+    });
+
+    if (results.length > 1) {
+      console.log('...More then one division...', results);
+      $('#division_id_' + id).val('');
+      $('#plant_id_' + id).val('');
+    } else {
+      $('#division_id_' + id).val(results[0].division);
+      $('#plant_id_' + id).val(results[0].plant);
+    }
+
+    suggestions.innerHTML = '';
+    suggestions.classList.remove('has-suggestions');
+    $('#division_suggestion_' + id).hide();
+  }
+  /***** EOF Division key-up functionality *****/
+
+
+  /***** Product key-up functionality *****/
+  searchProduct(e, i) {
     const id = (i === -1) ? 'def' : i;
+    const inputVal = e.currentTarget.value;
+
+    $('#product_id_' + id).val('');
+    $('#batch_' + id).val('');
+    $('#mrp_' + id).val(Number(0).toFixed(2));
+    $('#pts_' + id).val(Number(0).toFixed(2));
+    $('#billingRate_' + id).val('');
+
+    this.changeCalculation(e, i);
+
+    if (inputVal.length) {
+      $('#product_loader_' + id).show();
+
+      let results: any = [];
+      results = this.matchProduct(inputVal, i);
+      console.log('results---', results);
+
+      this.delay(10).then(any => {
+        this.productSuggestions(results, inputVal, i);
+      });
+    } else {
+      $('#product_suggestion_' + id).hide();
+    }
+  }
+
+  matchProduct(str, i) {
+    const id = (i === -1) ? 'def' : i;
+    const val = str.toLowerCase();
+    const plantId = $('#plant_id_' + id).val();
+    const divisionId = $('#division_id_' + id).val();
+
+    let results = [];
+
+    console.log('xxxxxx', this.products);
+    console.log('divisionId', divisionId);
+    results = this.products.filter(element => {
+      return element.materialName.toLowerCase().indexOf(val) > -1 &&
+        element.division === Number(divisionId); /*  && 
+            element.plant === Number(plantId); */
+    });
+
+    return results;
+  }
+
+  productSuggestions(results, inputVal, row) {
+    const id = (row === -1) ? 'def' : row;
+
+    const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.materialName.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#product_suggestion_' + id).show();
+
+      $('#product_loader_' + id).hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#product_suggestion_' + id).hide();
+
+      $('#product_loader_' + id).hide();
+    }
+  }
+
+  productSelection(e, row) {
+    let results = [];
+    const id = (row === -1) ? 'def' : row;
+
+    results = this.products.filter(function (d) {
+      //return d.materialName.toLowerCase().indexOf(e.target.innerText.toLowerCase()) > -1;
+      return d.materialName.toLowerCase() === e.target.innerText.toLowerCase()
+    });
+
+    if (results.length > 1) {
+      console.log('...More then one product...', results);
+      $('#product_' + id).val('');
+      $('#product_id_' + id).val('');
+    } else {
+      const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+
+      $('#product_' + id).val(e.target.innerText);
+      $('#product_id_' + id).val(results[0].material);
+    }
+
+    $('#product_suggestion_' + id).hide();
+  }
+  /***** EOF Product key-up functionality *****/
+
+
+  /***** Batch key-up functionality *****/
+  searchBatch(e, i) {
+    const id = (i === -1) ? 'def' : i;
+    const inputVal = e.currentTarget.value;
 
     $('#mrp_' + id).val(Number(0).toFixed(2));
     $('#pts_' + id).val(Number(0).toFixed(2));
+    $('#billingRate_' + id).val('');
 
-    let results: any = [];
-    if (inputVal.length > 2) {
+    this.changeCalculation(e, i);
+
+    if (inputVal.length) {
       $('#batch_loader_' + id).show();
-
+      let results: any = [];
       results = this.matchBatch(inputVal, i);
 
       this.delay(10).then(any => {
         this.batchSuggestions(results, inputVal, i);
       });
     } else {
-      const suggestions = document.querySelector('#batch_suggestion_' + id + ' ul');
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('has-suggestions');
       $('#batch_suggestion_' + id).hide();
     }
   }
 
   matchBatch(str, i) {
-    let results = [];
+    const id = (i === -1) ? 'def' : i;
     const val = str.toLowerCase();
+    const divisionId = $('#division_id_' + id).val();
+    const productId = $('#product_id_' + id).val();
+    const plantId = $('#plant_id_' + id).val();
 
-    results = this.batches.filter(function (d) {
-      return d.batch.toLowerCase().indexOf(val) > -1;
+    let results = [];
+    results = this.batches.filter(element => {
+      return element.material === Number(productId) &&
+        element.division === Number(divisionId) &&
+        /* element.plant === Number(plantId) && */
+        element.batch.toLowerCase().indexOf(val) > -1;
     });
 
     return results;
@@ -409,12 +624,11 @@ export class EditClaimComponent implements OnInit {
     const pts = (filtered.length) ? filtered[0].pts : 0;
     const ptr = (filtered.length) ? filtered[0].ptr : 0;
     const ptd = (filtered.length) ? filtered[0].ptd : 0;
-    const divisionName = (filtered.length) ? filtered[0].divisionName : 0;
-    const materialName = (filtered.length) ? filtered[0].materialName : 0;
+    const divisionName = (filtered.length) ? filtered[0].divisionName : '';
+    const materialName = (filtered.length) ? filtered[0].materialName : '';
 
-    // if (division) this.getBatchDivision(division, rowId);
-    // if (material) this.getBatchProduct(material, rowId);
-
+    //if (division) this.getBatchDivision(division, rowId);
+    //if (material) this.getBatchProduct(material, rowId);
     $('#division_' + rowId).val(divisionName);
     $('#product_' + rowId).val(materialName);
     $('#mrp_' + rowId).val(mrp.toFixed(2));
@@ -423,156 +637,6 @@ export class EditClaimComponent implements OnInit {
     $('#ptd_' + rowId).val(ptd.toFixed(2));
   }
   /***** EOF Batch key-up functionality *****/
-
-
-  /***** Division key-up functionality *****/
-  searchDivision(e, i) {
-    const inputVal = e.currentTarget.value;
-
-    let results: any = [];
-    if (inputVal.length > 2) {
-      const id = (i === -1) ? 'def' : i;
-      $('#division_loader_' + id).show();
-
-      results = this.matchDivision(inputVal, i);
-
-      this.delay(10).then(any => {
-        this.divisionSuggestions(results, inputVal, i);
-      });
-    }
-  }
-
-  matchDivision(str, i) {
-    let results = [];
-    const val = str.toLowerCase();
-
-    results = this.divisions.filter(function (d) {
-      return d.name.toLowerCase().indexOf(val) > -1;
-    });
-
-    return results;
-  }
-
-  divisionSuggestions(results, inputVal, row) {
-    const id = (row === -1) ? 'def' : row;
-
-    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
-    suggestions.innerHTML = '';
-
-    if (results.length > 0) {
-      results.forEach((element, index) => {
-        // Match word from start
-        const match = element.name.match(new RegExp('^' + inputVal, 'i'));
-        if (match) {
-          suggestions.innerHTML += `<li>${match.input}</li>`;
-        }
-      });
-
-      suggestions.classList.add('has-suggestions');
-      $('#division_suggestion_' + id).show();
-
-      $('#division_loader_' + id).hide();
-    } else {
-      results = [];
-
-      // If no result remove all <li>
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('has-suggestions');
-      $('#division_suggestion_' + id).hide();
-
-      $('#division_loader_' + id).hide();
-    }
-  }
-
-  divisionSelection(e, row) {
-    const id = (row === -1) ? 'def' : row;
-    const suggestions = document.querySelector('#division_suggestion_' + id + ' ul');
-
-    $('#division_' + id).val(e.target.innerText);
-    //$('#division_def').focus();
-
-    suggestions.innerHTML = '';
-    suggestions.classList.remove('has-suggestions');
-
-    $('#division_suggestion_' + id).hide();
-  }
-  /***** EOF Division key-up functionality *****/
-
-
-  /***** Product key-up functionality *****/
-  searchProduct(e, i) {
-    const inputVal = e.currentTarget.value;
-
-    let results: any = [];
-    if (inputVal.length > 2) {
-      const id = (i === -1) ? 'def' : i;
-      $('#product_loader_' + id).show();
-
-      results = this.matchProduct(inputVal, i);
-      console.log(results);
-
-      this.delay(10).then(any => {
-        this.productSuggestions(results, inputVal, i);
-      });
-    }
-  }
-
-  matchProduct(str, i) {
-    let results = [];
-    const val = str.toLowerCase();
-
-    results = this.products.filter(function (d) {
-      return d.materialName.toLowerCase().indexOf(val) > -1;
-    });
-
-    return results;
-  }
-
-  productSuggestions(results, inputVal, row) {
-    const id = (row === -1) ? 'def' : row;
-
-    const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
-    suggestions.innerHTML = '';
-
-    if (results.length > 0) {
-      results.forEach((element, index) => {
-        // Match word from start
-        const match = element.materialName.match(new RegExp('^' + inputVal, 'i'));
-        if (match) {
-          suggestions.innerHTML += `<li>${match.input}</li>`;
-        }
-      });
-
-      suggestions.classList.add('has-suggestions');
-      $('#product_suggestion_' + id).show();
-
-      $('#product_loader_' + id).hide();
-    } else {
-      results = [];
-
-      // If no result remove all <li>
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('has-suggestions');
-      $('#product_suggestion_' + id).hide();
-
-      $('#product_loader_' + id).hide();
-    }
-  }
-
-  productSelection(e, row) {
-    const id = (row === -1) ? 'def' : row;
-    const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
-
-    $('#product_' + id).val(e.target.innerText);
-    //$('#division_def').focus();
-
-    suggestions.innerHTML = '';
-    suggestions.classList.remove('has-suggestions');
-
-    $('#product_suggestion_' + id).hide();
-  }
-  /***** EOF Product key-up functionality *****/
-
   changeCalculation(e, row) {
     const rowId = (row === -1) ? 'def' : row;
 
@@ -743,7 +807,9 @@ export class EditClaimComponent implements OnInit {
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
       const division = $('#division_' + rowId).val();
+      const divisionId = $('#division_id_' + rowId).val();
       const product = $('#product_' + rowId).val();
+      const productId = $('#product_id_' + rowId).val();
       const mrp = $('#mrp_' + rowId).val();
       const pts = $('#pts_' + rowId).val();
       const ptr = $('#ptr_' + rowId).val();
@@ -824,8 +890,10 @@ export class EditClaimComponent implements OnInit {
         this.claimForm.value.def_image = fname;
         this.claimForm.value.def_invoice = invoice;
         this.claimForm.value.def_batch = batch;
+        this.claimForm.value.def_divisionId = divisionId;
         this.claimForm.value.def_division = division;
         this.claimForm.value.def_product = product;
+        this.claimForm.value.def_productId = productId;
         this.claimForm.value.def_mrp = mrp;
         this.claimForm.value.def_pts = pts;
         this.claimForm.value.def_ptr = ptr;
@@ -849,8 +917,10 @@ export class EditClaimComponent implements OnInit {
         this.claimForm.value.claims[row].image = fname;
         this.claimForm.value.claims[row].invoice = invoice;
         this.claimForm.value.claims[row].batch = batch;
+        this.claimForm.value.claims[row].divisionId = divisionId;
         this.claimForm.value.claims[row].division = division;
         this.claimForm.value.claims[row].product = product;
+        this.claimForm.value.claims[row].productId = productId;
         this.claimForm.value.claims[row].mrp = mrp;
         this.claimForm.value.claims[row].pts = pts;
         this.claimForm.value.claims[row].ptr = ptr;
@@ -899,11 +969,17 @@ export class EditClaimComponent implements OnInit {
           this.claimForm.controls['def_batch'].setValue(this.records.batch, { onlySelf: true });
           this.claimForm.value.def_batch = this.records.batch;
 
+          this.claimForm.controls['def_divisionId'].setValue(this.records.divisionId, { onlySelf: true });
+          this.claimForm.value.def_division = this.records.divisionId;
+
           this.claimForm.controls['def_division'].setValue(this.records.divisionName, { onlySelf: true });
           this.claimForm.value.def_division = this.records.divisionName;
 
           this.claimForm.controls['def_product'].setValue(this.records.materialName, { onlySelf: true });
           this.claimForm.value.def_product = this.records.materialName;
+
+          this.claimForm.controls['def_productId'].setValue(this.records.material, { onlySelf: true });
+          this.claimForm.value.def_productId = this.records.material;
 
           this.claimForm.controls['def_particulars'].setValue(this.records.particulars, { onlySelf: true });
           this.claimForm.value.def_particulars = this.records.particulars;
@@ -946,7 +1022,7 @@ export class EditClaimComponent implements OnInit {
             });
             this.fileNames[-1] = oldFilename;
           }
-          
+
         } else {
           this.toast('error', response.message);
         }
