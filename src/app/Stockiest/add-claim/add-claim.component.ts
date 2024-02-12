@@ -124,10 +124,10 @@ export class AddClaimComponent implements OnInit {
       if (parseInt(currentMonth) - 1 <= 0) {
         this.selectedYear = parseInt(currentYear) - 1;
         this.selectedMonth = 12;
-       } else {
+      } else {
         this.selectedYear = currentYear;
         this.selectedMonth = parseInt(currentMonth) - 1;
-       }
+      }
       $('#type').val('scheme');
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
@@ -375,7 +375,7 @@ export class AddClaimComponent implements OnInit {
     this.changeCalculation(e, i);
 
 
-    
+
     if (inputVal.length) {
       $('#division_loader_' + id).show();
       let results: any = [];
@@ -440,7 +440,7 @@ export class AddClaimComponent implements OnInit {
     results = this.divisions.filter(function (d) {
       return d.name.toLowerCase().indexOf(e.target.innerText.toLowerCase()) > -1;
     });
-    
+
     if (results.length > 1) {
       console.log('...More then one division...', results);
       $('#division_id_' + id).val('');
@@ -489,11 +489,11 @@ export class AddClaimComponent implements OnInit {
     const val = str.toLowerCase();
     const plantId = $('#plant_id_' + id).val();
     const divisionId = $('#division_id_' + id).val();
-    
+
     let results = [];
     results = this.products.filter(element => {
-      return  element.materialName.toLowerCase().indexOf(val) > -1 && 
-              element.division === Number(divisionId); /*  && 
+      return element.materialName.toLowerCase().indexOf(val) > -1 &&
+        element.division === Number(divisionId); /*  && 
               element.plant === Number(plantId); */
     });
 
@@ -567,7 +567,7 @@ export class AddClaimComponent implements OnInit {
     $('#billingRate_' + id).val('');
 
     this.changeCalculation(e, i);
-    
+
     if (inputVal.length) {
       $('#batch_loader_' + id).show();
       let results: any = [];
@@ -587,13 +587,13 @@ export class AddClaimComponent implements OnInit {
     const divisionId = $('#division_id_' + id).val();
     const productId = $('#product_id_' + id).val();
     const plantId = $('#plant_id_' + id).val();
-    
+
     let results = [];
     results = this.batches.filter(element => {
-      return  element.material === Number(productId) && 
-              element.division === Number(divisionId) && 
-              /* element.plant === Number(plantId) && */
-              element.batch.toLowerCase().indexOf(val) > -1;
+      return element.material === Number(productId) &&
+        element.division === Number(divisionId) &&
+        /* element.plant === Number(plantId) && */
+        element.batch.toLowerCase().indexOf(val) > -1;
     });
 
     return results;
@@ -829,7 +829,9 @@ export class AddClaimComponent implements OnInit {
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
       const division = $('#division_' + rowId).val();
+      const divisionId = $('#division_id_' + rowId).val();
       const product = $('#product_' + rowId).val();
+      const productId = $('#product_id_' + rowId).val();
       const mrp = $('#mrp_' + rowId).val();
       const pts = $('#pts_' + rowId).val();
       const ptr = $('#ptr_' + rowId).val();
@@ -862,7 +864,7 @@ export class AddClaimComponent implements OnInit {
       //   error = true;
       //   $('#billingRate_' + rowId).addClass('grf-invalid');
       // }
-      
+
       if (!reg.test(billingRate)) {
         error = true;
         $('#billingRate_' + rowId).addClass('grf-invalid');
@@ -916,7 +918,9 @@ export class AddClaimComponent implements OnInit {
         this.claimForm.value.def_invoice = invoice;
         this.claimForm.value.def_batch = batch;
         this.claimForm.value.def_division = division;
+        this.claimForm.value.def_divisionId = divisionId;
         this.claimForm.value.def_product = product;
+        this.claimForm.value.def_productId = productId;
         this.claimForm.value.def_mrp = mrp;
         this.claimForm.value.def_pts = pts;
         this.claimForm.value.def_ptr = ptr;
@@ -940,7 +944,9 @@ export class AddClaimComponent implements OnInit {
         this.claimForm.value.claims[row].invoice = invoice;
         this.claimForm.value.claims[row].batch = batch;
         this.claimForm.value.claims[row].division = division;
+        this.claimForm.value.claims[row].divisionId = divisionId;
         this.claimForm.value.claims[row].product = product;
+        this.claimForm.value.claims[row].productId = productId;
         this.claimForm.value.claims[row].mrp = mrp;
         this.claimForm.value.claims[row].pts = pts;
         this.claimForm.value.claims[row].ptr = ptr;
