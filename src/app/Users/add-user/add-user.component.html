@@ -17,15 +17,226 @@
   <div class="card-body">
     <form class="form" [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off" enctype="multipart/form-data">
       <div class="position-relative row mb-3 required">
+        <label for="userTypes" class="form-label col-sm-2 col-form-label">User Type</label>
+        <div class="col-sm-10">
+          <select id="userTypes" class="form-select" formControlName="userType" (change)="showFormFields($event)">
+            <option value="" disabled selected> User Type </option>
+            <option *ngFor="let utype of userTypes" [value]="utype.id">
+              {{utype.name | titlecase}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div *ngIf="officeFields" class="position-relative row mb-3 common required">
         <label for="username" class="form-label col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
-          <input class="form-control" formControlName="username" id="username" placeholder="Name" type="text"
-            [ngClass]="{ 'is-invalid': submitted && f.username.errors }" required>
-          <span class="text-danger" *ngIf="(f.username.touched || submitted) && f.username.errors?.required">
+          <input class="form-control" formControlName="username" id="username" placeholder="Name" type="text">
+        </div>
+      </div>
+
+      <div *ngIf="commonFields" class="position-relative row mb-3 required">
+        <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
+        <div class="col-sm-10">
+          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email">
+        </div>
+      </div>
+
+      <div *ngIf="officeFields" class="position-relative row mb-3 common required">
+        <label for="code" class="form-label col-sm-2 col-form-label">Employee Code</label>
+        <div class="col-sm-10">
+          <input class="form-control" formControlName="code" id="code" placeholder="Employee Code" type="text">
+        </div>
+      </div>
+
+      <div *ngIf="fieldFields" class="position-relative row mb-3 required">
+        <label for="workType" class="form-label col-sm-2 col-form-label">Work Type</label>
+        <div class="col-sm-10">
+          <select id="workType" class="form-select" formControlName="workType">
+            <option value="" disabled selected> Work Type </option>
+            <option *ngFor="let workType of workTypes" [value]="workType.id">
+              {{workType.name}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div *ngIf="officeFields" class="position-relative row mb-3 required">
+        <label for="supervisor" class="form-label col-sm-2 col-form-label">Supervisor</label>
+        <div class="col-sm-10">
+          <select id="supervisor" class="form-select" formControlName="supervisor">
+            <option value="" disabled selected> Supervisor </option>
+            <option *ngFor="let supervisor of supervisors" [value]="distributor.plant">
+              {{distributor.organization | titlecase}} ({{distributor.plant}})
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div *ngIf="distributorField" class="position-relative row mb-3 required">
+        <label for="distributor_def" class="form-label col-sm-2 col-form-label">Distributor</label>
+        <div class="col-sm-10">
+          <select id="distributor_def" class="form-select" formControlName="distributor_def"
+            (change)="getDistributorData($event, -1)">
+            <option value="" disabled selected> Distributor </option>
+            <option *ngFor="let distributor of distributors" [value]="distributor.plant">
+              {{distributor.plant}} - {{distributor.organization | titlecase}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Divisions for Distributor (user type) only -->
+      <div class="position-relative row mb-3 required" id="dvson_all" style="display: none;">
+        <label for="division_all" class="form-label col-sm-2 col-form-label">Division</label>
+        <div class="col-sm-10">
+          <div class="row container_div" id="division_div_all">
+            <div id="division_sd_all">
+              <input class="form-check-input" style="border: 2px solid #495057;" type="checkbox" id="sddCheckbox_all"
+                (click)="toggleDivisionAllCheckbox('all')"><label class="form-check-label" style="font-weight: 500;"
+                for="sddCheckbox_all">Select / Deselect All</label>
+            </div>
+            <div class="row" id="division_data_all" name="division_data_all"></div>
+          </div>
+        </div>
+      </div>
+      <!-- EOF Divisions for Distributor (user type) only -->
+
+      <div class="position-relative row mb-3 required" id="dvson_def" style="display: none;">
+        <label for="division_def" class="form-label col-sm-2 col-form-label">Division</label>
+        <div class="col-sm-10">
+          <select id="division_sel_def" class="form-select">
+            <option value="" disabled selected> Select Distributor First </option>
+          </select>
+
+          <div class="row container_div" id="division_div_def" style="display: none;">
+            <div id="division_sd_def">
+              <input class="form-check-input" style="border: 2px solid #495057;" type="checkbox" id="sddCheckbox_def"
+                (click)="toggleDivisionCheckbox(-1)"><label class="form-check-label" style="font-weight: 500;"
+                for="sddCheckbox_def">Select / Deselect All</label>
+            </div>
+            <div class="row" id="division_data_def" name="division_data_def"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="position-relative row mb-3 required" id="stkst_def" style="display: none;">
+        <label for="stockist_def" class="form-label col-sm-2 col-form-label">Stockist</label>
+        <div class="col-sm-10">
+          <select id="stockist_sel_def" class="form-select">
+            <option value="" disabled selected> Select Distributor First </option>
+          </select>
+
+          <div class="row container_div" id="stockist_div_def" style="display: none;">
+            <div id="stockist_sd_def">
+              <input class="form-check-input" style="border: 2px solid #495057;" type="checkbox" id="sdCheckbox_def"
+                (click)="toggleCheckbox(-1)"><label class="form-check-label" style="font-weight: 500;"
+                for="sdCheckbox_def">Select / Deselect All</label>
+            </div>
+            <div class="row" id="stockist_data_def" name="stockist_data_def"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD MORE FUNCTIONALITY -->
+      <div formArrayName="dist" style="position:relative;">
+        <div *ngFor="let dst of dist().controls; let i=index" [formGroupName]="i">
+          <div class="position-relative row mb-3 required">
+            <label for="distributor_{{i}}" class="form-label col-sm-2 col-form-label">Distributor {{i+2}}</label>
+            <div class="col-sm-8">
+              <select id="distributor_{{i}}" class="form-select" formControlName="distributor"
+                (change)="getDistributorData($event, i)">
+                <option value="" disabled selected> Distributor </option>
+                <option *ngFor="let distributor of distributors" [value]="distributor.plant">
+                  {{distributor.plant}} - {{distributor.organization | titlecase}}
+                </option>
+              </select>
+            </div>
+            <div class="col-sm-2">
+              <button type="button" class="btn btn-warning" (click)="removeDistributor(i)" [tabIndex]="100000"
+                style="width: 100%;">Remove Distributor {{i+2}}</button>
+            </div>
+          </div>
+
+          <div class="position-relative row mb-3 required" id="dvson_{{i}}">
+            <label for="division_{{i}}" class="form-label col-sm-2 col-form-label">Division</label>
+            <div class="col-sm-10">
+              <select id="division_sel_{{i}}" class="form-select">
+                <option value="" disabled selected> Select Distributor First </option>
+              </select>
+
+              <div class="row container_div" id="division_div_{{i}}" style="display: none;">
+                <div id="division_sd_{{i}}">
+                  <input class="form-check-input" style="border: 2px solid #495057;" type="checkbox"
+                    id="sddCheckbox_{{i}}" (click)="toggleDivisionCheckbox(i)"><label class="form-check-label"
+                    style="font-weight: 500;" for="sddCheckbox_{{i}}">Select / Deselect All</label>
+                </div>
+                <div class="row" id="division_data_{{i}}" name="division_data_{{i}}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="position-relative row mb-3" id="stkst_{{i}}">
+            <label for="stockist_{{i}}" class="form-label col-sm-2 col-form-label">Stockist</label>
+            <div class="col-sm-10">
+              <select id="stockist_sel_{{i}}" class="form-select">
+                <option value="" disabled selected> Select Distributor First </option>
+              </select>
+
+              <div class="row container_div" id="stockist_div_{{i}}" style="display: none;">
+                <div id="stockist_sd_{{i}}">
+                  <input class="form-check-input" style="border: 2px solid #495057;" type="checkbox"
+                    id="sdCheckbox_{{i}}" (click)="toggleCheckbox(i)"><label class="form-check-label"
+                    style="font-weight: 500;" for="sdCheckbox_{{i}}">Select / Deselect All</label>
+                </div>
+                <div class="row" id="stockist_data_{{i}}"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div *ngIf="officeFields" class="position-relative row mb-3">
+        <label class="form-label col-sm-2 col-form-label">&nbsp;</label>
+        <div class="col-sm-10" style="text-align: right;">
+          <button type="button" class="mt-1 btn btn-info m_lr" (click)="addMore()" [tabIndex]="100000">Add More
+            Distributor</button>
+        </div>
+      </div>
+
+      <!-- <div *ngIf="officeFields" formArrayName="dist" style="position:relative;">
+        <div *ngFor="let dst of dist().controls; let i=index" [formGroupName]="i">
+          <div class="position-relative row mb-3 required">
+            <label for="distributor" class="form-label col-sm-2 col-form-label">Distributor</label>
+            <div class="col-sm-10">
+              <ng-select 
+                formControlName="distributor" 
+                [multiple]="true" 
+                placeholder="Please Select"
+                (change)="getDistributorStockist()" 
+                [(ngModel)]="selectedDistributor">
+                  <ng-option *ngFor="let distributor of distributors" 
+                    [value]="distributor.plant">{{distributor.organization}} ({{distributor.plant}}) 
+                  </ng-option>
+              </ng-select>
+            </div>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- <div class="position-relative row mb-3 required">
+        <label for="userTypes" class="form-label col-sm-2 col-form-label">User Type</label>
+        <div class="col-sm-10">
+          <ng-select formControlName="userType" placeholder="Please Select" [(ngModel)]="selectedusertype">
+            <ng-option *ngFor="let utype of userTypes" [value]="utype.id">{{utype.name}}</ng-option>
+          </ng-select>
+          <span class="text-danger" *ngIf="(f.userType.touched || submitted) && f.userType.errors?.required">
             This field is required.
           </span>
         </div>
       </div>
+
       <div class="position-relative row mb-3 required">
         <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
         <div class="col-sm-10">
@@ -36,19 +247,17 @@
           </span>
         </div>
       </div>
-      <div class="position-relative row mb-3 required">
-        <label for="userTypes" class="form-label col-sm-2 col-form-label">User Type</label>
+      
+      <div class="position-relative row mb-3 common required">
+        <label for="username" class="form-label col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
-          <ng-select formControlName="userType" placeholder="Please Select" [(ngModel)]="selectedusertype">
-            <ng-option *ngFor="let utype of userTypes" [value]="utype.id">{{utype.name}}</ng-option>
-          </ng-select>
-          <span class="text-danger" *ngIf="(f.userType.touched || submitted) && f.userType.errors?.required">
+          <input class="form-control" formControlName="username" id="username" placeholder="Name" type="text"
+            [ngClass]="{ 'is-invalid': submitted && f.username.errors }" required>
+          <span class="text-danger" *ngIf="(f.username.touched || submitted) && f.username.errors?.required">
             This field is required.
           </span>
-
         </div>
       </div>
-
       <div class="position-relative row mb-3 required">
         <label for="divisions" class="form-label col-sm-2 col-form-label">Divisions</label>
         <div class="col-sm-10">
@@ -70,16 +279,6 @@
       <div class="position-relative row mb-3 required">
         <label for="distributors" class="form-label col-sm-2 col-form-label">Distributor</label>
         <div class="col-sm-10">
-          <!-- <ng-select
-            [items]="stockiestes"
-            [multiple]="true"
-            bindLabel="organization"
-            [selectableGroup]="true"
-            [closeOnSelect]="false"
-            
-            bindValue="_id"
-            [(ngModel)]="selectedStockiest" [ngModelOptions]="{standalone: true}">
-            </ng-select> -->
           <ng-select formControlName="distributor" [multiple]="true" placeholder="Please Select"
             (change)="getDistributorStockist()" [(ngModel)]="selectedDistributor">
             <ng-option *ngFor="let distributor of distributors" [value]="distributor.plant">{{distributor.organization}}
@@ -93,16 +292,6 @@
       <div class="position-relative row mb-3 required">
         <label for="stockiestes" class="form-label col-sm-2 col-form-label">Stockiest</label>
         <div class="col-sm-10">
-          <!-- <ng-select
-            [items]="stockiestes"
-            [multiple]="true"
-            bindLabel="organization"
-            [selectableGroup]="true"
-            [closeOnSelect]="false"
-            
-            bindValue="_id"
-            [(ngModel)]="selectedStockiest" [ngModelOptions]="{standalone: true}">
-            </ng-select> -->
           <ng-select formControlName="stockiest" [multiple]="true" placeholder="Please Select"
             [(ngModel)]="selectedStockiest">
             <ng-option *ngFor="let stockiest of stockiestes" [value]="stockiest.customerId"> ({{stockiest.plant}})
@@ -126,18 +315,8 @@
             This field is required.
           </span>
         </div>
-      </div>
-      <!-- <div class="position-relative row mb-3">
-        <label for="status" class="form-label col-sm-2 col-form-label">Status</label>
-        <div class="col-sm-10">
-          <select class="form-control grf-def" formControlName="status" id="status">
-            <option value="1">Active</option>
-            <option value="2">In-Active</option>
-           
-
-          </select>
-        </div>
       </div> -->
+
       <div class="position-relative row form-check">
         <div class="col-sm-10 offset-sm-2">
           <button class="mt-1 btn btn-primary" type="submit">Submit</button>

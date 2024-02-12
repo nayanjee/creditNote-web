@@ -126,10 +126,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     PdfViewerModule,
     NgSelectModule,
     NgxDatatableModule,
-    NgSelectModule,
     NgxMaskModule.forRoot(),
-
-
   ],
   exports: [
     NgxMaskModule
