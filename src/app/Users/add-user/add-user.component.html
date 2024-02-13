@@ -25,6 +25,7 @@
               {{utype.name | titlecase}}
             </option>
           </select>
+          <span id="err_userTypes" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
@@ -39,6 +40,7 @@
         <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
         <div class="col-sm-10">
           <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email">
+          <span id="err_email" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
@@ -83,6 +85,7 @@
               {{distributor.plant}} - {{distributor.organization | titlecase}}
             </option>
           </select>
+          <span id="err_distributor_def" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
@@ -98,6 +101,7 @@
             </div>
             <div class="row" id="division_data_all" name="division_data_all"></div>
           </div>
+          <span id="err_division_div_all" class="text-danger" style="display: none;"></span>
         </div>
       </div>
       <!-- EOF Divisions for Distributor (user type) only -->

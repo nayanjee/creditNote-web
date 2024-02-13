@@ -29,15 +29,14 @@ export class AddUserComponent implements OnInit {
   distributorField = false;
 
   loggedUserId: any = '';
-
   selectedDivision: any = [];
-  divisions: any = [];
   selectedStockiest: any = [];
   selectedDistributor: any = [];
   selectedPermission: any = [];
   selectedusertype: number;
-  stockiestes: any = [];
   distributors: any = [];
+  divisions: any = [];
+  stockiestes: any = [];
   accesspermissions: any = [];
   portalId: number;
 
@@ -96,7 +95,7 @@ export class AddUserComponent implements OnInit {
     this.userForm = this.fb.group({
       userType: ['', [Validators.required]],  // HO, Field, Stockist, Distributor
 
-      username: ['', [Validators.required]],
+      username: [''],
       email: ['', [Validators.required]],
 
       code: [''],    // employee=>EmpCode, stokist=>CustomerId, Distributor=>CustomerId
@@ -107,7 +106,7 @@ export class AddUserComponent implements OnInit {
       division_def: [[]],
       stockist_def: [[]],
 
-      permission: ['', [Validators.required]],
+      //permission: ['', [Validators.required]],
       portals: this.portalId,
       loggedUserId: this.loggedUserId,
       users: this.fb.array([]),
@@ -136,45 +135,6 @@ export class AddUserComponent implements OnInit {
 
   removeDistributor(i: number) {
     this.dist().removeAt(i);
-  }
-
-  showFormFields(e) {
-    console.log('showFormFields', e.target.value);
-
-    this.commonFields = true;
-    this.officeFields = false;
-    this.fieldFields = false;
-    this.distributorField = false;
-
-    $('#dvson_def').hide();
-    $('#stkst_def').hide();
-    $('#dvson_all').hide();
-
-    if (e.target.value == 'ho' || e.target.value == 'field') {
-      this.officeFields = true;
-      this.distributorField = true;
-
-      $('#dvson_def').show();
-      $('#stkst_def').show();
-    }
-
-    if (e.target.value == 'field') {
-      this.fieldFields = true;
-    }
-
-    if (e.target.value == 'distributor') {
-      this.distributorField = true;
-
-      this.appendDivisions(e);
-      $('#dvson_all').show();
-    }
-
-    if (e.target.value == 'stockist') {
-      this.distributorField = true;
-
-      $('#dvson_def').show();
-      $('#stkst_def').show();
-    }
   }
 
   getAllDistributor() {
@@ -214,7 +174,7 @@ export class AddUserComponent implements OnInit {
   getDistributorData(e, r) {
     const userType = $('#userTypes').val();
     if (userType === 'distributor') {
-      
+
     } else {
       let plants = [];
       const currentPlant = e.target.value;
@@ -373,64 +333,166 @@ export class AddUserComponent implements OnInit {
     allDivisionSelect(items);
   }
 
+  showFormFields(e) {
+    this.commonFields = true;
+    this.officeFields = false;
+    this.fieldFields = false;
+    this.distributorField = false;
+
+    $('#dvson_def').hide();
+    $('#stkst_def').hide();
+    $('#dvson_all').hide();
+
+    // $('#userTypes').removeClass('is-invalid');
+
+    if (e.target.value == 'ho' || e.target.value == 'field') {
+      this.officeFields = true;
+      this.distributorField = true;
+
+      $('#dvson_def').show();
+      $('#stkst_def').show();
+    }
+
+    if (e.target.value == 'field') {
+      this.fieldFields = true;
+    }
+
+    if (e.target.value == 'distributor') {
+      this.distributorField = true;
+
+      this.appendDivisions(e);
+      $('#dvson_all').show();
+    }
+
+    if (e.target.value == 'stockist') {
+      this.distributorField = true;
+
+      $('#dvson_def').show();
+      $('#stkst_def').show();
+    }
+  }
+
   onSubmit() {
     console.log(this.userForm.value);
-    console.log('count---', this.dist().controls.length);
+
     this.submitted = true;
+    let error = false;
+    const selectedDivisions = [];
+    const selectedStockists = [];
+    const selectedAllDivisions = [];
 
-    const countDistributor = this.dist().controls.length;
-    for (var i = 0; i <= countDistributor; i++) {
-      const r = i - 1;
-      const row = (r === -1) ? 'def' : r;
+    $('.form-select').removeClass('is-invalid');
+    $('.form-control').removeClass('is-invalid');
+    $('.container_div').css('border', '1px solid #ced4da');
 
-      let plant = $('#distributor_' + row).val();
-      /* if (row === 'def') {
-        plant = this.userForm.value.distributor_def;
-      } else {
-        plant = $('#distributor_' + row).val();
-      } */
-      console.log('plant--', plant);
+    $('.text-danger').hide();
 
+    const userType = $("#userTypes option:selected").val();
+    const email = $("#email").val();
+    const distributor_def = $("#distributor_def option:selected").val();
+
+    if (!userType) {
+      error = true;
+      $('#userTypes').addClass('is-invalid');
+      $('#err_userTypes').text('User type is required').show();
+    }
+
+    if (!email) {
+      error = true;
+      $('#email').addClass('is-invalid');
+      $('#err_email').text('Email is required').show();
+    }
+
+    if (!distributor_def) {
+      error = true;
+      $('#distributor_def').addClass('is-invalid');
+      $('#err_distributor_def').text('Distributor is required').show();
+    }
+
+    if (userType === 'distributor') {
       // Get checked divisions
-      const selectedDivisions = [];
-      const dCheckboxes = document.getElementsByName('dchkbox_' + row);
-      for (var d = 0; d < dCheckboxes.length; d++) {
-        const checkbox = $("#divisionCheckbox_" + plant + "_" + d);
+      const daCheckboxes = document.getElementsByName('dchkbox_all');
+      for (var d = 0; d < daCheckboxes.length; d++) {
+        const checkbox = $("#divisionCheckbox_all_" + d);
         if (checkbox.is(":checked")) {
           const value = checkbox.val();
-          selectedDivisions.push(value);
+          selectedAllDivisions.push(value);
         }
       }
       // EOF Get checked divisions
 
-      // Get checked stockist
-      const selectedStockists = [];
-      const checkboxes = document.getElementsByName('chkbox_' + row);
-      for (var s = 0; s < checkboxes.length; s++) {
-        const checkbox = $("#inlineCheckbox_" + plant + "_" + s);
-        if (checkbox.is(":checked")) {
-          const value = checkbox.val();
-          selectedStockists.push(value);
-        }
+      if (selectedAllDivisions.length === 0) {
+        $('#division_div_all').css('border', '1px solid red');
+        $('#err_division_div_all').text('At least one division is required.').show();
       }
-      // EOF Get checked stockist
+    }
 
-      console.log('selectedDivisions--', selectedDivisions);
-      console.log('selectedStockists--', selectedStockists);
+    if (userType === 'ho') {
+      const countDistributor = this.dist().controls.length;
+      for (var i = 0; i <= countDistributor; i++) {
+        const r = i - 1;
+        const row = (r === -1) ? 'def' : r;
+
+        let plant = $('#distributor_' + row).val();
+
+        // Get checked divisions
+        const dCheckboxes = document.getElementsByName('dchkbox_' + row);
+        for (var d = 0; d < dCheckboxes.length; d++) {
+          const checkbox = $("#divisionCheckbox_" + plant + "_" + d);
+          if (checkbox.is(":checked")) {
+            const value = checkbox.val();
+            selectedDivisions.push(value);
+          }
+        }
+        // EOF Get checked divisions
+
+        // Get checked stockist
+        const checkboxes = document.getElementsByName('chkbox_' + row);
+        for (var s = 0; s < checkboxes.length; s++) {
+          const checkbox = $("#inlineCheckbox_" + plant + "_" + s);
+          if (checkbox.is(":checked")) {
+            const value = checkbox.val();
+            selectedStockists.push(value);
+          }
+        }
+        // EOF Get checked stockist
+
+        console.log('selectedDivisions--', selectedDivisions);
+        console.log('selectedStockists--', selectedStockists);
+      }
     }
 
 
-    // if (this.userForm.valid) {
-    //   this.apiService.post('/api/user/createuser', this.userForm.value).subscribe((response: any) => {
-    //     if (response.status === 200) {
-    //       this.toast('success', 'Record has been successfully updated.');
-    //       this.router.navigateByUrl('/users/listUser');
-    //     }
-    //     else {
-    //       this.toast('error', 'Something went wrong, Please try again after some time');
-    //     }
-    //   });
-    // }
+    if (this.userForm.valid) {
+      const reqData = {};
+      if (userType === 'distributor') {
+        // To find distributor organization
+        const val = Number(this.userForm.value.distributor_def);
+        const results = this.distributors.filter(function (d) {
+          return d.plant === val;
+        });
+        // EOF To find distributor organization
+
+        reqData['userType'] = this.userForm.value.userType;
+        reqData['username'] = results[0].organization;
+        reqData['email'] = this.userForm.value.email;
+        reqData['code'] = this.userForm.value.distributor_def;
+        reqData['portalId'] = this.portalId;
+        reqData['loggedUserId'] = this.loggedUserId;
+        reqData['divisions'] = selectedAllDivisions;
+
+      }
+
+      this.apiService.post('/api/user/createuser', reqData).subscribe((response: any) => {
+        if (response.status === 200) {
+          this.toast('success', 'Record has been successfully updated.');
+          this.router.navigateByUrl('/users/listUser');
+        }
+        else {
+          this.toast('error', 'Something went wrong, Please try again after some time');
+        }
+      });
+    }
   }
 
 
