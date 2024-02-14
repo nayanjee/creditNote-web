@@ -30,6 +30,7 @@ export class AddUserComponent implements OnInit {
   stockistField = false;
 
   loggedUserId: any = '';
+
   selectedDivision: any = [];
   selectedStockiest: any = [];
   selectedDistributor: any = [];
@@ -37,11 +38,12 @@ export class AddUserComponent implements OnInit {
   selectedusertype: number;
   distributors: any = [];
   divisions: any = [];
-  supervisors: any = [];
   stockiestes: any = [];
-  distributorStockists: any = [];
   accesspermissions: any = [];
+  permission: any = [];
   portalId: number;
+  distributorStockists: any = [];
+  supervisors: any = [];
 
   userTypes = [
     { id: 'ho', name: 'Head Office' },
@@ -98,7 +100,7 @@ export class AddUserComponent implements OnInit {
     this.userForm = this.fb.group({
       userType: ['', [Validators.required]],  // HO, Field, Stockist, Distributor
 
-      username: [''],
+      username: ['', [Validators.required]],
       email: ['', [Validators.required]],
 
       code: [''],    // employee=>EmpCode, stokist=>CustomerId, Distributor=>CustomerId
@@ -110,7 +112,7 @@ export class AddUserComponent implements OnInit {
       stockist_def: [[]],
       stockist_all: [''],
 
-      //permission: ['', [Validators.required]],
+      permission: ['', [Validators.required]],
       portals: this.portalId,
       loggedUserId: this.loggedUserId,
       users: this.fb.array([]),
@@ -311,6 +313,55 @@ export class AddUserComponent implements OnInit {
     }
   }
 
+  togglePermissionAllCheckbox(row) {
+
+
+    const checkBox = document.getElementById("permissCheckbox_" + row);
+    const checkboxes = document.getElementsByName('pchkbox_' + row);
+    let j = 1;
+    for (var i = 0; i < checkboxes.length; i++) {
+      let childcheckbox = $('#permissionCheckbox_all_' + j).val();
+      const index = this.permission.indexOf(childcheckbox);
+      if (checkBox['checked'] == true) {
+        checkboxes[i]['checked'] = true;
+        if (index < 0) {
+          this.permission.push(childcheckbox);
+        }
+
+      } else {
+        checkboxes[i]['checked'] = false;
+        this.permission = [];
+      }
+      j++;
+
+    }
+    console.log('All permission====>', this.permission);
+  }
+
+
+  togglePermissionCheckbox(row) {
+    const checkBoxall = document.getElementById("permissCheckbox_all");
+    const childcheckbox = document.getElementById('permissionCheckbox_all_' + row);
+    const perval = $('#permissionCheckbox_all_' + row).val();
+    const index = this.permission.indexOf(perval);
+    if (childcheckbox['checked'] == false) {
+      checkBoxall['checked'] = false;
+      if (index > -1) { // only splice array when item is found
+        this.permission.splice(index, 1); // 2nd parameter means remove one item only
+      }
+
+    }
+    else {
+
+      if (index < 0) { // only splice array when item is found
+        this.permission.push(perval);
+      }
+
+    }
+    console.log('All permission single====>', this.permission);
+
+  }
+
   toggleCheckbox(r) {
     const row = (r === -1) ? 'def' : r;
     const checkBox = document.getElementById("sdCheckbox_" + row);
@@ -390,6 +441,7 @@ export class AddUserComponent implements OnInit {
 
       $('#dvson_def').show();
     }
+    $('#permiss_all').show();
   }
 
   getSupervisor(e) {
@@ -404,13 +456,15 @@ export class AddUserComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.userForm.value);
 
+
+    
+
+    console.log('count---', this.dist().controls.length);
     this.submitted = true;
     let error = false;
     const selectedDivisions = [];
     const selectedStockists = [];
-    const selectedDistributor = [];
     const selectedAllDivisions = [];
 
     $('.form-select').removeClass('is-invalid');
@@ -454,25 +508,17 @@ export class AddUserComponent implements OnInit {
       // EOF Get checked divisions
 
       if (selectedAllDivisions.length === 0) {
-        error = true;
         $('#division_div_all').css('border', '1px solid red');
         $('#err_division_div_all').text('At least one division is required.').show();
       }
     }
 
-    if (userType === 'stockist') {
-      const stockist = $("#stockist_all option:selected").val();
-      if (!stockist) {
-        error = true;
-        $('#stockist_all').addClass('is-invalid');
-        $('#err_stockist_all').text('Stockist is required').show();
-      }
-
-      // To collect all checked division
+    if (userType === 'ho') {
       const countDistributor = this.dist().controls.length;
       for (var i = 0; i <= countDistributor; i++) {
         const r = i - 1;
         const row = (r === -1) ? 'def' : r;
+
         let plant = $('#distributor_' + row).val();
 
         // Get checked divisions
@@ -485,98 +531,15 @@ export class AddUserComponent implements OnInit {
           }
         }
         // EOF Get checked divisions
-      }
-      // EOF To collect all checked division
-      
-      if (selectedDivisions.length === 0) {
-        error = true;
-        $('#division_div_def').css('border', '1px solid red');
-        $('#err_division_div_def').text('At least one division is required.').show();
-      }
-    }
-
-    if (userType === 'ho' || userType === 'field') {
-      const username = $("#username").val();
-      if (!username) {
-        error = true;
-        $('#username').addClass('is-invalid');
-        $('#err_username').text('Name is required').show();
-      }
-
-      const code = $("#code").val();
-      const typeCode = /^\d+$/.test(code);
-      if (!code) {
-        error = true;
-        $('#code').addClass('is-invalid');
-        $('#err_code').text('Employee code is required').show();
-      } else if (!typeCode) {
-        error = true;
-        $('#code').addClass('is-invalid');
-        $('#err_code').text('Employee code must be a number only').show();
-      } else if (String(code).length != 6) {
-        error = true;
-        $('#code').addClass('is-invalid');
-        $('#err_code').text('Employee code must be 6 digits only').show();
-      }
-
-      const supervisor = $("#supervisor option:selected").val();
-      if (!supervisor) {
-        error = true;
-        $('#supervisor').addClass('is-invalid');
-        $('#err_supervisor').text('Supervisor is required').show();
-      }
-
-      const countDistributor = this.dist().controls.length;
-      for (var i = 0; i <= countDistributor; i++) {
-        const r = i - 1;
-        const row = (r === -1) ? 'def' : r;
-        const plant = $('#distributor_' + row + ' option:selected').val();
-        
-        if (!plant) {
-          error = true;
-          $('#distributor_' + row).addClass('is-invalid');
-          $('#err_distributor_' + row).text('Distributor is required').show();
-        } else {
-          selectedDistributor[i] = plant;
-        }
-
-        // Get checked divisions
-        const sDivisions = [];
-        const dCheckboxes = document.getElementsByName('dchkbox_' + row);
-        for (var d = 0; d < dCheckboxes.length; d++) {
-          const checkbox = $("#divisionCheckbox_" + plant + "_" + d);
-          if (checkbox.is(":checked")) {
-            const value = checkbox.val();
-            sDivisions.push(value);
-          }
-        }
-        
-        if (sDivisions.length === 0) {
-          error = true;
-          $('#division_div_' + row).css('border', '1px solid red');
-          $('#err_division_div_' + row).text('At least one division is required.').show();
-        } else {
-          selectedDivisions[i] = sDivisions;
-        }
-        // EOF Get checked divisions
 
         // Get checked stockist
-        const sStockists = [];
         const checkboxes = document.getElementsByName('chkbox_' + row);
         for (var s = 0; s < checkboxes.length; s++) {
           const checkbox = $("#inlineCheckbox_" + plant + "_" + s);
           if (checkbox.is(":checked")) {
             const value = checkbox.val();
-            sStockists.push(value);
+            selectedStockists.push(value);
           }
-        }
-        
-        if (sStockists.length === 0) {
-          error = true;
-          $('#stockist_div_' + row).css('border', '1px solid red');
-          $('#err_stockist_div_' + row).text('At least one stockist is required.').show();
-        } else {
-          selectedStockists[i] = sStockists;
         }
         // EOF Get checked stockist
 
@@ -585,24 +548,12 @@ export class AddUserComponent implements OnInit {
       }
     }
 
-    if (userType === 'field') {
-      const workType = $("#workType option:selected").val();
-      if (!workType) {
-        error = true;
-        $('#workType').addClass('is-invalid');
-        $('#err_workType').text('Work type is required').show();
-      }
-    }
-
+    this.userForm.get("permission").setValue(this.permission);
+    console.log(this.userForm.value);
     if (this.userForm.valid) {
       const reqData = {};
-      reqData['userType'] = this.userForm.value.userType;
-      reqData['email'] = this.userForm.value.email;
-      reqData['portalId'] = this.portalId;
-      reqData['loggedUserId'] = this.loggedUserId;
-
       if (userType === 'distributor') {
-        // To find distributor organization 
+        // To find distributor organization
         const val = Number(this.userForm.value.distributor_def);
         const results = this.distributors.filter(function (d) {
           return d.plant === val;
@@ -613,45 +564,19 @@ export class AddUserComponent implements OnInit {
         reqData['username'] = results[0].organization;
         reqData['email'] = this.userForm.value.email;
         reqData['code'] = this.userForm.value.distributor_def;
+        reqData['portalId'] = this.portalId;
+        reqData['loggedUserId'] = this.loggedUserId;
         reqData['divisions'] = selectedAllDivisions;
+
       }
-
-      if (userType === 'stockist') {
-        // To find stockist organization 
-        const val = Number(this.userForm.value.stockist_all);
-        const results = this.distributorStockists.filter(function (d) {
-          return d.customerId === val;
-        });
-        // EOF To find stockist organization
-
-        reqData['username'] = results[0].organization;
-        reqData['plant'] = this.userForm.value.distributor_def;
-        reqData['code'] = this.userForm.value.stockist_all;
-        reqData['divisions'] = selectedDivisions;
-      }
-
-      if (userType === 'ho' || userType === 'field') {
-        reqData['username'] = this.userForm.value.username;
-        reqData['code'] = this.userForm.value.code;
-        reqData['supervisor'] = this.userForm.value.supervisor;
-        reqData['distributors'] = selectedDistributor;
-        reqData['divisions'] = selectedDivisions;
-        reqData['stockists'] = selectedStockists;
-      }
-
-      if (userType === 'field') {
-        reqData['workType'] = this.userForm.value.workType;
-      }
-
-      console.log('reqData--', reqData);
 
       this.apiService.post('/api/user/createuser', reqData).subscribe((response: any) => {
-        console.log('-----',response.status);
         if (response.status === 200) {
-          this.toast('success', 'User added successfully.');
-          //this.router.navigateByUrl('/users/listUser');
-        } else {
-          this.toast('error', response.message);
+          this.toast('success', 'Record has been successfully updated.');
+          this.router.navigateByUrl('/users/listUser');
+        }
+        else {
+          this.toast('error', 'Something went wrong, Please try again after some time');
         }
       });
     }

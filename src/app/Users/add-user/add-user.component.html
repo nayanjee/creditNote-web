@@ -235,6 +235,32 @@
         </div>
       </div>
 
+      <!-- User Permission  -->
+      <div class="position-relative row mb-3" id="permiss_all" style="display: none;">
+        <label for="permission_all" class="form-label col-sm-2 col-form-label req_permission ">Permissions</label>
+        <div class="col-sm-10">
+          <div class="row container_div" id="permission_div_all">
+            <div id="permission_sd_all">
+              <input class="form-check-input" style="border: 2px solid #495057;" type="checkbox"
+                id="permissCheckbox_all" (click)="togglePermissionAllCheckbox('all')"><label
+                class="form-check-label req_permission" style="font-weight: 500;" for="permissCheckbox_all">Select /
+                Deselect All</label>
+            </div>
+            <div class="row" id="permission_data_all" name="permission_data_all">
+              <div class="col-sm-4" *ngFor="let access of accesspermissions"><input class="form-check-input dchkbox"
+                  style="margin: 5px 0px 0px 0px; color: black;" (click)="togglePermissionCheckbox(access.permissionId)"
+                  type="checkbox" name="pchkbox_all" id="permissionCheckbox_all_{{access.permissionId}}"
+                  value="{{access.permissionId}}"><label class="form-check-label" style="margin: 2px 0px 2px 4px;"
+                  for="permissionCheckbox_all_{{access.permissionId}}">{{access.permissionName}}</label>
+              </div>
+            </div>
+          </div>
+          <span id="err_permission_div_all" class="text-danger" style="display: none;">dasdasd</span>
+        </div>
+      </div>
+      <!-- EOF User Permission -->
+
+
       <!-- <div *ngIf="officeFields" formArrayName="dist" style="position:relative;">
         <div *ngFor="let dst of dist().controls; let i=index" [formGroupName]="i">
           <div class="position-relative row mb-3 required">
