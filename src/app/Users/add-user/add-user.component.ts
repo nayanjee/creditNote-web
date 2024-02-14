@@ -27,6 +27,7 @@ export class AddUserComponent implements OnInit {
   officeFields = false;
   fieldFields = false;
   distributorField = false;
+  stockistField = false;
 
   loggedUserId: any = '';
   selectedDivision: any = [];
@@ -36,7 +37,9 @@ export class AddUserComponent implements OnInit {
   selectedusertype: number;
   distributors: any = [];
   divisions: any = [];
+  supervisors: any = [];
   stockiestes: any = [];
+  distributorStockists: any = [];
   accesspermissions: any = [];
   portalId: number;
 
@@ -105,6 +108,7 @@ export class AddUserComponent implements OnInit {
       distributor_def: [''],
       division_def: [[]],
       stockist_def: [[]],
+      stockist_all: [''],
 
       //permission: ['', [Validators.required]],
       portals: this.portalId,
@@ -113,6 +117,7 @@ export class AddUserComponent implements OnInit {
       dist: this.fb.array([]),
     });
   }
+
   users(): FormArray {
     return this.userForm.get("users") as FormArray
   }
@@ -222,12 +227,15 @@ export class AddUserComponent implements OnInit {
     const row = (r === -1) ? 'def' : r;
     const reqData = { plant: source }
 
+    $('#division_sel_' + row).show();
+    $('#division_div_' + row).hide();
+
+    var listdiv = document.querySelector("#division_data_" + row);
+    listdiv.innerHTML = '';
+
     this.apiService.post('/api/distributor/distributorDivison', reqData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
-          var listdiv = document.querySelector("#division_data_" + row);
-          listdiv.innerHTML = '';
-
           response.data[0].divisions.forEach((item, key) => {
             const result = this.divisions.filter(element => {
               return element.division === Number(item);
@@ -248,15 +256,21 @@ export class AddUserComponent implements OnInit {
   }
 
   getDistributorStockist(e, r) {
+    this.distributorStockists = [];
     const source = parseInt(e.target.value)
     const row = (r === -1) ? 'def' : r;
-    const reqData = { plant: source }
+    const reqData = { plant: source };
+
+    $('#stockist_sel_' + row).show();
+    $('#stockist_div_' + row).hide();
+
+    var listdiv = document.querySelector("#stockist_data_" + row);
+    listdiv.innerHTML = '';
+
     this.apiService.post('/api/stockiest/distributorStockiest', reqData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
-          var listdiv = document.querySelector("#stockist_data_" + row);
-          listdiv.innerHTML = '';
-
+          this.distributorStockists = response.data;
           $.each(response.data, function (key, item) {
             var div = document.createElement('div');
             div.classList.add("col-sm-4");
@@ -334,9 +348,12 @@ export class AddUserComponent implements OnInit {
   }
 
   showFormFields(e) {
+    this.supervisors = [];
+    
     this.commonFields = true;
     this.officeFields = false;
     this.fieldFields = false;
+    this.stockistField = false;
     this.distributorField = false;
 
     $('#dvson_def').hide();
@@ -344,6 +361,9 @@ export class AddUserComponent implements OnInit {
     $('#dvson_all').hide();
 
     // $('#userTypes').removeClass('is-invalid');
+    if (e.target.value == 'ho') {
+      this.getSupervisor(e);
+    }
 
     if (e.target.value == 'ho' || e.target.value == 'field') {
       this.officeFields = true;
@@ -366,10 +386,21 @@ export class AddUserComponent implements OnInit {
 
     if (e.target.value == 'stockist') {
       this.distributorField = true;
+      this.stockistField = true;
 
       $('#dvson_def').show();
-      $('#stkst_def').show();
     }
+  }
+
+  getSupervisor(e) {
+    this.supervisors = [];
+    this.apiService.get('/api/userSupervisor', e.target.value).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.supervisors = response.data;
+        }
+      }
+    });
   }
 
   onSubmit() {
@@ -379,6 +410,7 @@ export class AddUserComponent implements OnInit {
     let error = false;
     const selectedDivisions = [];
     const selectedStockists = [];
+    const selectedDistributor = [];
     const selectedAllDivisions = [];
 
     $('.form-select').removeClass('is-invalid');
@@ -422,17 +454,25 @@ export class AddUserComponent implements OnInit {
       // EOF Get checked divisions
 
       if (selectedAllDivisions.length === 0) {
+        error = true;
         $('#division_div_all').css('border', '1px solid red');
         $('#err_division_div_all').text('At least one division is required.').show();
       }
     }
 
-    if (userType === 'ho') {
+    if (userType === 'stockist') {
+      const stockist = $("#stockist_all option:selected").val();
+      if (!stockist) {
+        error = true;
+        $('#stockist_all').addClass('is-invalid');
+        $('#err_stockist_all').text('Stockist is required').show();
+      }
+
+      // To collect all checked division
       const countDistributor = this.dist().controls.length;
       for (var i = 0; i <= countDistributor; i++) {
         const r = i - 1;
         const row = (r === -1) ? 'def' : r;
-
         let plant = $('#distributor_' + row).val();
 
         // Get checked divisions
@@ -445,15 +485,98 @@ export class AddUserComponent implements OnInit {
           }
         }
         // EOF Get checked divisions
+      }
+      // EOF To collect all checked division
+      
+      if (selectedDivisions.length === 0) {
+        error = true;
+        $('#division_div_def').css('border', '1px solid red');
+        $('#err_division_div_def').text('At least one division is required.').show();
+      }
+    }
+
+    if (userType === 'ho' || userType === 'field') {
+      const username = $("#username").val();
+      if (!username) {
+        error = true;
+        $('#username').addClass('is-invalid');
+        $('#err_username').text('Name is required').show();
+      }
+
+      const code = $("#code").val();
+      const typeCode = /^\d+$/.test(code);
+      if (!code) {
+        error = true;
+        $('#code').addClass('is-invalid');
+        $('#err_code').text('Employee code is required').show();
+      } else if (!typeCode) {
+        error = true;
+        $('#code').addClass('is-invalid');
+        $('#err_code').text('Employee code must be a number only').show();
+      } else if (String(code).length != 6) {
+        error = true;
+        $('#code').addClass('is-invalid');
+        $('#err_code').text('Employee code must be 6 digits only').show();
+      }
+
+      const supervisor = $("#supervisor option:selected").val();
+      if (!supervisor) {
+        error = true;
+        $('#supervisor').addClass('is-invalid');
+        $('#err_supervisor').text('Supervisor is required').show();
+      }
+
+      const countDistributor = this.dist().controls.length;
+      for (var i = 0; i <= countDistributor; i++) {
+        const r = i - 1;
+        const row = (r === -1) ? 'def' : r;
+        const plant = $('#distributor_' + row + ' option:selected').val();
+        
+        if (!plant) {
+          error = true;
+          $('#distributor_' + row).addClass('is-invalid');
+          $('#err_distributor_' + row).text('Distributor is required').show();
+        } else {
+          selectedDistributor[i] = plant;
+        }
+
+        // Get checked divisions
+        const sDivisions = [];
+        const dCheckboxes = document.getElementsByName('dchkbox_' + row);
+        for (var d = 0; d < dCheckboxes.length; d++) {
+          const checkbox = $("#divisionCheckbox_" + plant + "_" + d);
+          if (checkbox.is(":checked")) {
+            const value = checkbox.val();
+            sDivisions.push(value);
+          }
+        }
+        
+        if (sDivisions.length === 0) {
+          error = true;
+          $('#division_div_' + row).css('border', '1px solid red');
+          $('#err_division_div_' + row).text('At least one division is required.').show();
+        } else {
+          selectedDivisions[i] = sDivisions;
+        }
+        // EOF Get checked divisions
 
         // Get checked stockist
+        const sStockists = [];
         const checkboxes = document.getElementsByName('chkbox_' + row);
         for (var s = 0; s < checkboxes.length; s++) {
           const checkbox = $("#inlineCheckbox_" + plant + "_" + s);
           if (checkbox.is(":checked")) {
             const value = checkbox.val();
-            selectedStockists.push(value);
+            sStockists.push(value);
           }
+        }
+        
+        if (sStockists.length === 0) {
+          error = true;
+          $('#stockist_div_' + row).css('border', '1px solid red');
+          $('#err_stockist_div_' + row).text('At least one stockist is required.').show();
+        } else {
+          selectedStockists[i] = sStockists;
         }
         // EOF Get checked stockist
 
@@ -462,11 +585,24 @@ export class AddUserComponent implements OnInit {
       }
     }
 
+    if (userType === 'field') {
+      const workType = $("#workType option:selected").val();
+      if (!workType) {
+        error = true;
+        $('#workType').addClass('is-invalid');
+        $('#err_workType').text('Work type is required').show();
+      }
+    }
 
     if (this.userForm.valid) {
       const reqData = {};
+      reqData['userType'] = this.userForm.value.userType;
+      reqData['email'] = this.userForm.value.email;
+      reqData['portalId'] = this.portalId;
+      reqData['loggedUserId'] = this.loggedUserId;
+
       if (userType === 'distributor') {
-        // To find distributor organization
+        // To find distributor organization 
         const val = Number(this.userForm.value.distributor_def);
         const results = this.distributors.filter(function (d) {
           return d.plant === val;
@@ -477,19 +613,45 @@ export class AddUserComponent implements OnInit {
         reqData['username'] = results[0].organization;
         reqData['email'] = this.userForm.value.email;
         reqData['code'] = this.userForm.value.distributor_def;
-        reqData['portalId'] = this.portalId;
-        reqData['loggedUserId'] = this.loggedUserId;
         reqData['divisions'] = selectedAllDivisions;
-
       }
 
+      if (userType === 'stockist') {
+        // To find stockist organization 
+        const val = Number(this.userForm.value.stockist_all);
+        const results = this.distributorStockists.filter(function (d) {
+          return d.customerId === val;
+        });
+        // EOF To find stockist organization
+
+        reqData['username'] = results[0].organization;
+        reqData['plant'] = this.userForm.value.distributor_def;
+        reqData['code'] = this.userForm.value.stockist_all;
+        reqData['divisions'] = selectedDivisions;
+      }
+
+      if (userType === 'ho' || userType === 'field') {
+        reqData['username'] = this.userForm.value.username;
+        reqData['code'] = this.userForm.value.code;
+        reqData['supervisor'] = this.userForm.value.supervisor;
+        reqData['distributors'] = selectedDistributor;
+        reqData['divisions'] = selectedDivisions;
+        reqData['stockists'] = selectedStockists;
+      }
+
+      if (userType === 'field') {
+        reqData['workType'] = this.userForm.value.workType;
+      }
+
+      console.log('reqData--', reqData);
+
       this.apiService.post('/api/user/createuser', reqData).subscribe((response: any) => {
+        console.log('-----',response.status);
         if (response.status === 200) {
-          this.toast('success', 'Record has been successfully updated.');
-          this.router.navigateByUrl('/users/listUser');
-        }
-        else {
-          this.toast('error', 'Something went wrong, Please try again after some time');
+          this.toast('success', 'User added successfully.');
+          //this.router.navigateByUrl('/users/listUser');
+        } else {
+          this.toast('error', response.message);
         }
       });
     }
