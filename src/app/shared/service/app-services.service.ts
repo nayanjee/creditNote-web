@@ -18,21 +18,21 @@ export class AppServicesService {
 
   constructor(
     private http: HttpClient
-  ) {}
+  ) { }
 
   fetch(endpoint: string) {
-    return this.http.get(`${this.apiURL + endpoint}`, httpOptions ).pipe(catchError(
+    return this.http.get(`${this.apiURL + endpoint}`, httpOptions).pipe(catchError(
       this.handleError('getData', []))
     );
   }
 
   get(endpoint: string, param: any) {
-    return this.http.get(`${this.apiURL + endpoint +'/'+param}`, httpOptions ).pipe(catchError(
+    return this.http.get(`${this.apiURL + endpoint + '/' + param}`, httpOptions).pipe(catchError(
       this.handleError('getData', []))
     );
   }
 
-  post(endpoint: string, data: any ) {
+  post(endpoint: string, data: any) {
     return this.http.post(`${this.apiURL + endpoint}`, data, httpOptions).pipe(catchError(
       this.handleError('getData', []))
     );
@@ -44,15 +44,15 @@ export class AppServicesService {
     );
   }
 
-  upload(endpoint: string, data: any ) {
+  upload(endpoint: string, data: any) {
     return this.http.post(`${this.apiURL + endpoint}`, data).pipe(catchError(
-        this.handleError('getData', [])
-      )
+      this.handleError('getData', [])
+    )
     );
   }
-  
-  delete(endpoint: string, param: any ) {
-    return this.http.delete(`${this.apiURL + endpoint + param}`, httpOptions ).pipe(catchError(
+
+  delete(endpoint: string, param: any) {
+    return this.http.delete(`${this.apiURL + endpoint + param}`, httpOptions).pipe(catchError(
       this.handleError('getData', []))
     );
   }

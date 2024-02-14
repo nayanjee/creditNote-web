@@ -70,6 +70,9 @@ import { ListUserComponent } from './Users/list-user/list-user.component';
 import { TestComponent } from './Test/test.component';
 
 import { NgSelectModule } from '@ng-select/ng-select';
+import { AddDivisionComponent } from './Division/add-division/add-division.component';
+import { ListDivisionComponent } from './Division/list-division/list-division.component';
+
 
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
@@ -108,6 +111,9 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     AddUserComponent,
     ListUserComponent,
     TestComponent,
+    AddDivisionComponent,
+    ListDivisionComponent
+
 
   ],
   imports: [

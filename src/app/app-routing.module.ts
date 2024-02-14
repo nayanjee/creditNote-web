@@ -35,37 +35,44 @@ import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
 import { AddUserComponent } from './Users/add-user/add-user.component';
 import { ListUserComponent } from './Users/list-user/list-user.component';
 
+import { AddDivisionComponent } from './Division/add-division/add-division.component';
+import { ListDivisionComponent } from './Division/list-division/list-division.component';
+
 import { TestComponent } from './Test/test.component';
 const routes: Routes = [
   {
     path: '',
     component: BaseLayoutComponent,
     children: [
-      { path: '', component: AnalyticsComponent, data: {extraParameter: 'dashboardsMenu'} },
+      { path: '', component: AnalyticsComponent, data: { extraParameter: 'dashboardsMenu' } },
 
-      { path: 'change/password', component: ChangePasswordComponent, data: {extraParameter: 'passwordMenu'} },
+      { path: 'change/password', component: ChangePasswordComponent, data: { extraParameter: 'passwordMenu' } },
 
-      { path: 'stockiest/createClaim', component: AddClaimComponent, data: {extraParameter: 'stockiestElementsMenu'} },
-      { path: 'stockiest/updateClaim/:claimId', component: EditClaimComponent, data: {extraParameter: 'stockiestElementsMenu'} },
-      { path: 'stockiest/draftClaim', component: DraftClaimComponent, data: {extraParameter: 'stockiestElementsMenu'} },
-      { path: 'stockiest/claimStatus', component: ClaimStatusComponent, data: {extraParameter: 'stockiestElementsMenu'} },
+      { path: 'stockiest/createClaim', component: AddClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/updateClaim/:claimId', component: EditClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/draftClaim', component: DraftClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/claimStatus', component: ClaimStatusComponent, data: { extraParameter: 'stockiestElementsMenu' } },
 
-      { path: 'headoffice/stockiestClaim', component: StockiestClaimComponent, data: {extraParameter: 'hoElementsMenu'} },
-      { path: 'headoffice/claimApproval/:month/:stockiest/:year/:type/:invoice', component: ClaimApprovalComponent, data: {extraParameter: 'hoElementsMenu'} },
-      { path: 'headoffice/claimStatus', component: StatusClaimComponent, data: {extraParameter: 'hoElementsMenu'} },
-      { path: 'headoffice/foApproval', component: FoApprovalComponent, data: {extraParameter: 'hoElementsMenu'} },
+      { path: 'headoffice/stockiestClaim', component: StockiestClaimComponent, data: { extraParameter: 'hoElementsMenu' } },
+      { path: 'headoffice/claimApproval/:month/:stockiest/:year/:type/:invoice', component: ClaimApprovalComponent, data: { extraParameter: 'hoElementsMenu' } },
+      { path: 'headoffice/claimStatus', component: StatusClaimComponent, data: { extraParameter: 'hoElementsMenu' } },
+      { path: 'headoffice/foApproval', component: FoApprovalComponent, data: { extraParameter: 'hoElementsMenu' } },
 
-      { path: 'upload/salesHo', component: UploadHoComponent, data: {extraParameter: 'uploadElementsMenu'} },
-      { path: 'upload/salesDist', component: UploadDistComponent, data: {extraParameter: 'uploadElementsMenu'} },
+      { path: 'upload/salesHo', component: UploadHoComponent, data: { extraParameter: 'uploadElementsMenu' } },
+      { path: 'upload/salesDist', component: UploadDistComponent, data: { extraParameter: 'uploadElementsMenu' } },
 
       // Components
-      { path: 'components/modals', component: ModalsComponent, data: {extraParameter: 'componentsMenu'} },
-      { path: 'components/tooltips-popovers', component: TooltipsPopoversComponent, data: {extraParameter: 'componentsMenu'} },
+      { path: 'components/modals', component: ModalsComponent, data: { extraParameter: 'componentsMenu' } },
+      { path: 'components/tooltips-popovers', component: TooltipsPopoversComponent, data: { extraParameter: 'componentsMenu' } },
 
-      { path: 'users/addUser', component: AddUserComponent, data: {extraParameter: 'userElementMenu'} },
-      { path: 'users/listUser', component: ListUserComponent, data: {extraParameter: 'userElementMenu'} },
+      { path: 'users/addUser', component: AddUserComponent, data: { extraParameter: 'userElementMenu' } },
+      { path: 'users/listUser', component: ListUserComponent, data: { extraParameter: 'userElementMenu' } },
 
-      { path: 'test/test', component: TestComponent, data: {extraParameter: 'userElementMenu'} },
+
+      { path: 'division/add', component: AddDivisionComponent, data: {} },
+      { path: 'division/list', component: ListDivisionComponent, data: {} },
+
+      { path: 'test/test', component: TestComponent, data: { extraParameter: 'userElementMenu' } },
     ]
   },
   {
@@ -73,9 +80,9 @@ const routes: Routes = [
     component: PagesLayoutComponent,
     children: [
       // User Pages
-      { path: 'login', component: LoginBoxedComponent, data: {extraParameter: ''} },
-      { path: 'pages/register-boxed', component: RegisterBoxedComponent, data: {extraParameter: ''} },
-      { path: 'pages/forgot-password-boxed', component: ForgotPasswordBoxedComponent, data: {extraParameter: ''} },
+      { path: 'login', component: LoginBoxedComponent, data: { extraParameter: '' } },
+      { path: 'pages/register-boxed', component: RegisterBoxedComponent, data: { extraParameter: '' } },
+      { path: 'pages/forgot-password-boxed', component: ForgotPasswordBoxedComponent, data: { extraParameter: '' } },
     ]
   },
   { path: '**', redirectTo: '' }
@@ -84,14 +91,14 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forRoot(routes,
     {
-    scrollPositionRestoration: 'enabled',
-    anchorScrolling: 'enabled',
-    relativeLinkResolution: 'legacy'
+      scrollPositionRestoration: 'enabled',
+      anchorScrolling: 'enabled',
+      relativeLinkResolution: 'legacy'
     }
   )],
   exports: [RouterModule]
 })
 
 export class AppRoutingModule {
-  
+
 }
