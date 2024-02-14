@@ -27,8 +27,10 @@ export class AddUserComponent implements OnInit {
   officeFields = false;
   fieldFields = false;
   distributorField = false;
+  stockistField = false;
 
   loggedUserId: any = '';
+
   selectedDivision: any = [];
   selectedStockiest: any = [];
   selectedDistributor: any = [];
@@ -38,7 +40,10 @@ export class AddUserComponent implements OnInit {
   divisions: any = [];
   stockiestes: any = [];
   accesspermissions: any = [];
+  permission: any = [];
   portalId: number;
+  distributorStockists: any = [];
+  supervisors: any = [];
 
   userTypes = [
     { id: 'ho', name: 'Head Office' },
@@ -95,7 +100,7 @@ export class AddUserComponent implements OnInit {
     this.userForm = this.fb.group({
       userType: ['', [Validators.required]],  // HO, Field, Stockist, Distributor
 
-      username: [''],
+      username: ['', [Validators.required]],
       email: ['', [Validators.required]],
 
       code: [''],    // employee=>EmpCode, stokist=>CustomerId, Distributor=>CustomerId
@@ -105,14 +110,16 @@ export class AddUserComponent implements OnInit {
       distributor_def: [''],
       division_def: [[]],
       stockist_def: [[]],
+      stockist_all: [''],
 
-      //permission: ['', [Validators.required]],
+      permission: ['', [Validators.required]],
       portals: this.portalId,
       loggedUserId: this.loggedUserId,
       users: this.fb.array([]),
       dist: this.fb.array([]),
     });
   }
+
   users(): FormArray {
     return this.userForm.get("users") as FormArray
   }
@@ -222,12 +229,15 @@ export class AddUserComponent implements OnInit {
     const row = (r === -1) ? 'def' : r;
     const reqData = { plant: source }
 
+    $('#division_sel_' + row).show();
+    $('#division_div_' + row).hide();
+
+    var listdiv = document.querySelector("#division_data_" + row);
+    listdiv.innerHTML = '';
+
     this.apiService.post('/api/distributor/distributorDivison', reqData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
-          var listdiv = document.querySelector("#division_data_" + row);
-          listdiv.innerHTML = '';
-
           response.data[0].divisions.forEach((item, key) => {
             const result = this.divisions.filter(element => {
               return element.division === Number(item);
@@ -248,15 +258,21 @@ export class AddUserComponent implements OnInit {
   }
 
   getDistributorStockist(e, r) {
+    this.distributorStockists = [];
     const source = parseInt(e.target.value)
     const row = (r === -1) ? 'def' : r;
-    const reqData = { plant: source }
+    const reqData = { plant: source };
+
+    $('#stockist_sel_' + row).show();
+    $('#stockist_div_' + row).hide();
+
+    var listdiv = document.querySelector("#stockist_data_" + row);
+    listdiv.innerHTML = '';
+
     this.apiService.post('/api/stockiest/distributorStockiest', reqData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
-          var listdiv = document.querySelector("#stockist_data_" + row);
-          listdiv.innerHTML = '';
-
+          this.distributorStockists = response.data;
           $.each(response.data, function (key, item) {
             var div = document.createElement('div');
             div.classList.add("col-sm-4");
@@ -297,6 +313,55 @@ export class AddUserComponent implements OnInit {
     }
   }
 
+  togglePermissionAllCheckbox(row) {
+
+
+    const checkBox = document.getElementById("permissCheckbox_" + row);
+    const checkboxes = document.getElementsByName('pchkbox_' + row);
+    let j = 1;
+    for (var i = 0; i < checkboxes.length; i++) {
+      let childcheckbox = $('#permissionCheckbox_all_' + j).val();
+      const index = this.permission.indexOf(childcheckbox);
+      if (checkBox['checked'] == true) {
+        checkboxes[i]['checked'] = true;
+        if (index < 0) {
+          this.permission.push(childcheckbox);
+        }
+
+      } else {
+        checkboxes[i]['checked'] = false;
+        this.permission = [];
+      }
+      j++;
+
+    }
+    console.log('All permission====>', this.permission);
+  }
+
+
+  togglePermissionCheckbox(row) {
+    const checkBoxall = document.getElementById("permissCheckbox_all");
+    const childcheckbox = document.getElementById('permissionCheckbox_all_' + row);
+    const perval = $('#permissionCheckbox_all_' + row).val();
+    const index = this.permission.indexOf(perval);
+    if (childcheckbox['checked'] == false) {
+      checkBoxall['checked'] = false;
+      if (index > -1) { // only splice array when item is found
+        this.permission.splice(index, 1); // 2nd parameter means remove one item only
+      }
+
+    }
+    else {
+
+      if (index < 0) { // only splice array when item is found
+        this.permission.push(perval);
+      }
+
+    }
+    console.log('All permission single====>', this.permission);
+
+  }
+
   toggleCheckbox(r) {
     const row = (r === -1) ? 'def' : r;
     const checkBox = document.getElementById("sdCheckbox_" + row);
@@ -334,9 +399,12 @@ export class AddUserComponent implements OnInit {
   }
 
   showFormFields(e) {
+    this.supervisors = [];
+    
     this.commonFields = true;
     this.officeFields = false;
     this.fieldFields = false;
+    this.stockistField = false;
     this.distributorField = false;
 
     $('#dvson_def').hide();
@@ -344,6 +412,9 @@ export class AddUserComponent implements OnInit {
     $('#dvson_all').hide();
 
     // $('#userTypes').removeClass('is-invalid');
+    if (e.target.value == 'ho') {
+      this.getSupervisor(e);
+    }
 
     if (e.target.value == 'ho' || e.target.value == 'field') {
       this.officeFields = true;
@@ -366,15 +437,30 @@ export class AddUserComponent implements OnInit {
 
     if (e.target.value == 'stockist') {
       this.distributorField = true;
+      this.stockistField = true;
 
       $('#dvson_def').show();
-      $('#stkst_def').show();
     }
+    $('#permiss_all').show();
+  }
+
+  getSupervisor(e) {
+    this.supervisors = [];
+    this.apiService.get('/api/userSupervisor', e.target.value).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.supervisors = response.data;
+        }
+      }
+    });
   }
 
   onSubmit() {
-    console.log(this.userForm.value);
 
+
+    
+
+    console.log('count---', this.dist().controls.length);
     this.submitted = true;
     let error = false;
     const selectedDivisions = [];
@@ -462,7 +548,8 @@ export class AddUserComponent implements OnInit {
       }
     }
 
-
+    this.userForm.get("permission").setValue(this.permission);
+    console.log(this.userForm.value);
     if (this.userForm.valid) {
       const reqData = {};
       if (userType === 'distributor') {

@@ -33,13 +33,14 @@
         <label for="username" class="form-label col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
           <input class="form-control" formControlName="username" id="username" placeholder="Name" type="text">
+          <span id="err_username" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
       <div *ngIf="commonFields" class="position-relative row mb-3 required">
         <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
         <div class="col-sm-10">
-          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email">
+          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email" required>
           <span id="err_email" class="text-danger" style="display: none;"></span>
         </div>
       </div>
@@ -48,18 +49,20 @@
         <label for="code" class="form-label col-sm-2 col-form-label">Employee Code</label>
         <div class="col-sm-10">
           <input class="form-control" formControlName="code" id="code" placeholder="Employee Code" type="text">
+          <span id="err_code" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
       <div *ngIf="fieldFields" class="position-relative row mb-3 required">
         <label for="workType" class="form-label col-sm-2 col-form-label">Work Type</label>
         <div class="col-sm-10">
-          <select id="workType" class="form-select" formControlName="workType">
+          <select id="workType" class="form-select" formControlName="workType" (change)="getSupervisor($event)">
             <option value="" disabled selected> Work Type </option>
             <option *ngFor="let workType of workTypes" [value]="workType.id">
               {{workType.name}}
             </option>
           </select>
+          <span id="err_workType" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
@@ -68,10 +71,11 @@
         <div class="col-sm-10">
           <select id="supervisor" class="form-select" formControlName="supervisor">
             <option value="" disabled selected> Supervisor </option>
-            <option *ngFor="let supervisor of supervisors" [value]="distributor.plant">
-              {{distributor.organization | titlecase}} ({{distributor.plant}})
+            <option *ngFor="let supervisor of supervisors" [value]="supervisor.code">
+              {{supervisor.code}} - {{supervisor.name | titlecase}}
             </option>
           </select>
+          <span id="err_supervisor" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
@@ -106,6 +110,21 @@
       </div>
       <!-- EOF Divisions for Distributor (user type) only -->
 
+      <!-- Stockists according to Distributor -->
+      <div *ngIf="stockistField" class="position-relative row mb-3 required">
+        <label for="stockist_all" class="form-label col-sm-2 col-form-label">Stockist</label>
+        <div class="col-sm-10">
+          <select id="stockist_all" class="form-select" formControlName="stockist_all">
+            <option value="" disabled selected> Stockist </option>
+            <option *ngFor="let stockist of distributorStockists" [value]="stockist.customerId">
+              {{stockist.customerId}} - {{stockist.organization | titlecase}}
+            </option>
+          </select>
+          <span id="err_stockist_all" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+      <!-- EOF Stockists according to Distributor -->
+
       <div class="position-relative row mb-3 required" id="dvson_def" style="display: none;">
         <label for="division_def" class="form-label col-sm-2 col-form-label">Division</label>
         <div class="col-sm-10">
@@ -121,6 +140,7 @@
             </div>
             <div class="row" id="division_data_def" name="division_data_def"></div>
           </div>
+          <span id="err_division_div_def" class="text-danger" style="display: none;"></span>
         </div>
       </div>
 
@@ -139,8 +159,11 @@
             </div>
             <div class="row" id="stockist_data_def" name="stockist_data_def"></div>
           </div>
+          <span id="err_stockist_div_def" class="text-danger" style="display: none;"></span>
         </div>
       </div>
+
+      
 
       <!-- ADD MORE FUNCTIONALITY -->
       <div formArrayName="dist" style="position:relative;">
@@ -155,6 +178,7 @@
                   {{distributor.plant}} - {{distributor.organization | titlecase}}
                 </option>
               </select>
+              <span id="err_distributor_{{i}}" class="text-danger" style="display: none;"></span>
             </div>
             <div class="col-sm-2">
               <button type="button" class="btn btn-warning" (click)="removeDistributor(i)" [tabIndex]="100000"
@@ -177,6 +201,7 @@
                 </div>
                 <div class="row" id="division_data_{{i}}" name="division_data_{{i}}"></div>
               </div>
+              <span id="err_division_div_{{i}}" class="text-danger" style="display: none;"></span>
             </div>
           </div>
 
@@ -195,6 +220,7 @@
                 </div>
                 <div class="row" id="stockist_data_{{i}}"></div>
               </div>
+              <span id="err_stockist_div_{{i}}" class="text-danger" style="display: none;"></span>
             </div>
           </div>
 
@@ -208,6 +234,32 @@
             Distributor</button>
         </div>
       </div>
+
+      <!-- User Permission  -->
+      <div class="position-relative row mb-3" id="permiss_all" style="display: none;">
+        <label for="permission_all" class="form-label col-sm-2 col-form-label req_permission ">Permissions</label>
+        <div class="col-sm-10">
+          <div class="row container_div" id="permission_div_all">
+            <div id="permission_sd_all">
+              <input class="form-check-input" style="border: 2px solid #495057;" type="checkbox"
+                id="permissCheckbox_all" (click)="togglePermissionAllCheckbox('all')"><label
+                class="form-check-label req_permission" style="font-weight: 500;" for="permissCheckbox_all">Select /
+                Deselect All</label>
+            </div>
+            <div class="row" id="permission_data_all" name="permission_data_all">
+              <div class="col-sm-4" *ngFor="let access of accesspermissions"><input class="form-check-input dchkbox"
+                  style="margin: 5px 0px 0px 0px; color: black;" (click)="togglePermissionCheckbox(access.permissionId)"
+                  type="checkbox" name="pchkbox_all" id="permissionCheckbox_all_{{access.permissionId}}"
+                  value="{{access.permissionId}}"><label class="form-check-label" style="margin: 2px 0px 2px 4px;"
+                  for="permissionCheckbox_all_{{access.permissionId}}">{{access.permissionName}}</label>
+              </div>
+            </div>
+          </div>
+          <span id="err_permission_div_all" class="text-danger" style="display: none;">dasdasd</span>
+        </div>
+      </div>
+      <!-- EOF User Permission -->
+
 
       <!-- <div *ngIf="officeFields" formArrayName="dist" style="position:relative;">
         <div *ngFor="let dst of dist().controls; let i=index" [formGroupName]="i">
