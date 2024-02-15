@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+//import { DataTablesModule } from "angular-datatables";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgReduxModule } from '@angular-redux/store';
@@ -132,6 +133,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     PdfViewerModule,
     NgSelectModule,
     NgxDatatableModule,
+
     NgxMaskModule.forRoot(),
   ],
   exports: [

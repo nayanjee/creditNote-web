@@ -30,15 +30,60 @@
         <div class="card-header-title font-size-lg text-capitalize fw-normal">Company Agents Status</div>
     </div> -->
     <div class="card-body">
+        <!-- <input type="text" style="padding:8px;margin:15px auto;width:30%;"
+            placeholder="Type to filter the name column..." (keyup)="updateFilter($event)" />
+        <div class="table-responsive">
+            <ngx-datatable #table class="bootstrap" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                [columns]="columns" [columnMode]="ColumnMode.force" [headerHeight]="40" [summaryRow]="true"
+                [summaryPosition]="'bottom'" [footerHeight]="40" [limit]="10" rowHeight="auto"
+                [reorderable]="reorderable">
+            </ngx-datatable>
 
+        </div> -->
+        <div class="mytable">
+            <ngx-datatable #table class="bootstrap" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                [columns]="columns" [columnMode]="ColumnMode.force" [headerHeight]="40" [summaryRow]="true"
+                [summaryPosition]="'bottom'" [footerHeight]="40" [limit]="10" rowHeight="auto"
+                [reorderable]="reorderable">
+            </ngx-datatable>
+            <!-- <table>
+                <thead>
+                    <tr>
+                        <th class="border-right" style="width: 50px;">Sl.No.</th>
+                        <th class="border-right" style="width: 100px;">Name</th>
+                        <th class="border-right" style="width: 90px;">Plant</th>
+                        <th class="border-right" style="width: 90px;">Division ID</th>
 
+                        <th class="border-right" style="width: 80px;">Options</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-bottom" style="height: 35px;">
+                        <td class="border-right">fg</td>
+                        <td class="border-right">fgdfg</td>
+                        <td class="border-right">dfgd</td>
+                        <td class="border-right">sfdad</td>
 
+                        <td class="border-right">
+                            <span title="Upload Invoice" class="option-span" style="color: #6610f2;">
+                                <i class="vsm-icon pe-7s-cloud-upload option-tr"></i>
+                            </span>
+                            <span title="Edit" class="option-span">
+                               
+                                <a href="#"><i class="vsm-icon pe-7s-note option-tr"></i></a>
+                            </span>
+                            <span title="Delete" class="option-span" style="color: red">
+                                <i class="vsm-icon pe-7s-trash option-tr"></i>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table> -->
 
-        <div class="row claim-frm">
-            <form enctype="multipart/form-data" autocomplete="off">
-
-
-            </form>
         </div>
+
+
+
+
     </div>
 </div>
