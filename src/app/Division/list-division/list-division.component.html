@@ -41,44 +41,40 @@
 
         </div> -->
         <div class="mytable">
-            <ngx-datatable #table class="bootstrap" [rows]="rows" [loadingIndicator]="loadingIndicator"
+            <!-- <ngx-datatable #table class="bootstrap" [rows]="rows" [loadingIndicator]="loadingIndicator"
                 [columns]="columns" [columnMode]="ColumnMode.force" [headerHeight]="40" [summaryRow]="true"
                 [summaryPosition]="'bottom'" [footerHeight]="40" [limit]="10" rowHeight="auto"
                 [reorderable]="reorderable">
-            </ngx-datatable>
-            <!-- <table>
+            </ngx-datatable> -->
+            <table datatable [dtOptions]="dtOptions" class="row-border hover">
                 <thead>
                     <tr>
-                        <th class="border-right" style="width: 50px;">Sl.No.</th>
-                        <th class="border-right" style="width: 100px;">Name</th>
-                        <th class="border-right" style="width: 90px;">Plant</th>
-                        <th class="border-right" style="width: 90px;">Division ID</th>
+                        <th class="border-right">S.No.</th>
+                        <th class="border-right">Name</th>
+                        <th class="border-right">Plant</th>
+                        <th class="border-right">Division ID</th>
 
-                        <th class="border-right" style="width: 80px;">Options</th>
+                        <th class="border-right">Options</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-bottom" style="height: 35px;">
-                        <td class="border-right">fg</td>
-                        <td class="border-right">fgdfg</td>
-                        <td class="border-right">dfgd</td>
-                        <td class="border-right">sfdad</td>
+                    <tr class="border-bottom" style="height: 35px;" *ngFor="let record of divisions; let i=index">
+                        <td class="border-right">{{i+1}}</td>
+                        <td class="border-right">{{record.name}}</td>
+                        <td class="border-right">{{record.plant}}</td>
+                        <td class="border-right">{{record.division}}</td>
 
                         <td class="border-right">
-                            <span title="Upload Invoice" class="option-span" style="color: #6610f2;">
-                                <i class="vsm-icon pe-7s-cloud-upload option-tr"></i>
-                            </span>
+
                             <span title="Edit" class="option-span">
-                               
-                                <a href="#"><i class="vsm-icon pe-7s-note option-tr"></i></a>
+
+                                <a href="division/edit/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
                             </span>
-                            <span title="Delete" class="option-span" style="color: red">
-                                <i class="vsm-icon pe-7s-trash option-tr"></i>
-                            </span>
+
                         </td>
                     </tr>
                 </tbody>
-            </table> -->
+            </table>
 
         </div>
 

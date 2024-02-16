@@ -37,6 +37,7 @@ import { ListUserComponent } from './Users/list-user/list-user.component';
 
 import { AddDivisionComponent } from './Division/add-division/add-division.component';
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
+import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
 
 import { TestComponent } from './Test/test.component';
 const routes: Routes = [
@@ -71,6 +72,7 @@ const routes: Routes = [
 
       { path: 'division/add', component: AddDivisionComponent, data: {} },
       { path: 'division/list', component: ListDivisionComponent, data: {} },
+      { path: 'division/edit/:divisionId', component: EditDivisionComponent, data: {} },
 
       { path: 'test/test', component: TestComponent, data: { extraParameter: 'userElementMenu' } },
     ]

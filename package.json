@@ -30,7 +30,7 @@
     "@ngx-loading-bar/core": "^5.1.1",
     "@ngx-loading-bar/router": "^5.1.1",
     "@swimlane/ngx-datatable": "^20.0.0",
-    "angular-datatables": "^17.0.0",
+    "angular-datatables": "^6.0.0",
     "animate-sass": "^0.8.2",
     "datatables.net": "^1.13.10",
     "datatables.net-bs5": "^1.11.3",

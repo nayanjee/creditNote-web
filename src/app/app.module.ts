@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-//import { DataTablesModule } from "angular-datatables";
+import { DataTablesModule } from "angular-datatables";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgReduxModule } from '@angular-redux/store';
@@ -73,6 +73,7 @@ import { TestComponent } from './Test/test.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AddDivisionComponent } from './Division/add-division/add-division.component';
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
+import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
 
 
 
@@ -113,7 +114,8 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ListUserComponent,
     TestComponent,
     AddDivisionComponent,
-    ListDivisionComponent
+    ListDivisionComponent,
+    EditDivisionComponent
 
 
   ],
@@ -133,7 +135,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     PdfViewerModule,
     NgSelectModule,
     NgxDatatableModule,
-
+    DataTablesModule,
     NgxMaskModule.forRoot(),
   ],
   exports: [
