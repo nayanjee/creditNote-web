@@ -34,6 +34,7 @@ import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
 
 import { AddUserComponent } from './Users/add-user/add-user.component';
 import { ListUserComponent } from './Users/list-user/list-user.component';
+import { EditUserComponent } from './Users/edit-user/edit-user.component';
 
 import { AddDivisionComponent } from './Division/add-division/add-division.component';
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
@@ -68,7 +69,7 @@ const routes: Routes = [
 
       { path: 'users/addUser', component: AddUserComponent, data: { extraParameter: 'userElementMenu' } },
       { path: 'users/listUser', component: ListUserComponent, data: { extraParameter: 'userElementMenu' } },
-
+      { path: 'users/edit/:userId', component: EditUserComponent, data: { extraParameter: 'userElementMenu' } },
 
       { path: 'division/add', component: AddDivisionComponent, data: {} },
       { path: 'division/list', component: ListDivisionComponent, data: {} },
