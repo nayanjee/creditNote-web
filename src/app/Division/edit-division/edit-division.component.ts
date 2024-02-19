@@ -29,6 +29,10 @@ export class EditDivisionComponent implements OnInit {
     { id: '2200', name: '2200' },
     { id: '3300', name: '3300' },
   ];
+  status = [
+    { id: true, name: 'Active' },
+    { id: false, name: 'In-Active' },
+  ];
   constructor(private router: Router,
     private fb: FormBuilder,
     private activatedRoute: ActivatedRoute,
@@ -51,7 +55,7 @@ export class EditDivisionComponent implements OnInit {
       if (response.status === 200) {
 
         this.records = response.data;
-        console.log('this.records--', this.records);
+        //console.log('this.records--', this.records);
         this.divisionform.controls['plant'].setValue(this.records.plant, { onlySelf: true });
         this.divisionform.value.plant = this.records.plant;
         this.divisionform.controls['name'].setValue(this.records.name, { onlySelf: true });
@@ -60,6 +64,8 @@ export class EditDivisionComponent implements OnInit {
         this.divisionform.value.olddivision = this.records.division;
         this.divisionform.controls['newdivision'].setValue(this.records.division, { onlySelf: true });
         this.divisionform.value.newdivision = this.records.division;
+        this.divisionform.controls['status'].setValue(this.records.isActive, { onlySelf: true });
+        this.divisionform.value.status = this.records.isActive;
         this.divisionform.controls['_id'].setValue(this.records._id, { onlySelf: true });
         this.divisionform.value._id = this.records._id;
 
@@ -87,6 +93,7 @@ export class EditDivisionComponent implements OnInit {
       name: [this.records.name, [Validators.required]],
       olddivision: [this.records.division, [Validators.required]],
       newdivision: [this.records.division, [Validators.required]],
+      status: [this.records.isActive, [Validators.required]],
       loggedUserId: this.loggedUserId,
 
     });

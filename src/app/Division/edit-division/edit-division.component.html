@@ -47,6 +47,18 @@
                     <span id="err_divisionid" class="text-danger" style="display: none;"></span>
                 </div>
             </div>
+            <div class="position-relative row mb-3 required">
+                <label for="Status" class="form-label col-sm-2 col-form-label">Status</label>
+                <div class="col-sm-10">
+                    <select id="status" class="form-select" formControlName="status">
+                        <!-- <option value="" disabled selected> Status </option> -->
+                        <option *ngFor="let s of status" [value]="s.id">
+                            {{s.name}}
+                        </option>
+                    </select>
+                    <span id="err_status" class="text-danger" style="display: none;"></span>
+                </div>
+            </div>
             <div class="position-relative row form-check">
                 <div class="col-sm-10 offset-sm-2">
                     <button class="mt-1 btn btn-primary" type="submit">Submit</button>
