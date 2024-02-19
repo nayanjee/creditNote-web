@@ -46,13 +46,13 @@
                 [summaryPosition]="'bottom'" [footerHeight]="40" [limit]="10" rowHeight="auto"
                 [reorderable]="reorderable">
             </ngx-datatable> -->
-            <table datatable [dtOptions]="dtOptions" class="row-border hover">
+            <table *ngIf="divisions.length" datatable [dtOptions]="dtOptions" class="row-border hover">
                 <thead>
                     <tr>
                         <th class="border-right">S.No.</th>
-                        <th class="border-right">Name</th>
+                        <th class="border-right">Division Name</th>
                         <th class="border-right">Plant</th>
-                        <th class="border-right">Division ID</th>
+                        <th class="border-right">Division</th>
 
                         <th class="border-right">Options</th>
                     </tr>

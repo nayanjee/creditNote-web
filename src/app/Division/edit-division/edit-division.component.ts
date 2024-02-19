@@ -56,6 +56,10 @@ export class EditDivisionComponent implements OnInit {
         this.divisionform.value.plant = this.records.plant;
         this.divisionform.controls['name'].setValue(this.records.name, { onlySelf: true });
         this.divisionform.value.name = this.records.name;
+        this.divisionform.controls['olddivision'].setValue(this.records.division, { onlySelf: true });
+        this.divisionform.value.olddivision = this.records.division;
+        this.divisionform.controls['newdivision'].setValue(this.records.division, { onlySelf: true });
+        this.divisionform.value.newdivision = this.records.division;
         this.divisionform.controls['_id'].setValue(this.records._id, { onlySelf: true });
         this.divisionform.value._id = this.records._id;
 
@@ -81,7 +85,8 @@ export class EditDivisionComponent implements OnInit {
       _id: [this.selectedDivision, [Validators.required]],
       plant: [this.records.plant, [Validators.required]],
       name: [this.records.name, [Validators.required]],
-
+      olddivision: [this.records.division, [Validators.required]],
+      newdivision: [this.records.division, [Validators.required]],
       loggedUserId: this.loggedUserId,
 
     });
@@ -93,7 +98,8 @@ export class EditDivisionComponent implements OnInit {
     let error = false;
     const plant = $('#plant').val();
     const divisionName = $('#divisionName').val();
-    //const divisionID = $('#divisionID').val();
+    const newdivision = $('#newdivision').val();
+    const olddivision = $('#olddivision').val();
     if (!plant) {
       error = true;
       $('#plant').addClass('is-invalid');
@@ -104,11 +110,11 @@ export class EditDivisionComponent implements OnInit {
       $('#divisionName').addClass('is-invalid');
       $('#err_divisionname').text('Division name is required').show();
     }
-    // if (!divisionID) {
-    //   error = true;
-    //   $('#divisionID').addClass('is-invalid');
-    //   $('#err_divisionid').text('Division id is required').show();
-    // }
+    if (!newdivision) {
+      error = true;
+      $('#newdivision').addClass('is-invalid');
+      $('#err_divisionid').text('Division is required').show();
+    }
     //console.log('xxxxxxxxxx', this.divisionform.value);
     if (!error) {
       this.apiService.post('/api/division/edit', this.divisionform.value).subscribe((response: any) => {
@@ -116,14 +122,16 @@ export class EditDivisionComponent implements OnInit {
         if (response.status === 200) {
 
           this.toast('success', 'Record has been successfully updated.');
-          //this.router.navigateByUrl('/users/listUser');
+
         }
         else if (response.status === 400) {
           this.toast('error', response.message);
+
         }
         else {
           this.toast('error', 'Something went wrong, Please try again after some time');
         }
+        this.ngOnInit();
       });
     }
 
