@@ -1,0 +1,56 @@
+<div class="app-page-title">
+    <div class="page-title-wrapper">
+        <div class="page-title-heading">
+            <div class="page-title-icon">
+                <i class="icon {{icon}}"></i>
+            </div>
+            <div>
+                {{heading}}
+                <div class="page-title-subheading">
+                    {{subheading}}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="main-card mb-3 card">
+    <div class="card-body">
+        <form class="form" [formGroup]="divisionform" (ngSubmit)="onSubmit()" autocomplete="off"
+            enctype="multipart/form-data">
+            <div class="position-relative row mb-3 required">
+                <label for="Plant" class="form-label col-sm-2 col-form-label">Plant</label>
+                <div class="col-sm-10">
+                    <select id="plant" class="form-select" formControlName="plant">
+                        <option value="" disabled selected> Plant </option>
+                        <option *ngFor="let plant of plants" [value]="plant.id">
+                            {{plant.name | titlecase}}
+                        </option>
+                    </select>
+                    <span id="err_plant" class="text-danger" style="display: none;"></span>
+                </div>
+            </div>
+            <div class="position-relative row mb-3 common required">
+                <label for="divisionName" class="form-label col-sm-2 col-form-label">Division Name</label>
+                <div class="col-sm-10">
+                    <input class="form-control" formControlName="divisionName" id="divisionName"
+                        placeholder="Division Name" type="text">
+                    <span id="err_divisionname" class="text-danger" style="display: none;"></span>
+                </div>
+            </div>
+            <div class="position-relative row mb-3 common required">
+                <label for="divisionId" class="form-label col-sm-2 col-form-label">Division ID</label>
+                <div class="col-sm-10">
+                    <input class="form-control" formControlName="divisionID" id="divisionID" placeholder="Division ID"
+                        type="number">
+                    <span id="err_divisionid" class="text-danger" style="display: none;"></span>
+                </div>
+            </div>
+            <div class="position-relative row form-check">
+                <div class="col-sm-10 offset-sm-2">
+                    <button class="mt-1 btn btn-primary" type="submit">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

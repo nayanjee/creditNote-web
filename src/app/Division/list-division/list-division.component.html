@@ -1,0 +1,85 @@
+<div class="app-page-title">
+    <div class="page-title-wrapper">
+        <div class="page-title-heading">
+            <div class="page-title-icon">
+                <i class="icon {{icon}}"></i>
+            </div>
+            <div>
+                {{heading}}
+                <div class="page-title-subheading">
+                    {{subheading}}
+                </div>
+            </div>
+        </div>
+        <div class="page-title-actions">
+            <button type="button" class="btn-shadow me-3 btn btn-dark">
+                <fa-icon [icon]="faStar"></fa-icon>
+            </button>
+            <button type="button" (click)="addnewdivision()"
+                class="btn-shadow d-inline-flex align-items-center btn btn-success">
+                <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
+                Create New Division
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="main-card mb-3 card">
+
+    <!-- <div class="card-header">
+        <div class="card-header-title font-size-lg text-capitalize fw-normal">Company Agents Status</div>
+    </div> -->
+    <div class="card-body">
+        <!-- <input type="text" style="padding:8px;margin:15px auto;width:30%;"
+            placeholder="Type to filter the name column..." (keyup)="updateFilter($event)" />
+        <div class="table-responsive">
+            <ngx-datatable #table class="bootstrap" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                [columns]="columns" [columnMode]="ColumnMode.force" [headerHeight]="40" [summaryRow]="true"
+                [summaryPosition]="'bottom'" [footerHeight]="40" [limit]="10" rowHeight="auto"
+                [reorderable]="reorderable">
+            </ngx-datatable>
+
+        </div> -->
+        <div class="mytable">
+            <!-- <ngx-datatable #table class="bootstrap" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                [columns]="columns" [columnMode]="ColumnMode.force" [headerHeight]="40" [summaryRow]="true"
+                [summaryPosition]="'bottom'" [footerHeight]="40" [limit]="10" rowHeight="auto"
+                [reorderable]="reorderable">
+            </ngx-datatable> -->
+            <table *ngIf="divisions.length" datatable [dtOptions]="dtOptions" class="row-border hover">
+                <thead>
+                    <tr>
+                        <th class="border-right">S.No.</th>
+                        <th class="border-right">Division Name</th>
+                        <th class="border-right">Plant</th>
+                        <th class="border-right">Division</th>
+
+                        <th class="border-right">Options</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-bottom" style="height: 35px;" *ngFor="let record of divisions; let i=index">
+                        <td class="border-right">{{i+1}}</td>
+                        <td class="border-right">{{record.name}}</td>
+                        <td class="border-right">{{record.plant}}</td>
+                        <td class="border-right">{{record.division}}</td>
+
+                        <td class="border-right">
+
+                            <span title="Edit" class="option-span">
+
+                                <a href="division/edit/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
+                            </span>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+
+
+
+    </div>
+</div>

@@ -57,7 +57,7 @@
                 <span class="vsm-title">Approved/InProgress Claim</span>
               </a>
             </div>
-            
+
             <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(4)">
               <a routerLink="/headoffice/stockiestClaim" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-id"></i>
@@ -77,7 +77,13 @@
                 <span class="vsm-title">Users</span>
               </a>
             </div>
-            
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
+              <a routerLink="division/list" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-portfolio"></i>
+                <span class="vsm-title">Divisions</span>
+              </a>
+            </div>
+
             <!-- <ngb-accordion [destroyOnHide]="false" [closeOthers]="true" [activeIds]="extraParameter">
               <ngb-panel id="ownersMenu">
                 <ng-template ngbPanelHeader>

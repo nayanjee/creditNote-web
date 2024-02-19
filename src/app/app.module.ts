@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { DataTablesModule } from "angular-datatables";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgReduxModule } from '@angular-redux/store';
@@ -70,6 +71,10 @@ import { ListUserComponent } from './Users/list-user/list-user.component';
 import { TestComponent } from './Test/test.component';
 
 import { NgSelectModule } from '@ng-select/ng-select';
+import { AddDivisionComponent } from './Division/add-division/add-division.component';
+import { ListDivisionComponent } from './Division/list-division/list-division.component';
+import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
+
 
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
@@ -108,6 +113,10 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     AddUserComponent,
     ListUserComponent,
     TestComponent,
+    AddDivisionComponent,
+    ListDivisionComponent,
+    EditDivisionComponent
+
 
   ],
   imports: [
@@ -126,6 +135,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     PdfViewerModule,
     NgSelectModule,
     NgxDatatableModule,
+    DataTablesModule,
     NgxMaskModule.forRoot(),
   ],
   exports: [
