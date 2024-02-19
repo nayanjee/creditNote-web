@@ -40,7 +40,8 @@
       <div *ngIf="commonFields" class="position-relative row mb-3 required">
         <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
         <div class="col-sm-10">
-          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email" required>
+          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email"
+            required>
           <span id="err_email" class="text-danger" style="display: none;"></span>
         </div>
       </div>
@@ -163,7 +164,6 @@
         </div>
       </div>
 
-      
 
       <!-- ADD MORE FUNCTIONALITY -->
       <div formArrayName="dist" style="position:relative;">
@@ -238,6 +238,7 @@
       <!-- User Permission  -->
       <div class="position-relative row mb-3" id="permiss_all" style="display: none;">
         <label for="permission_all" class="form-label col-sm-2 col-form-label req_permission ">Permissions</label>
+
         <div class="col-sm-10">
           <div class="row container_div" id="permission_div_all">
             <div id="permission_sd_all">
@@ -253,125 +254,14 @@
                   value="{{access.permissionId}}"><label class="form-check-label" style="margin: 2px 0px 2px 4px;"
                   for="permissionCheckbox_all_{{access.permissionId}}">{{access.permissionName}}</label>
               </div>
+
+
             </div>
           </div>
           <span id="err_permission_div_all" class="text-danger" style="display: none;">dasdasd</span>
         </div>
       </div>
       <!-- EOF User Permission -->
-
-
-      <!-- <div *ngIf="officeFields" formArrayName="dist" style="position:relative;">
-        <div *ngFor="let dst of dist().controls; let i=index" [formGroupName]="i">
-          <div class="position-relative row mb-3 required">
-            <label for="distributor" class="form-label col-sm-2 col-form-label">Distributor</label>
-            <div class="col-sm-10">
-              <ng-select 
-                formControlName="distributor" 
-                [multiple]="true" 
-                placeholder="Please Select"
-                (change)="getDistributorStockist()" 
-                [(ngModel)]="selectedDistributor">
-                  <ng-option *ngFor="let distributor of distributors" 
-                    [value]="distributor.plant">{{distributor.organization}} ({{distributor.plant}}) 
-                  </ng-option>
-              </ng-select>
-            </div>
-          </div>
-        </div>
-      </div> -->
-
-      <!-- <div class="position-relative row mb-3 required">
-        <label for="userTypes" class="form-label col-sm-2 col-form-label">User Type</label>
-        <div class="col-sm-10">
-          <ng-select formControlName="userType" placeholder="Please Select" [(ngModel)]="selectedusertype">
-            <ng-option *ngFor="let utype of userTypes" [value]="utype.id">{{utype.name}}</ng-option>
-          </ng-select>
-          <span class="text-danger" *ngIf="(f.userType.touched || submitted) && f.userType.errors?.required">
-            This field is required.
-          </span>
-        </div>
-      </div>
-
-      <div class="position-relative row mb-3 required">
-        <label for="email" class="form-label col-sm-2 col-form-label">Email</label>
-        <div class="col-sm-10">
-          <input class="form-control grf-def" formControlName="email" id="email" placeholder="Email" type="email"
-            [ngClass]="{ 'is-invalid': submitted && f.email.errors }">
-          <span class="text-danger" *ngIf="(f.email.touched || submitted) && f.email.errors?.required">
-            This field is required.
-          </span>
-        </div>
-      </div>
-      
-      <div class="position-relative row mb-3 common required">
-        <label for="username" class="form-label col-sm-2 col-form-label">Name</label>
-        <div class="col-sm-10">
-          <input class="form-control" formControlName="username" id="username" placeholder="Name" type="text"
-            [ngClass]="{ 'is-invalid': submitted && f.username.errors }" required>
-          <span class="text-danger" *ngIf="(f.username.touched || submitted) && f.username.errors?.required">
-            This field is required.
-          </span>
-        </div>
-      </div>
-      <div class="position-relative row mb-3 required">
-        <label for="divisions" class="form-label col-sm-2 col-form-label">Divisions</label>
-        <div class="col-sm-10">
-          <ng-select formControlName="division" [items]="divisions" bindLabel="name" bindValue="division"
-            [multiple]="true" groupBy="selectedAllDivisionGroup" [selectableGroupAsModel]="false"
-            [selectableGroup]="true" placeholder="Select Divisions">
-
-            <ng-template ng-optgroup-tmp let-item="item" let-item$="item$" let-index="index">
-              <input id="item-{{index}}" type="checkbox" [ngModel]="item$.selected"
-                [ngModelOptions]="{standalone: true}" /> Select All
-            </ng-template>
-          </ng-select>
-          <span class="text-danger" *ngIf="(f.division.touched || submitted) && f.division.errors?.required">
-            This field is required.
-          </span>
-
-        </div>
-      </div>
-      <div class="position-relative row mb-3 required">
-        <label for="distributors" class="form-label col-sm-2 col-form-label">Distributor</label>
-        <div class="col-sm-10">
-          <ng-select formControlName="distributor" [multiple]="true" placeholder="Please Select"
-            (change)="getDistributorStockist()" [(ngModel)]="selectedDistributor">
-            <ng-option *ngFor="let distributor of distributors" [value]="distributor.plant">{{distributor.organization}}
-              ({{distributor.plant}}) </ng-option>
-          </ng-select>
-          <span class="text-danger" *ngIf="(f.distributor.touched || submitted) && f.distributor.errors?.required">
-            This field is required.
-          </span>
-        </div>
-      </div>
-      <div class="position-relative row mb-3 required">
-        <label for="stockiestes" class="form-label col-sm-2 col-form-label">Stockiest</label>
-        <div class="col-sm-10">
-          <ng-select formControlName="stockiest" [multiple]="true" placeholder="Please Select"
-            [(ngModel)]="selectedStockiest">
-            <ng-option *ngFor="let stockiest of stockiestes" [value]="stockiest.customerId"> ({{stockiest.plant}})
-              {{stockiest.organization}} ({{stockiest.customerId}}) </ng-option>
-          </ng-select>
-          <span class="text-danger" *ngIf="(f.stockiest.touched || submitted) && f.stockiest.errors?.required">
-            This field is required.
-          </span>
-        </div>
-      </div>
-      <div class="position-relative row mb-3 required">
-        <label for="accesspermissions" class="form-label col-sm-2 col-form-label">Access Permission</label>
-        <div class="col-sm-10">
-
-          <ng-select formControlName="permission" [multiple]="true" placeholder="Please Select"
-            [(ngModel)]="selectedPermission">
-            <ng-option *ngFor="let permission of accesspermissions" [value]="permission.permissionId">
-              {{permission.permissionName}} </ng-option>
-          </ng-select>
-          <span class="text-danger" *ngIf="(f.permission.touched || submitted) && f.permission.errors?.required">
-            This field is required.
-          </span>
-        </div>
-      </div> -->
 
       <div class="position-relative row form-check">
         <div class="col-sm-10 offset-sm-2">
