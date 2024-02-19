@@ -85,7 +85,7 @@ export class ListUserComponent implements OnInit {
 
 
   ////////////////////////////////
-  dtOptions: DataTables.Settings = {};
+
   constructor(private router: Router,
     private fb: FormBuilder,
     private activatedRoute: ActivatedRoute,

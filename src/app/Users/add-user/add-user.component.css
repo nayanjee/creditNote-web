@@ -56,12 +56,6 @@
     display: inline;
 }
 
-.req_permission:after {
-    color: #e32;
-    content: ' *';
-    display: inline;
-}
-
 .btn-reset {
     padding: 6px 15px;
     margin: 0 3px;
@@ -194,15 +188,12 @@ ng-select.ng-invalid.ng-touched ::ng-deep .ng-select-container {
     max-height: 155px;
     overflow-y: auto;
 }
-
 .inrdiv {
     padding: 3px 3px 3px 9px;
 }
-
 .form-check-input {
     margin: 5px 0px 0px 0px !important;
 }
-
 .form-check-label {
     margin: 2px 0px 2px 4px !important;
 }
