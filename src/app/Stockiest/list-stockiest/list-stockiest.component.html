@@ -1,1 +1,86 @@
-<p>list-stockiest works!</p>
+<div class="app-page-title">
+    <div class="page-title-wrapper">
+        <div class="page-title-heading">
+            <div class="page-title-icon">
+                <i class="icon {{icon}}"></i>
+            </div>
+            <div>
+                {{heading}}
+                <div class="page-title-subheading">
+                    {{subheading}}
+                </div>
+            </div>
+        </div>
+        <div class="page-title-actions">
+            <button type="button" class="btn-shadow me-3 btn btn-dark">
+                <fa-icon [icon]="faStar"></fa-icon>
+            </button>
+            <button type="button" (click)="addNewStockiest()"
+                class="btn-shadow d-inline-flex align-items-center btn btn-success">
+                <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
+                Create New Stockiest
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="main-card mb-3 card">
+
+    <!-- <div class="card-header">
+        <div class="card-header-title font-size-lg text-capitalize fw-normal">Company Agents Status</div>
+    </div> -->
+    <div class="card-body">
+        <!-- <input type="text" style="padding:8px;margin:15px auto;width:30%;"
+            placeholder="Type to filter the name column..." (keyup)="updateFilter($event)" />
+        <div class="table-responsive">
+            <ngx-datatable #table class="bootstrap" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                [columns]="columns" [columnMode]="ColumnMode.force" [headerHeight]="40" [summaryRow]="true"
+                [summaryPosition]="'bottom'" [footerHeight]="40" [limit]="10" rowHeight="auto"
+                [reorderable]="reorderable">
+            </ngx-datatable>
+  
+        </div> -->
+        <div class="mytable">
+
+            <table *ngIf="stockiest.length" datatable [dtOptions]="dtOptions" class="row-border hover">
+                <thead>
+                    <tr>
+                        <th class="border-right">S.No.</th>
+                        <th class="border-right">Organization</th>
+                        <th class="border-right">Plant</th>
+                        <th class="border-right">Customer ID</th>
+                        <th class="border-right">Status</th>
+                        <th class="border-right">Options</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-bottom" style="height: 35px;" *ngFor="let record of stockiest; let i=index">
+                        <td class="border-right">{{i+1}}</td>
+                        <td class="border-right">{{record.organization}}</td>
+                        <td class="border-right">{{record.plant}}</td>
+
+                        <td class="border-right">{{record.customerId}}</td>
+                        <td class="border-right">{{record.isActive ? 'Active' : 'In-Active'}}</td>
+                        <td class="border-right">
+
+                            <span title="Edit" class="option-span">
+
+                                <a href="stockiest/edit/{{record._id}}"><i
+                                        class="vsm-icon pe-7s-note option-tr"></i></a>
+                            </span>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+        <div *ngIf="loading" class="col-md-12 tc" style="color: red; text-align: center;">
+            <img src="./../../assets/images/btn_loader.gif"> <br /> Loading... Please wait
+        </div>
+
+
+
+
+    </div>
+</div>

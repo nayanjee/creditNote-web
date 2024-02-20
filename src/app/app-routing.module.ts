@@ -23,6 +23,9 @@ import { AddClaimComponent } from './Stockiest/add-claim/add-claim.component';
 import { EditClaimComponent } from './Stockiest/edit-claim/edit-claim.component';
 import { DraftClaimComponent } from './Stockiest/draft-claim/draft-claim.component';
 import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.component';
+import { ListStockiestComponent } from './Stockiest/list-stockiest/list-stockiest.component';
+import { AddStockiestComponent } from './Stockiest/add-stockiest/add-stockiest.component';
+import { EditStockiestComponent } from './Stockiest/edit-stockiest/edit-stockiest.component';
 
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
@@ -54,6 +57,9 @@ const routes: Routes = [
       { path: 'stockiest/updateClaim/:claimId', component: EditClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/draftClaim', component: DraftClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/claimStatus', component: ClaimStatusComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/add', component: AddStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/edit/:stockiestId', component: EditStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/list', component: ListStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
 
       { path: 'headoffice/stockiestClaim', component: StockiestClaimComponent, data: { extraParameter: 'hoElementsMenu' } },
       { path: 'headoffice/claimApproval/:month/:stockiest/:year/:type/:invoice', component: ClaimApprovalComponent, data: { extraParameter: 'hoElementsMenu' } },
