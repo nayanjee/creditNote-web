@@ -43,6 +43,10 @@ import { AddDivisionComponent } from './Division/add-division/add-division.compo
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
 import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
 
+import { AddDistributorComponent } from './Distributor/add-distributor/add-distributor.component';
+import { EditDistributorComponent } from './Distributor/edit-distributor/edit-distributor.component';
+import { ListDistributorComponent } from './Distributor/list-distributor/list-distributor.component';
+
 import { TestComponent } from './Test/test.component';
 const routes: Routes = [
   {
@@ -80,6 +84,11 @@ const routes: Routes = [
       { path: 'division/add', component: AddDivisionComponent, data: {} },
       { path: 'division/list', component: ListDivisionComponent, data: {} },
       { path: 'division/edit/:divisionId', component: EditDivisionComponent, data: {} },
+
+
+      { path: 'distributor/add', component: AddDistributorComponent, data: {} },
+      { path: 'distributor/list', component: ListDistributorComponent, data: {} },
+      { path: 'distributor/edit/:distId', component: EditDistributorComponent, data: {} },
 
       { path: 'test/test', component: TestComponent, data: { extraParameter: 'userElementMenu' } },
     ]
