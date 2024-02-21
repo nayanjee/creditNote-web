@@ -78,6 +78,9 @@ import { EditUserComponent } from './Users/edit-user/edit-user.component';
 import { EditStockiestComponent } from './Stockiest/edit-stockiest/edit-stockiest.component';
 import { AddStockiestComponent } from './Stockiest/add-stockiest/add-stockiest.component';
 import { ListStockiestComponent } from './Stockiest/list-stockiest/list-stockiest.component';
+import { AddDistributorComponent } from './Distributor/add-distributor/add-distributor.component';
+import { ListDistributorComponent } from './Distributor/list-distributor/list-distributor.component';
+import { EditDistributorComponent } from './Distributor/edit-distributor/edit-distributor.component';
 
 
 
@@ -123,7 +126,10 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     EditUserComponent,
     EditStockiestComponent,
     AddStockiestComponent,
-    ListStockiestComponent
+    ListStockiestComponent,
+    AddDistributorComponent,
+    ListDistributorComponent,
+    EditDistributorComponent
 
 
   ],
