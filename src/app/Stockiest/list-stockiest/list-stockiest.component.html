@@ -12,9 +12,35 @@
             </div>
         </div>
         <div class="page-title-actions">
-            <button type="button" class="btn-shadow me-3 btn btn-dark">
-                <fa-icon [icon]="faStar"></fa-icon>
+            <ng-template #content let-c="close" let-d="dismiss">
+                <div class="modal-header">
+                    <h4 class="modal-title">Upload Stockiest Data</h4>
+                    <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')">
+
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <p>
+                        <input type="file" (change)="onFileSelected($event)" class="file-input">
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+                    <button type="button" id="uploadstockiestid" class="btn btn-primary"
+                        (click)="uploadStockiest($event)">Save
+                        changes</button>
+                    <div *ngIf="loading" class="col-md-12 tc" style="color: red; text-align: center;">
+                        <img src="./../../assets/images/btn_loader.gif"> <br /> Uploading... Please wait<br /> <b>Don`t
+                            close this window while uploading</b>
+                    </div>
+                </div>
+            </ng-template>
+            <button type="button" (click)="open(content)" class="btn-shadow me-3 btn btn-dark">
+                <!-- <i class="fa fa-fw" aria-hidden="true" title="upload"></i> -->
+                Upload Stockiest
             </button>
+
             <button type="button" (click)="addNewStockiest()"
                 class="btn-shadow d-inline-flex align-items-center btn btn-success">
                 <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
@@ -42,7 +68,7 @@
         </div> -->
         <div class="mytable">
 
-            <table *ngIf="stockiest.length" datatable [dtOptions]="dtOptions" class="row-border hover">
+            <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="row-border hover">
                 <thead>
                     <tr>
                         <th class="border-right">S.No.</th>
