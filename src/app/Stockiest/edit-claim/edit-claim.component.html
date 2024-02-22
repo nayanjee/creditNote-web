@@ -16,9 +16,23 @@
 
 <div class="main-card mb-3 card">
   <div class="card-body">
-    <!-- <form class="form" [formGroup]="myForm" (ngSubmit)="onHeaderSubmit()" autocomplete="off"> -->
     <div class="row">
-      <div class="col-md-3">
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="distributor" class="form-label fb">Distributor</label>
+          <select id="distributor" class="form-select" (change)="getStockiest()" style="display: none;">
+            <option value="" disabled hidden selected> -- Distributor -- </option>
+            <option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+              {{distributor.plant}} - {{distributor.organization | titlecase}}
+            </option>
+          </select>
+          <span id="err_distributor" class="text-danger" style="display: none;"></span>
+          <div id="distributor_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
+        </div>
+      </div>
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="stockiest" class="form-label fb">Stockiest</label>
           <select id="stockiest" class="form-select" style="display: none;">
@@ -33,7 +47,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="type" class="form-label fb">Claim Type</label>
           <select id="type" class="form-select">
@@ -45,7 +59,7 @@
           <span id="err_type" class="text-danger" style="display: none;"></span>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="month" class="form-label fb">Month</label>
           <select id="month" class="form-select" (change)="validateMonth()">
@@ -57,7 +71,7 @@
           <span id="err_month" class="text-danger" style="display: none;"></span>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="year" class="form-label fb">Year</label>
           <select id="year" class="form-select" (change)="validateMonth()">
@@ -70,7 +84,6 @@
         </div>
       </div>
     </div>
-    <!-- </form> -->
 
     <div class="row">
       <div class="col-md-12">
@@ -92,7 +105,7 @@
                   <!-- <td class="td-head">Particulars</td> -->
                   <td class="td-head">MRP</td>
                   <td class="td-head">PTS</td>
-                  <td class="td-head">Margin (%)</td>
+                  <!-- <td class="td-head">Margin (%)</td> -->
                   <td class="td-head required"><label class="form-label grid-label">Billing Rate</label></td>
                   <td class="td-head required"><label class="form-label grid-label">Free QTY</label></td>
                   <td class="td-head required"><label class="form-label grid-label">Sale QTY</label></td>
@@ -195,9 +208,9 @@
                     <input type="hidden" id="ptr_def" />
                     <input type="hidden" id="ptd_def" />
                   </td>
-                  <td class="tdpd1">
+                  <!-- <td class="tdpd1">
                     <input type="text" class="form-control tc" formControlName="def_margin" id="margin_def" readonly />
-                  </td>
+                  </td> -->
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_billingRate"
                       id="billingRate_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="6" />
@@ -240,115 +253,6 @@
                     </span>
                   </td> -->
                 </tr>
-
-                <!-- ADD MORE FUNCTIONALITY -->
-                <!-- <div formArrayName="claims">
-                  <tr *ngFor="let claim of claims().controls; let i=index" [formGroupName]="i">
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am" formControlName="invoice" id="invoice_{{i}}"
-                        [tabIndex]="(10*i)+11" />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am" formControlName="batch" id="batch_{{i}}"
-                        (keyup)="searchBatch($event, i)" [tabIndex]="(10*i)+12" />
-
-                      <img style="float:right;" id="batch_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
-                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
-
-                      <div class="suggestions" id="batch_suggestion_{{i}}" (click)="batchSelection($event, i)"
-                        style="display: none;">
-                        <ul></ul>
-                      </div>
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control" formControlName="division" id="division_{{i}}"
-                        (keyup)="searchDivision($event, i)" [tabIndex]="(10*i)+13" />
-
-                      <img style="float:right;" id="division_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
-                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
-
-                      <div class="suggestions" id="division_suggestion_{{i}}" (click)="divisionSelection($event, i)"
-                        style="display: none;">
-                        <ul></ul>
-                      </div>
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
-                        (keyup)="searchProduct($event, i)" [tabIndex]="(10*i)+14" />
-
-                      <img style="float:right;" id="product_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
-                        style="position: absolute; margin: -35px 0 0 65px; display: none;" />
-
-                      <div class="suggestions" id="product_suggestion_{{i}}" (click)="productSelection($event, i)"
-                        style="display: none;">
-                        <ul></ul>
-                      </div>
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control" formControlName="particulars" id="particulars_{{i}}"
-                        [tabIndex]="(10*i)+15" />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control tc" formControlName="mrp" id="mrp_{{i}}" readonly />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control tc" formControlName="pts" id="pts_{{i}}" readonly />
-                      <input type="hidden" id="ptr_{{i}}" />
-                      <input type="hidden" id="ptd_{{i}}" />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am" formControlName="billingRate" id="billingRate_{{i}}"
-                        (keyup)="changeCalculation($event, i)" [tabIndex]="(10*i)+16" />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control tc" formControlName="margin" id="margin_{{i}}" readonly />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am" formControlName="freeQuantity" id="freeQuantity_{{i}}"
-                        (keyup)="changeCalculation($event, i)" [tabIndex]="(10*i)+17" />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am" formControlName="saleQuantity" id="saleQuantity_{{i}}"
-                        (keyup)="changeCalculation($event, i)" [tabIndex]="(10*i)+18" />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control tc" formControlName="difference" id="difference_{{i}}"
-                        readonly />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control tc" formControlName="totalDifference"
-                        id="totalDifference_{{i}}" readonly />
-                    </td>
-                    <td class="tdpd">
-                      <input type="text" class="form-control grf-am tc" formControlName="amount" id="amount_{{i}}" readonly />
-                    </td>
-                    <td class="tdpd">
-                      <input type="file" class="file-input" [accept]="requiredFileType"
-                        (change)="onFileSelected($event, i)" #fileUpload multiple style="display: none;">
-                      <button type="button" class="btn-transition btn btn-outline-focus"
-                        (click)="fileUpload.click()" [tabIndex]="(10*i)+19">Attach File</button>
-                    </td>
-                    <td class="tc">
-                      <div *ngIf="fileNames[i]">
-                        <span *ngFor="let fn of fileNames[i]">
-                          <i class="pe-7s-paperclip" placement="bottom" ngbTooltip="{{fn.originalname}}"></i>
-                        </span>
-                      </div>
-                    </td>
-                    <td class="tdpd tc">
-                      <span title="Add to this invoice" [tabIndex]="(10*i)+20" (click)="addSameInvoice(i)" (keyup.enter)="addSameInvoice(i)">
-                        <i class="vsm-icon pe-7s-copy-file"></i>
-                      </span>
-
-                      <span title="Delete this row" style="color:red;">
-                        <i class="vsm-icon pe-7s-trash" (click)="removeClaim(i)"></i>
-                      </span>
-
-                      <input type="hidden" class="count" value="{{i}}">
-                    </td>
-                  </tr>
-
-                </div> -->
               </table>
             </div>
           </div>

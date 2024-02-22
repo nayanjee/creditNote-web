@@ -111,7 +111,7 @@ export class LoginBoxedComponent implements OnInit {
           type: response.data.type,
           isOfficer: response.isOfficer,
           portal: response.data.portal,
-          stockiest: response.data.stockiest,
+          // stockiest: response.data.stockiest,
           permissions: response.data.permissions
         }
         sessionStorage.setItem('laUser', JSON.stringify(storage));

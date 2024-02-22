@@ -28,6 +28,11 @@
 .claim-frm {
     /* display: none; */
 }
+#distributor_loader {
+    border: 1px solid #ced4da;
+    height: 35px;
+    border-radius: 5px;
+}
 #stockiest_loader {
     border: 1px solid #ced4da;
     height: 35px;

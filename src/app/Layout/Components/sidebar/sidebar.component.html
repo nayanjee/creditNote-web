@@ -23,21 +23,21 @@
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(1)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('1')">
               <a routerLink="/stockiest/createClaim" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-news-paper"></i>
                 <span class="vsm-title">Create Claim</span>
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(2)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('2')">
               <a routerLink="/stockiest/draftClaim" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-notebook"></i>
                 <span class="vsm-title">Draft Claim</span>
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(7)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('7')">
               <a routerLink="/headoffice/foApproval" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-check"></i>
                 <span class="vsm-title">Approve Claim (FO)</span>
@@ -51,33 +51,33 @@
               </a>
             </div> -->
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
               <a routerLink="/stockiest/claimStatus" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-check"></i>
                 <span class="vsm-title">Approved/InProgress Claim</span>
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(4)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('4')">
               <a routerLink="/headoffice/stockiestClaim" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-id"></i>
                 <span class="vsm-title">Stockiest Claim</span>
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(5)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('5')">
               <a routerLink="/headoffice/claimStatus" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-check"></i>
                 <span class="vsm-title">Claim Status</span>
               </a>
             </div>
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
               <a routerLink="users/listUser" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-users"></i>
                 <span class="vsm-title">Users</span>
               </a>
             </div>
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
               <a routerLink="division/list" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-portfolio"></i>
                 <span class="vsm-title">Divisions</span>

@@ -22,7 +22,7 @@ export class DraftClaimComponent implements OnInit {
   faStar = faStar;
   faPlus = faPlus;
   heading = 'Drafts';
-  subheading = 'Temporarily saved claim. The claim can be rectified (If required) and finally submitted to the Head Office.';
+  subheading = 'Temporarily saved claim. The claim can be corrected (if necessary) and finally submitted for approval.';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
 
   claimForm: FormGroup;
@@ -52,7 +52,9 @@ export class DraftClaimComponent implements OnInit {
     { id: 11, name: '11 - November' },
     { id: 12, name: '12 - December' },
   ];
+
   years: any = [];
+  sessionData: any;
   currentYear: any;
   currentMonth: any;
   closeResult: any;
@@ -69,6 +71,10 @@ export class DraftClaimComponent implements OnInit {
   alignedStockiest: any = [];
   requiredFileType: string;
   pdfSource: string = '';
+  distributors: any = [];
+  userDistributors: any = [];
+  userPlantStockists: any = [];
+  userPlantDivisions: any = [];
 
   constructor(
     private router: Router,
@@ -83,15 +89,10 @@ export class DraftClaimComponent implements OnInit {
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
+    this.sessionData = sessionData;
 
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;
-
-    // Number of stockists aligned with the user
-    this.alignedStockiest = JSON.parse(sessionData).stockiest;
-
-    this.getStockiest();
-    this.getDivision();
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -105,48 +106,47 @@ export class DraftClaimComponent implements OnInit {
       this.years.push(year);
     }
 
-    /* To show this data as predefined in the form
-    $(document).ready(function () {
-      $('#month').val(parseInt(currentMonth) - 1);
-      $('#year').val(currentYear);
-
-      // Keep second option selected from the stockist's select box
-      setTimeout(function () {
-        $("#stockiest").val($("#stockiest option:eq(1)").val());
-        $('#stockiest_loader').hide();
-        $('#stockiest').show();
-      }, 300);
-    }); */
-
     this.delay(1000).then(any => {
       // To show this data as predefined in the form
       if (parseInt(currentMonth) - 1 <= 0) {
         this.selectedYear = parseInt(currentYear) - 1;
         this.selectedMonth = 12;
-       } else {
+      } else {
         this.selectedYear = currentYear;
         this.selectedMonth = parseInt(currentMonth) - 1;
-       }
-
+      }
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
-      $("#stockiest").val($("#stockiest option:eq(1)").val());  // Keep second option selected from the stockist's select box
-      $('#stockiest_loader').hide();
-      $('#stockiest').show();
 
-      const stockiest = $("#stockiest option:selected").val();
-      const month = $("#month option:selected").val();
-      const year = $("#year option:selected").val();
+      $("#distributor").val($("#distributor option:eq(1)").val());
+      $('#distributor_loader').hide();
+      $('#distributor').show();
 
-      this.getData(stockiest, month, year);
+      this.getStockiest();
+      this.getDivisions();
 
-      // Put default selected field value
-      this.selectedFields['stockiest'] = stockiest;
-      this.selectedFields['type'] = '';
-      this.selectedFields['division'] = '';
-      this.selectedFields['month'] = month;
-      this.selectedFields['year'] = year;
+      this.delay(1000).then(any => {
+        const stockiest = $("#stockiest option:selected").val();
+        const month = $("#month option:selected").val();
+        const year = $("#year option:selected").val();
+
+        this.getData(stockiest, month, year);
+
+        // Put default selected field value
+        this.selectedFields['stockiest'] = stockiest;
+        this.selectedFields['type'] = '';
+        this.selectedFields['division'] = '';
+        this.selectedFields['month'] = month;
+        this.selectedFields['year'] = year;
+      });
     });
+
+    this.getDistributors();
+    if (JSON.parse(sessionData).type === 'ho' || JSON.parse(sessionData).type === 'field') {
+      this.getUserDistStockistDivision(this.loggedUserId);
+    } else if (JSON.parse(sessionData).type === 'stockist') {
+      this.getStockistDistDivision(this.loggedUserId);
+    }
   }
 
   toast(typeIcon, message) {
@@ -179,18 +179,116 @@ export class DraftClaimComponent implements OnInit {
     }
   }
 
-  getStockiest() {
-    this.apiService.post('/api/getStockiest', this.alignedStockiest).subscribe((response: any) => {
+  getUserDistStockistDivision(userId) {
+    this.apiService.get('/api/user/getDistStockistDivision', userId).subscribe((response: any) => {
       if (response.status === 200) {
-        if (response.data.length) {
-          this.stockiests = response.data;
+        if (response.data) {
+          response.data.forEach(element => {
+            // get user's distributor
+            const result = this.distributors.filter(element2 => {
+              return element.plant === element2.plant;
+            });
+            this.userDistributors.push(result[0]);
+            // EOF get user's distributor
+
+
+            // get user's stockist plant wise
+            this.userPlantStockists[element.plant] = element.stockists;
+
+            // get user's division plant wise
+            this.userPlantDivisions[element.plant] = element.divisions;
+          });
         }
       }
     });
   }
 
-  getDivision() {
-    this.apiService.fetch('/api/division/all').subscribe((response: any) => {
+  getStockistDistDivision(userId) {
+    this.apiService.get('/api/user/getStockistDistDivision', userId).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          response.data.forEach(element => {
+            // get user's distributor
+            const result = this.distributors.filter(element2 => {
+              return element.plant === element2.plant;
+            });
+            this.userDistributors.push(result[0]);
+            // EOF get user's distributor
+
+
+            // get user's stockist plant wise
+            this.userPlantStockists[element.plant] = element.customerId;
+
+            // get user's division plant wise
+            this.userPlantDivisions[element.plant] = element.divisions;
+          });
+        }
+      }
+    });
+  }
+
+  getDistributors() {
+    this.apiService.fetch('/api/distributor/getDistributor9000').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          // Getting a unique distributor
+          const map = new Map();
+          for (const item of response.data) {
+            if (!map.has(item.plant)) {
+              map.set(item.plant, true);
+              this.distributors.push({
+                plant: item.plant,
+                organization: item.organization
+              });
+            }
+          }
+          // EOF Getting a unique distributor
+        }
+      }
+    });
+  }
+
+  getStockiest() {
+    let stockists = [];
+    const distributor = $("#distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+
+    if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
+      stockist.forEach(element => {
+        stockists.push(Number(element));
+      });
+    } else if (JSON.parse(this.sessionData).type === 'stockist') {
+      stockists.push(Number(stockist));
+    }
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+
+            const stockiest = $("#stockiest option:selected").val();
+            this.selectedFields['stockiest'] = stockiest;
+          });
+        }
+      }
+    });
+  }
+
+  getDivisions() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#distributor option:selected").val();
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
@@ -215,15 +313,6 @@ export class DraftClaimComponent implements OnInit {
           response.data.sort((a, b) => a.invoice - b.invoice);
           this.records = response.data;
           this.tempRecords = response.data;
-          console.log('records---', this.records);
-
-          /* this.selectedFields.stockiest = stockiest;
-          this.selectedFields.month = month;
-          this.selectedFields.year = year;
-
-          $("#stockiest").val(this.selectedFields.stockiest);
-          $("#month").val(this.selectedFields.month);
-          $("#year").val(this.selectedFields.year); */
 
           if (type || division) {
             this.filterDataTwice(type, division);
@@ -265,11 +354,29 @@ export class DraftClaimComponent implements OnInit {
   }
 
   filterData(e) {
+    this.loading = true;
+    this.showData = true;
+
     const targetId = e.target.id;
     this.selectedFields[targetId] = e.target.value;
 
     const type = this.selectedFields.type;
     const division = this.selectedFields.division;
+
+    if (targetId === 'distributor') {
+      this.getStockiest();
+      this.getDivisions();
+
+      this.delay(1000).then(any => {
+        this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+
+        this.selectedFields.type = '';
+        this.selectedFields.division = '';
+
+        $("#type").val(this.selectedFields.type);
+        $("#division").val(this.selectedFields.division);
+      });
+    }
 
     if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
       this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
@@ -295,6 +402,14 @@ export class DraftClaimComponent implements OnInit {
       });
     } else if (!type && !division) {
       this.tempRecords = this.records;
+    }
+
+    if (this.tempRecords.length) {
+      this.loading = false;
+      this.showData = true;
+    } else {
+      this.loading = false;
+      this.showData = false;
     }
   }
 

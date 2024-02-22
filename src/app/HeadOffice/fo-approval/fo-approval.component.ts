@@ -23,7 +23,7 @@ export class FoApprovalComponent implements OnInit {
   faStar = faStar;
   faPlus = faPlus;
   heading = 'Field Officer Approval';
-  subheading = 'Approve claim sent by stockiest.';
+  subheading = 'Approve claim sent by stockist.';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
 
   claimForm: FormGroup;
@@ -60,6 +60,7 @@ export class FoApprovalComponent implements OnInit {
   records: any = [];
   modalReference: any;
   batches: any = [];
+  products: any = [];
   fileNames: any = [];
   divisions: any = [];
   stockiests: any = [];
@@ -81,6 +82,10 @@ export class FoApprovalComponent implements OnInit {
   requestedQty: number = 0;
   displayStyle: string = "none";
   approvalClickedClaim: any = [];
+  distributors: any = [];
+  userDistributors: any = [];
+  userPlantStockists: any = [];
+  userPlantDivisions: any = [];
 
   constructor(
     private router: Router,
@@ -100,12 +105,6 @@ export class FoApprovalComponent implements OnInit {
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;
 
-    // Number of stockists aligned with the user
-    this.alignedStockiest = JSON.parse(sessionData).stockiest;
-
-    this.getStockiest();
-    this.getDivision();
-
     // Current Month and Year
     const currentMonth = moment().format("MM");
     this.currentMonth = parseInt(currentMonth);
@@ -123,36 +122,44 @@ export class FoApprovalComponent implements OnInit {
       if (parseInt(currentMonth) - 1 <= 0) {
         this.selectedYear = parseInt(currentYear) - 1;
         this.selectedMonth = 12;
-       } else {
+      } else {
         this.selectedYear = currentYear;
         this.selectedMonth = parseInt(currentMonth) - 1;
-       }
+      }
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
-      $("#stockiest").val($("#stockiest option:eq(1)").val());  // Keep second option selected from the stockist's select box
-      $('#stockiest_loader').hide();
-      $('#stockiest').show();
 
-      const stockiest = $("#stockiest option:selected").val();
-      const month = $("#month option:selected").val();
-      const year = $("#year option:selected").val();
+      $("#distributor").val($("#distributor option:eq(1)").val());
+      $('#distributor_loader').hide();
+      $('#distributor').show();
 
-      this.getData(stockiest, month, year);
-      this.getParticulars();
-      this.getCategories();
-      this.getBatch();
+      this.getStockiest();
+      this.getDivisions();
 
-      // Put default selected field value
-      this.selectedFields['stockiest'] = stockiest;
-      this.selectedFields['type'] = '';
-      this.selectedFields['division'] = '';
-      this.selectedFields['month'] = month;
-      this.selectedFields['year'] = year;
+      this.delay(1000).then(any => {
+        const distributor = $("#distributor option:selected").val();
+        const stockiest = $("#stockiest option:selected").val();
+        const month = $("#month option:selected").val();
+        const year = $("#year option:selected").val();
 
-      // this.delay(1000).then(any => {
-      //   this.editRecord();
-      // });
+        // Put default selected field value
+        this.selectedFields['distributor'] = distributor;
+        this.selectedFields['stockiest'] = stockiest;
+        this.selectedFields['type'] = '';
+        this.selectedFields['division'] = '';
+        this.selectedFields['month'] = month;
+        this.selectedFields['year'] = year;
+
+        this.getData();
+      });
     });
+
+    this.getDistributors();
+    this.getParticulars();
+    this.getCategories();
+    this.getProduct();
+    this.getBatch();
+    this.getUserDistStockistDivision(this.loggedUserId);
   }
 
   toast(typeIcon, message) {
@@ -185,18 +192,114 @@ export class FoApprovalComponent implements OnInit {
     }
   }
 
-  getStockiest() {
-    this.apiService.post('/api/getStockiest', this.alignedStockiest).subscribe((response: any) => {
+  getDistributors() {
+    this.apiService.fetch('/api/distributor/getDistributor9000').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
-          this.stockiests = response.data;
+          // Getting a unique distributor
+          const map = new Map();
+          for (const item of response.data) {
+            if (!map.has(item.plant)) {
+              map.set(item.plant, true);
+              this.distributors.push({
+                plant: item.plant,
+                organization: item.organization
+              });
+            }
+          }
+          // EOF Getting a unique distributor
         }
       }
     });
   }
 
-  getDivision() {
-    this.apiService.fetch('/api/division/all').subscribe((response: any) => {
+  getUserDistStockistDivision(userId) {
+    this.apiService.get('/api/user/getDistStockistDivision', userId).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          response.data.forEach(element => {
+            // get user's distributor
+            const result = this.distributors.filter(element2 => {
+              return element.plant === element2.plant;
+            });
+            this.userDistributors.push(result[0]);
+            // EOF get user's distributor
+
+
+            // get user's stockist plant wise
+            this.userPlantStockists[element.plant] = element.stockists;
+            console.log(element.stockists);
+
+            // get user's division plant wise
+            this.userPlantDivisions[element.plant] = element.divisions;
+          });
+        }
+      }
+    });
+  }
+
+  getStockiest() {
+    let stockists = [];
+    const distributor = $("#distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+    stockist.forEach(element => {
+      stockists.push(Number(element));
+    });
+
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+          console.log(this.stockiests);
+
+          this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+
+            const stockiest = $("#stockiest option:selected").val();
+            this.selectedFields['stockiest'] = stockiest;
+          });
+        }
+      }
+    });
+  }
+
+  getStockiest_edit() {
+    let stockists = [];
+    const distributor = $("#edit_distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+    stockist.forEach(element => {
+      stockists.push(Number(element));
+    });
+
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+          });
+        }
+      }
+    });
+  }
+
+  getDivisions() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#distributor option:selected").val();
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
@@ -205,14 +308,22 @@ export class FoApprovalComponent implements OnInit {
     });
   }
 
-  getData(stockiest, month, year, type = '', division = '') {
+  getData() {
     this.loading = this.showData = true;
     this.records = this.tempRecords = [];
 
+    let divisions = [];
+    const dvsion = this.userPlantDivisions[this.selectedFields['distributor']];
+    dvsion.forEach(element => {
+      divisions.push(Number(element));
+    });
+
     const requestData = {
-      customerId: stockiest,
-      month: month,
-      year: year
+      plant: this.selectedFields['distributor'],
+      customerId: this.selectedFields['stockiest'],
+      divisions: divisions,
+      month: this.selectedFields['month'],
+      year: this.selectedFields['year']
     };
 
     this.apiService.post('/api/claimForApproval', requestData).subscribe((response: any) => {
@@ -222,8 +333,8 @@ export class FoApprovalComponent implements OnInit {
           this.records = response.data;
           this.tempRecords = response.data;
 
-          if (type || division) {
-            this.filterDataTwice(type, division);
+          if (this.selectedFields['type'] || this.selectedFields['division']) {
+            this.filterDataTwice(this.selectedFields['type'], this.selectedFields['division']);
           }
 
           this.loading = false;
@@ -262,16 +373,33 @@ export class FoApprovalComponent implements OnInit {
   }
 
   filterData(e) {
+    this.loading = true;
+    this.showData = true;
+
     const targetId = e.target.id;
     this.selectedFields[targetId] = e.target.value;
     $("#divisionCode").text('');
-    console.log(targetId);
 
     const type = this.selectedFields.type;
     const division = this.selectedFields.division;
 
+    if (targetId === 'distributor') {
+      this.getStockiest();
+      this.getDivisions();
+
+      this.delay(1000).then(any => {
+        this.getData();
+
+        this.selectedFields.type = '';
+        this.selectedFields.division = '';
+
+        $("#type").val(this.selectedFields.type);
+        $("#division").val(this.selectedFields.division);
+      });
+    }
+
     if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
-      this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+      this.getData();
 
       this.selectedFields.type = '';
       this.selectedFields.division = '';
@@ -282,7 +410,7 @@ export class FoApprovalComponent implements OnInit {
 
     if (division) {
       const div = this.divisions.filter(function (el) {
-        return el.name == division;
+        return el.division == Number(division);
       });
       const divisionCode = div[0].division;
       $("#divisionCode").text('(' + divisionCode + ')');
@@ -290,7 +418,7 @@ export class FoApprovalComponent implements OnInit {
 
     if (type && division) {
       this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type && el.divisionName == division;
+        return el.claimType == type && el.divisionId === Number(division);
       });
     } else if (type && !division) {
       this.tempRecords = this.records.filter(function (el) {
@@ -298,10 +426,18 @@ export class FoApprovalComponent implements OnInit {
       });
     } else if (!type && division) {
       this.tempRecords = this.records.filter(function (el) {
-        return el.divisionName == division;
+        return el.divisionId === Number(division);
       });
     } else if (!type && !division) {
       this.tempRecords = this.records;
+    }
+
+    if (this.tempRecords.length) {
+      this.loading = false;
+      this.showData = true;
+    } else {
+      this.loading = false;
+      this.showData = false;
     }
   }
 
@@ -346,7 +482,7 @@ export class FoApprovalComponent implements OnInit {
         let reqData = { _id: id };
         this.apiService.update('/api/claim/delete', reqData).subscribe((response: any) => {
           if (response.status === 200) {
-            this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year, type, division);
+            this.getData();
             Swal.fire(
               'Deleted!',
               'Your imaginary record has been deleted.',
@@ -374,13 +510,10 @@ export class FoApprovalComponent implements OnInit {
       cancelButtonText: 'No, keep it'
     }).then((result) => {
       if (result.value) {
-        const type = this.selectedFields.type;
-        const division = this.selectedFields.division;
-
         let reqData = { _id: file._id };
         this.apiService.update('/api/claim/deleteFile', reqData).subscribe((response: any) => {
           if (response.status === 200) {
-            this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year, type, division);
+            this.getData();
             Swal.fire(
               'Deleted!',
               'Your imaginary record has been deleted.',
@@ -435,7 +568,7 @@ export class FoApprovalComponent implements OnInit {
           this.apiService.post('/api/claim/fileUpload', images).subscribe((response: any) => {
             if (response.status === 200) {
               this.modalReference.close();
-              this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+              this.getData();
               Swal.fire(
                 'Uploaded!',
                 'Your image/file has been uploaded.',
@@ -755,42 +888,233 @@ export class FoApprovalComponent implements OnInit {
     });
   } */
 
+  /***** Division key-up functionality *****/
+  searchDivision(e) {
+    const inputVal = e.currentTarget.value;
+
+    $('#edit_division_id').val('');
+    $('#edit_product').val('');
+    $('#edit_material').val('');
+    $('#edit_batch').val('');
+    $('#edit_mrp').val(Number(0).toFixed(2));
+    $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_billingRate').val('');
+
+    this.changeCalculation(e);
+
+    if (inputVal.length) {
+      $('#edit_division_loader').show();
+      let results: any = [];
+      results = this.matchDivision(inputVal);
+
+      this.delay(10).then(any => {
+        this.divisionSuggestions(results, inputVal);
+      });
+    } else {
+      $('#edit_division_suggestion').hide();
+    }
+  }
+
+  matchDivision(str) {
+    let results = [];
+    const val = str.toLowerCase();
+
+    results = this.divisions.filter(function (d) {
+      return d.name.toLowerCase().indexOf(val) > -1;
+    });
+
+    return results;
+  }
+
+  divisionSuggestions(results, inputVal) {
+    const suggestions = document.querySelector('#edit_division_suggestion' + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.name.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#edit_division_suggestion').show();
+      $('#edit_division_loader').hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#edit_division_suggestion').hide();
+      $('#edit_division_loader').hide();
+    }
+  }
+
+  divisionSelection(e) {
+    const suggestions = document.querySelector('#edit_division_suggestion' + ' ul');
+
+    $('#edit_division').val(e.target.innerText);
+
+    let results = [];
+    results = this.divisions.filter(function (d) {
+      return d.name.toLowerCase().indexOf(e.target.innerText.toLowerCase()) > -1;
+    });
+
+    if (results.length > 1) {
+      console.log('...More then one division...', results);
+      $('#edit_division_id').val('');
+    } else {
+      $('#edit_division_id').val(results[0].division);
+    }
+
+    suggestions.innerHTML = '';
+    suggestions.classList.remove('has-suggestions');
+    $('#edit_division_suggestion').hide();
+  }
+  /***** EOF Division key-up functionality *****/
+
+  /***** Product key-up functionality *****/
+  searchProduct(e) {
+    const inputVal = e.currentTarget.value;
+
+    $('#edit_material').val('');
+    $('#edit_batch').val('');
+    $('#edit_mrp').val(Number(0).toFixed(2));
+    $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_billingRate').val('');
+
+    this.changeCalculation(e);
+
+    if (inputVal.length) {
+      $('#edit_product_loader').show();
+
+      let results: any = [];
+      results = this.matchProduct(inputVal);
+
+      this.delay(10).then(any => {
+        this.productSuggestions(results, inputVal);
+      });
+    } else {
+      $('#edit_product_suggestion').hide();
+    }
+  }
+
+  matchProduct(str) {
+    const val = str.toLowerCase();
+    const divisionId = $('#edit_division_id').val();
+
+    let results = [];
+    results = this.products.filter(element => {
+      return element.materialName.toLowerCase().indexOf(val) > -1 &&
+        element.division === Number(divisionId); /*  && 
+              element.plant === Number(plantId); */
+    });
+
+    return results;
+  }
+
+  productSuggestions(results, inputVal) {
+    const suggestions = document.querySelector('#edit_product_suggestion' + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.materialName.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#edit_product_suggestion').show();
+
+      $('#edit_product_loader').hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#edit_product_suggestion').hide();
+
+      $('#edit_product_loader').hide();
+    }
+  }
+
+  productSelection(e) {
+    let results = [];
+    results = this.products.filter(function (d) {
+      return d.materialName.toLowerCase() === e.target.innerText.toLowerCase();
+    });
+
+    let material = '';
+    if (results.length > 1) {
+      results.forEach((element, index) => {
+        if (index + 1 == results.length) {
+          material += element.material;
+        } else {
+          material += element.material + ',';
+        }
+
+      });
+    } else {
+      material = results[0].material;
+    }
+
+    const suggestions = document.querySelector('#edit_product_suggestion' + ' ul');
+    suggestions.innerHTML = '';
+    suggestions.classList.remove('has-suggestions');
+
+    $('#edit_product').val(e.target.innerText);
+    $('#edit_material').val(material);
+    $('#edit_product_suggestion').hide();
+  }
+  /***** EOF Product key-up functionality *****/
+
   /***** Batch key-up functionality *****/
   searchBatch(e) {
     const inputVal = e.currentTarget.value;
 
-    let results: any = [];
-    if (e.key != "Tab") {
-      $('#edit_division').val('');
-      $('#edit_product').val('');
-      $('#edit_material').val('');
-      $('#edit_mrp').val(Number(0).toFixed(2));
-      $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_batch').val('');
+    $('#edit_mrp').val(Number(0).toFixed(2));
+    $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_billingRate').val('');
 
-      if (inputVal.length > 2) {
-        $('#edit_batch_loader').show();
+    this.changeCalculation(e);
 
-        results = this.matchBatch(inputVal);
+    if (inputVal.length) {
+      $('#edit_batch_loader').show();
+      let results: any = [];
+      results = this.matchBatch(inputVal);
 
-        this.delay(10).then(any => {
-          this.batchSuggestions(results, inputVal);
-        });
-      } else {
-        const suggestions = document.querySelector('#edit_batch_suggestion' + ' ul');
-        suggestions.innerHTML = '';
-        suggestions.classList.remove('has-suggestions');
-        $('#edit_batch_suggestion').hide();
-      }
+      this.delay(10).then(any => {
+        this.batchSuggestions(results, inputVal);
+      });
+    } else {
+      $('#edit_batch_suggestion').hide();
     }
-    this.validateClaim();
   }
 
   matchBatch(str) {
-    let results = [];
     const val = str.toLowerCase();
+    const divisionId = $('#edit_division_id').val();
+    const productId = $('#edit_material').val();
+    const explodeProductId = productId.split(",");
 
-    results = this.batches.filter(function (d) {
-      return d.batch.toLowerCase().indexOf(val) > -1;
+    let results = [];
+    explodeProductId.forEach(element => {
+      let result = [];
+      result = this.batches.filter(element2 => {
+        return element2.material === Number(element) &&
+          element2.division === Number(divisionId) &&
+          element2.batch.toLowerCase().indexOf(val) > -1;
+      });
+
+      if (result.length) results.push(result);
     });
 
     return results;
@@ -802,11 +1126,13 @@ export class FoApprovalComponent implements OnInit {
 
     if (results.length > 0) {
       results.forEach((element, index) => {
-        // Match word from start
-        const match = element.batch.match(new RegExp('^' + inputVal, 'i'));
-        if (match) {
-          suggestions.innerHTML += `<li>${match.input}</li>`;
-        }
+        element.forEach(element2 => {
+          // Match word from start
+          const match = element2.batch.match(new RegExp('^' + inputVal, 'i'));
+          if (match) {
+            suggestions.innerHTML += `<li>${match.input}</li>`;
+          }
+        });
       });
 
       suggestions.classList.add('has-suggestions');
@@ -840,17 +1166,13 @@ export class FoApprovalComponent implements OnInit {
     const pts = (filtered.length) ? filtered[0].pts : 0;
     const ptr = (filtered.length) ? filtered[0].ptr : 0;
     const ptd = (filtered.length) ? filtered[0].ptd : 0;
-    const division = (filtered.length) ? filtered[0].division : 0;
-    const material = (filtered.length) ? filtered[0].material : 0;
+    const material = (filtered.length) ? filtered[0].material : '';
 
-    if (division) this.getBatchDivision(division);
-    if (material) this.getBatchProduct(material);
-
+    $('#edit_material').val(material);
     $('#edit_mrp').val(mrp.toFixed(2));
     $('#edit_pts').val(pts.toFixed(2));
     $('#edit_ptr').val(ptr.toFixed(2));
     $('#edit_ptd').val(ptd.toFixed(2));
-    $('#edit_material').val(material);
   }
   /***** EOF Batch key-up functionality *****/
 
@@ -864,7 +1186,7 @@ export class FoApprovalComponent implements OnInit {
     });
   }
 
-  getBatchDivision(division) {
+  /* getBatchDivision(division) {
     this.apiService.get('/api/division', division).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
@@ -883,7 +1205,7 @@ export class FoApprovalComponent implements OnInit {
         }
       }
     });
-  }
+  } */
 
   /* updateSupplyProof(e, id) {
     $('#sproof_loader_' + id).show();
@@ -926,7 +1248,7 @@ export class FoApprovalComponent implements OnInit {
     const claim = await this.getClaimById(record._id);
     if (claim) {
       if (event === 'Approve') {
-        if (claim['isFoApproved']) { 
+        if (claim['isFoApproved']) {
           Swal.fire(
             'Oops... can\'t proceed',
             'This claim has already been approved.',
@@ -954,7 +1276,7 @@ export class FoApprovalComponent implements OnInit {
         claim['foApprovedBy'] = this.loggedUserId;
         claim['foApprovedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
       } else if (event === 'Unapprove') {
-        if (claim['isFoUnapproved']) { 
+        if (claim['isFoUnapproved']) {
           Swal.fire(
             'Oops... can\'t proceed',
             'This claim has already been unapproved.',
@@ -1006,7 +1328,7 @@ export class FoApprovalComponent implements OnInit {
               $('#def_unapprovedIcon_' + record._id).hide();
               $('#approvedIcon_' + record._id).show();
               $('#unapprovedIcon_' + record._id).hide();
-  
+
               Swal.fire(
                 'Approved!',
                 'You approved the claim successfully.',
@@ -1017,7 +1339,7 @@ export class FoApprovalComponent implements OnInit {
               $('#def_unapprovedIcon_' + record._id).hide();
               $('#approvedIcon_' + record._id).hide();
               $('#unapprovedIcon_' + record._id).hide();
-  
+
               Swal.fire(
                 'Canceled!',
                 'You canceled the claim successfully.',
@@ -1035,7 +1357,7 @@ export class FoApprovalComponent implements OnInit {
           }
         });
       }
-      
+
     }
   }
 
@@ -1050,7 +1372,7 @@ export class FoApprovalComponent implements OnInit {
     const claim = await this.getClaimById(record._id);
     if (claim) {
       if (event === 'Approve') {
-        if (claim['isApproved']) { 
+        if (claim['isApproved']) {
           Swal.fire(
             'Oops... can\'t proceed',
             'This claim has already been approved.',
@@ -1124,7 +1446,7 @@ export class FoApprovalComponent implements OnInit {
           claim['purchaseOrder'] = tempPurchaseOrder;
         }
       } else if (event === 'Unapprove') {
-        if (claim['isUnapproved']) { 
+        if (claim['isUnapproved']) {
           Swal.fire(
             'Oops... can\'t proceed',
             'This claim has already been unapproved.',
@@ -1186,7 +1508,7 @@ export class FoApprovalComponent implements OnInit {
           const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
         });
       }
-      
+
       this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
         if (response.status === 200) {
           // $('#sproof_loader_' + id).hide();
@@ -1383,7 +1705,7 @@ export class FoApprovalComponent implements OnInit {
         showCancelButton: true,
         confirmButtonText: 'Yes, approve it!',
         cancelButtonText: 'No, keep it'
-      }).then(async(result) => {
+      }).then(async (result) => {
         if (result.value) {
           const allocatQty = await this.allocateQuantity(this.allotedInvoiceQty);
 
@@ -1391,7 +1713,7 @@ export class FoApprovalComponent implements OnInit {
           this.approvalClickedClaim['isUnapproved'] = false;
           this.approvalClickedClaim['approvedBy'] = this.loggedUserId;
           this.approvalClickedClaim['approvedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-      
+
           this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
             if (response.status === 200) {
               $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
@@ -1412,7 +1734,7 @@ export class FoApprovalComponent implements OnInit {
               );
             }
           });
-          
+
           this.closePopup();
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           Swal.fire(
@@ -1425,7 +1747,7 @@ export class FoApprovalComponent implements OnInit {
       });
     } else {
       const allocatQty = await this.allocateQuantity(this.allotedInvoiceQty);
-      
+
       this.approvalClickedClaim['isApproved'] = true;
       this.approvalClickedClaim['isUnapproved'] = false;
       this.approvalClickedClaim['approvedBy'] = this.loggedUserId;
@@ -1451,7 +1773,7 @@ export class FoApprovalComponent implements OnInit {
           );
         }
       });
-      
+
       this.closePopup();
     }
   }
@@ -1487,6 +1809,7 @@ export class FoApprovalComponent implements OnInit {
   editRecord(record) {
     //this.getBatch();
     $('#edit_id').val(record._id);
+    $('#edit_distributor').val(record.plant);
     $('#edit_stockiest').val(record.customerId);
     $('#edit_type').val(record.claimType);
     $('#edit_month').val(record.claimMonth);
@@ -1571,6 +1894,7 @@ export class FoApprovalComponent implements OnInit {
   async updateCommentClaim() {
     const reqData = {
       _id: $('#edit_id').val(),
+      plant: $('#edit_distributor').val(),
       customerId: $('#edit_stockiest').val(),
       claimType: $('#edit_type').val(),
       claimMonth: $('#edit_month').val(),
@@ -1660,7 +1984,7 @@ export class FoApprovalComponent implements OnInit {
         $('#edit_amount').val(amount.toFixed(2));
       }
     }
-    this.validateClaim();
+    //this.validateClaim();
   }
 
   validateClaim() {
@@ -1759,6 +2083,16 @@ export class FoApprovalComponent implements OnInit {
     }
 
     $('#edit_error').val(error);
+  }
+
+  getProduct() {
+    this.apiService.fetch('/api/product/all').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.products = response.data;
+        }
+      }
+    });
   }
 
   async updateClaim() {
