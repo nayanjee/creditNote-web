@@ -16,9 +16,23 @@
 
 <div class="main-card mb-3 card">
   <div class="card-body">
-    <!-- <form class="form" [formGroup]="myForm" (ngSubmit)="onHeaderSubmit()" autocomplete="off"> -->
-    <div class="row">
-      <div class="col-md-3">
+    <div class="row row-cols-5">
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="distributor" class="form-label fb">Distributor</label>
+          <select id="distributor" class="form-select" (change)="getStockiest()" style="display: none;">
+            <option value="" disabled hidden selected> -- Distributor -- </option>
+            <option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+              {{distributor.plant}} - {{distributor.organization | titlecase}}
+            </option>
+          </select>
+          <span id="err_distributor" class="text-danger" style="display: none;"></span>
+          <div id="distributor_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
+        </div>
+      </div>
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="stockiest" class="form-label fb">Stockiest</label>
           <select id="stockiest" class="form-select" style="display: none;">
@@ -33,7 +47,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="type" class="form-label fb">Claim Type</label>
           <select id="type" class="form-select">
@@ -45,7 +59,7 @@
           <span id="err_type" class="text-danger" style="display: none;"></span>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="month" class="form-label fb">Month</label>
           <select id="month" class="form-select" (change)="validateMonth()">
@@ -57,7 +71,7 @@
           <span id="err_month" class="text-danger" style="display: none;"></span>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="position-relative mb-3 required">
           <label for="year" class="form-label fb">Year</label>
           <select id="year" class="form-select" (change)="validateMonth()">
@@ -70,7 +84,6 @@
         </div>
       </div>
     </div>
-    <!-- </form> -->
 
     <div class="row">
       <div class="col-md-12">
@@ -110,7 +123,7 @@
                     <input type="text" class="form-control grf-def" formControlName="def_invoice" id="invoice_def"
                       [tabIndex]="1" />
                   </td>
-                  
+
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_division" id="division_def"
                       (keyup)="searchDivision($event, -1)" [tabIndex]="2" />
@@ -126,7 +139,7 @@
                     <input type="hidden" class="form-control" formControlName="def_divisionId" id="division_id_def" />
                     <input type="hidden" class="form-control" formControlName="def_plantId" id="plant_id_def" />
                   </td>
-                  
+
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_product" id="product_def"
                       (keyup)="searchProduct($event, -1)" [tabIndex]="3" />
@@ -140,6 +153,7 @@
                     </div>
 
                     <input type="hidden" class="form-control" formControlName="def_productId" id="product_id_def" />
+                    <input type="hidden" class="form-control" id="product_id_temp_def" />
                   </td>
 
                   <td class="tdpd1">
@@ -217,7 +231,8 @@
                       id="totalDifference_def" readonly />
                   </td>
                   <td class="tdpd1">
-                    <input type="text" class="form-control tc  grf-def" formControlName="def_amount" id="amount_def" readonly />
+                    <input type="text" class="form-control tc  grf-def" formControlName="def_amount" id="amount_def"
+                      readonly />
                   </td>
                   <td class="tc">
                     <input type="file" class="file-input" [accept]="requiredFileType"
@@ -241,7 +256,7 @@
                 </tr>
 
                 <!-- ADD MORE FUNCTIONALITY -->
-                <div formArrayName="claims" style="position:relative;"> 
+                <div formArrayName="claims" style="position:relative;">
                   <tr *ngFor="let claim of claims().controls; let i=index" [formGroupName]="i">
                     <td class="tdpd">
                       <input type="text" class="form-control grf-am" formControlName="invoice" id="invoice_{{i}}"
@@ -280,6 +295,7 @@
                       </div>
 
                       <input type="hidden" class="form-control" formControlName="productId" id="product_id_{{i}}" />
+                      <input type="hidden" class="form-control" id="product_id_temp_{{i}}" />
                     </td>
                     <td class="tdpd">
                       <input type="text" class="form-control grf-am" formControlName="batch" id="batch_{{i}}"
