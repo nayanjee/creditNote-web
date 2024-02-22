@@ -81,14 +81,14 @@ const routes: Routes = [
       { path: 'users/listUser', component: ListUserComponent, data: { extraParameter: 'userElementMenu' } },
       { path: 'users/edit/:userId', component: EditUserComponent, data: { extraParameter: 'userElementMenu' } },
 
-      { path: 'division/add', component: AddDivisionComponent, data: {} },
-      { path: 'division/list', component: ListDivisionComponent, data: {} },
-      { path: 'division/edit/:divisionId', component: EditDivisionComponent, data: {} },
+      { path: 'division/add', component: AddDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
+      { path: 'division/list', component: ListDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
+      { path: 'division/edit/:divisionId', component: EditDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
 
 
-      { path: 'distributor/add', component: AddDistributorComponent, data: {} },
-      { path: 'distributor/list', component: ListDistributorComponent, data: {} },
-      { path: 'distributor/edit/:distId', component: EditDistributorComponent, data: {} },
+      { path: 'distributor/add', component: AddDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
+      { path: 'distributor/list', component: ListDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
+      { path: 'distributor/edit/:distId', component: EditDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
 
       { path: 'test/test', component: TestComponent, data: { extraParameter: 'userElementMenu' } },
     ]

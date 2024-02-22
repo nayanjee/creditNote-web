@@ -18,19 +18,19 @@
         <form class="form" [formGroup]="distForm" (ngSubmit)="onSubmit()" autocomplete="off"
             enctype="multipart/form-data">
             <div class="position-relative row mb-3 required">
-                <label for="organization" class="form-label col-sm-2 col-form-label">Organization Name</label>
+                <label for="organization" class="form-label col-sm-2 col-form-label">Distributor Name</label>
                 <div class="col-sm-10">
                     <input class="form-control" formControlName="organization" id="organization"
-                        placeholder="Organization Name" type="text">
+                        placeholder="Distributor Name" type="text">
                     <span id="err_organization" class="text-danger" style="display: none;"></span>
                 </div>
             </div>
 
             <div class="position-relative row mb-3 common required">
-                <label for="Company" class="form-label col-sm-2 col-form-label">Company</label>
+                <label for="Company" class="form-label col-sm-2 col-form-label">Organization</label>
                 <div class="col-sm-10">
                     <select id="company" class="form-select" formControlName="company">
-                        <option value="" disabled selected> Company </option>
+                        <option value="" disabled selected> Organization </option>
                         <option *ngFor="let c of company" [value]="c.id">
                             {{c.name}}
                         </option>

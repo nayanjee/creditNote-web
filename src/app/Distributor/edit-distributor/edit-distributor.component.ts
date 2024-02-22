@@ -126,11 +126,11 @@ export class EditDistributorComponent implements OnInit {
     if (!organization) {
       error = true;
       $('#organization').addClass('is-invalid');
-      $('#err_organization').text('Organization is required').show();
+      $('#err_organization').text('Distributor is required').show();
     }
     else {
       $('#organization').removeClass('is-invalid');
-      $('#err_organization').text('Organization is required').hide();
+      $('#err_organization').text('Distributor is required').hide();
     }
     if (!company) {
       error = true;
@@ -139,7 +139,7 @@ export class EditDistributorComponent implements OnInit {
     }
     else {
       $('#company').removeClass('is-invalid');
-      $('#err_company').text('Status is required').hide();
+      $('#err_company').text('Company is required').hide();
     }
     if (!plant) {
       error = true;
