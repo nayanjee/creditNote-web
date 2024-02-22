@@ -19,7 +19,7 @@ export class SidebarComponent implements OnInit {
   ) {
     const sessionData = sessionStorage.getItem("laUser");
     this.loggedInUser = JSON.parse(sessionData);
-    // console.log('nayan---', this.loggedInUser);
+    console.log('nayan---', this.loggedInUser);
   }
 
   @select('config') public config$: Observable<any>;

@@ -17,8 +17,23 @@
 <div class="main-card mb-3 card">
   <div class="card-body">
     <!-- <form class="form" [formGroup]="myForm" (ngSubmit)="onHeaderSubmit()" autocomplete="off"> -->
-    <div class="row row-cols-5">
-      <div class="col">
+    <div class="row">
+      <div class="col-md-2">
+        <div class="position-relative mb-3 required">
+          <label for="distributor" class="form-label fb">Distributor</label>
+          <select id="distributor" class="form-select" (change)="filterData($event)" style="display: none;">
+            <option value="" disabled hidden selected> -- Distributor -- </option>
+            <option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+              {{distributor.plant}} - {{distributor.organization | titlecase}}
+            </option>
+          </select>
+          <span id="err_distributor" class="text-danger" style="display: none;"></span>
+          <div id="distributor_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
         <div class="position-relative mb-3 required">
           <label for="stockiest" class="form-label fb">Stockiest</label>
           <select id="stockiest" class="form-select" style="display: none;" (change)="filterData($event)">
@@ -33,7 +48,7 @@
           </div>
         </div>
       </div>
-      <div class="col">
+      <div class="col-md-2">
         <div class="position-relative mb-3 required">
           <label for="type" class="form-label fb">Claim Type</label>
           <select id="type" class="form-select" (change)="filterData($event)">
@@ -45,18 +60,18 @@
           <span id="err_type" class="text-danger" style="display: none;"></span>
         </div>
       </div>
-      <div class="col">
+      <div class="col-md-2">
         <div class="position-relative mb-3 required">
           <label for="division" class="form-label fb">Division</label>
           <select id="division" class="form-select" (change)="filterData($event)">
             <option value="" selected> -- All -- </option>
             <option *ngFor="let division of divisions" [value]="division.name">
-              {{division.name | titlecase}}
+              {{division.name}}
             </option>
           </select>
         </div>
       </div>
-      <div class="col">
+      <div class="col-md-2">
         <div class="position-relative mb-3 required">
           <label for="month" class="form-label fb">Month</label>
           <select id="month" class="form-select" (change)="validateMonth($event)">
@@ -68,7 +83,7 @@
           <span id="err_month" class="text-danger" style="display: none;"></span>
         </div>
       </div>
-      <div class="col">
+      <div class="col-md-2">
         <div class="position-relative mb-3 required">
           <label for="year" class="form-label fb">Year</label>
           <select id="year" class="form-select" (change)="validateMonth($event)">

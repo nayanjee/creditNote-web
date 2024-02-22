@@ -43,7 +43,9 @@ export class EditClaimComponent implements OnInit {
     { id: 11, name: '11 - November' },
     { id: 12, name: '12 - December' },
   ];
+
   years: any = [];
+  sessionData: any;
   currentYear: any;
   currentMonth: any;
   records: any = [];
@@ -67,6 +69,10 @@ export class EditClaimComponent implements OnInit {
     totalDifference: '0.00',
     amount: '0.00'
   };
+  distributors: any = [];
+  userDistributors: any = [];
+  userPlantStockists: any = [];
+  userPlantDivisions: any = [];
 
 
   constructor(
@@ -81,15 +87,10 @@ export class EditClaimComponent implements OnInit {
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
+    this.sessionData = sessionData;
 
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;
-
-    // Number of stockists aligned with the user
-    this.alignedStockiest = JSON.parse(sessionData).stockiest;
-    this.getStockiest();
-    this.getData();
-
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -103,21 +104,20 @@ export class EditClaimComponent implements OnInit {
       this.years.push(year);
     }
 
-    // this.delay(1000).then(any => {
-    //   // To show this data as predefined in the form
-    //   $('#type').val('scheme');
-    //   $('#month').val(parseInt(currentMonth) - 1);
-    //   $('#year').val(currentYear);
-
-    //   $("#stockiest").val($("#stockiest option:eq(1)").val());
-    //   $('#stockiest_loader').hide();
-    //   $('#stockiest').show();
-    // });
-
     this.createForm();
-    this.getBatch();
-    this.getDivision();
+    this.getDistributors();
     this.getProduct();
+    this.getBatch();
+
+    if (JSON.parse(sessionData).type === 'ho' || JSON.parse(sessionData).type === 'field') {
+      this.getUserDistStockistDivision(this.loggedUserId);
+    } else if (JSON.parse(sessionData).type === 'stockist') {
+      this.getStockistDistDivision(this.loggedUserId);
+    }
+
+    this.delay(1000).then(any => {
+      this.getData();
+    });
   }
 
   toast(typeIcon, message) {
@@ -327,9 +327,6 @@ export class EditClaimComponent implements OnInit {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
   }
 
-
-
-
   /***** Division key-up functionality *****/
   searchDivision(e, i) {
     const id = (i === -1) ? 'def' : i;
@@ -465,8 +462,6 @@ export class EditClaimComponent implements OnInit {
 
     let results = [];
 
-    console.log('xxxxxx', this.products);
-    console.log('divisionId', divisionId);
     results = this.products.filter(element => {
       return element.materialName.toLowerCase().indexOf(val) > -1 &&
         element.division === Number(divisionId); /*  && 
@@ -701,11 +696,145 @@ export class EditClaimComponent implements OnInit {
     }
   }
 
+  getDistributors() {
+    this.apiService.fetch('/api/distributor/getDistributor9000').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          // Getting a unique distributor
+          const map = new Map();
+          for (const item of response.data) {
+            if (!map.has(item.plant)) {
+              map.set(item.plant, true);
+              this.distributors.push({
+                plant: item.plant,
+                organization: item.organization
+              });
+            }
+          }
+          // EOF Getting a unique distributor
+        }
+      }
+    });
+  }
+
+  getUserDistStockistDivision(userId) {
+    this.apiService.get('/api/user/getDistStockistDivision', userId).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          response.data.forEach(element => {
+            // get user's distributor
+            const result = this.distributors.filter(element2 => {
+              return element.plant === element2.plant;
+            });
+            this.userDistributors.push(result[0]);
+            // EOF get user's distributor
+
+
+            // get user's stockist plant wise
+            this.userPlantStockists[element.plant] = element.stockists;
+
+            // get user's division plant wise
+            this.userPlantDivisions[element.plant] = element.divisions;
+          });
+        }
+      }
+    });
+  }
+
+  getStockistDistDivision(userId) {
+    this.apiService.get('/api/user/getStockistDistDivision', userId).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          response.data.forEach(element => {
+            // get user's distributor
+            const result = this.distributors.filter(element2 => {
+              return element.plant === element2.plant;
+            });
+            this.userDistributors.push(result[0]);
+            // EOF get user's distributor
+            
+            
+            // get user's stockist plant wise
+            this.userPlantStockists[element.plant] = element.customerId;
+
+            // get user's division plant wise
+            this.userPlantDivisions[element.plant] = element.divisions;
+          });
+        }
+      }
+    });
+  }
+
+  getDivisions() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#distributor option:selected").val();
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+    
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.divisions = response.data;
+        }
+      }
+    });
+  }
+
   getStockiest() {
-    this.apiService.post('/api/getStockiest', this.alignedStockiest).subscribe((response: any) => {
+    let stockists = [];
+    const distributor = $("#distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+    
+    if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
+      stockist.forEach(element => {
+        stockists.push(Number(element));
+      });
+    } else if (JSON.parse(this.sessionData).type === 'stockist') {
+      stockists.push(Number(stockist));
+    }
+
+    this.getDivisions();
+    
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+          });
+        }
+      }
+    });
+  }
+
+  getStockiest2(distributor, stockiest) {
+    let stockists = [];
+    const stockist = this.userPlantStockists[distributor];
+    
+    if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
+      stockist.forEach(element => {
+        stockists.push(Number(element));
+      });
+    } else if (JSON.parse(this.sessionData).type === 'stockist') {
+      stockists.push(Number(stockist));
+    }
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#stockiest").val(stockiest);
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+          });
         }
       }
     });
@@ -716,17 +845,6 @@ export class EditClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.batches = response.data;
-        }
-      }
-    });
-  }
-
-  getDivision() {
-    this.apiService.fetch('/api/division/all').subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.divisions = response.data;
-          // console.log('division---', this.divisions);
         }
       }
     });
@@ -794,6 +912,7 @@ export class EditClaimComponent implements OnInit {
     }
     // EOF Month validation
 
+    const distributor = $("#distributor option:selected").val();
     const stockiest = $("#stockiest option:selected").val();
     const claimType = $("#type option:selected").val();
     const ClaimMonth = $("#month option:selected").val();
@@ -803,7 +922,7 @@ export class EditClaimComponent implements OnInit {
       const reg = /^\d*\.?\d*$/;    // RegEx for number and decimal value
       const rowId = (row === -1) ? 'def' : row;
 
-      const header = stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.loggedUserId;
+      const header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.loggedUserId;
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
       const division = $('#division_' + rowId).val();
@@ -815,7 +934,7 @@ export class EditClaimComponent implements OnInit {
       const ptr = $('#ptr_' + rowId).val();
       const ptd = $('#ptd_' + rowId).val();
       const billingRate = $('#billingRate_' + rowId).val();
-      const margin = $('#margin_' + rowId).val();
+      //const margin = $('#margin_' + rowId).val();
       const freeQuantity = $('#freeQuantity_' + rowId).val();
       const saleQuantity = $('#saleQuantity_' + rowId).val();
       const difference = $('#difference_' + rowId).val();
@@ -899,7 +1018,7 @@ export class EditClaimComponent implements OnInit {
         this.claimForm.value.def_ptr = ptr;
         this.claimForm.value.def_ptd = ptd;
         this.claimForm.value.def_billingRate = billingRate;
-        this.claimForm.value.def_margin = margin;
+        //this.claimForm.value.def_margin = margin;
         this.claimForm.value.def_freeQuantity = freeQuantity;
         this.claimForm.value.def_saleQuantity = saleQuantity;
         this.claimForm.value.def_difference = difference;
@@ -926,7 +1045,7 @@ export class EditClaimComponent implements OnInit {
         this.claimForm.value.claims[row].ptr = ptr;
         this.claimForm.value.claims[row].ptd = ptd;
         this.claimForm.value.claims[row].billingRate = billingRate;
-        this.claimForm.value.claims[row].margin = margin;
+        //this.claimForm.value.claims[row].margin = margin;
         this.claimForm.value.claims[row].freeQuantity = freeQuantity;
         this.claimForm.value.claims[row].saleQuantity = saleQuantity;
         this.claimForm.value.claims[row].difference = difference;
@@ -935,8 +1054,6 @@ export class EditClaimComponent implements OnInit {
         this.claimForm.value.claims[row].header = header;
       }
     }
-    console.log(this.claimForm.value);
-    //return false;
 
     this.apiService.post('/api/claim/update', this.claimForm.value).subscribe((response: any) => {
       if (response.status === 200) {
@@ -953,11 +1070,13 @@ export class EditClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.records = response.data[0];
-          console.log('this.records--', this.records);
 
-          $("#stockiest").val(this.records.customerId);
-          $('#stockiest_loader').hide();
-          $('#stockiest').show();
+          $("#distributor").val(this.records.plant);
+          $('#distributor_loader').hide();
+          $('#distributor').show();
+
+          this.getDivisions();
+          this.getStockiest2(this.records.plant, this.records.customerId);
 
           $('#type').val(this.records.claimType);
           $('#month').val(this.records.claimMonth);
@@ -993,8 +1112,8 @@ export class EditClaimComponent implements OnInit {
           this.claimForm.controls['def_billingRate'].setValue(this.records.billingRate, { onlySelf: true });
           this.claimForm.value.def_billingRate = this.records.billingRate;
 
-          this.claimForm.controls['def_margin'].setValue(this.records.margin, { onlySelf: true });
-          this.claimForm.value.def_margin = this.records.margin;
+          // this.claimForm.controls['def_margin'].setValue(this.records.margin, { onlySelf: true });
+          // this.claimForm.value.def_margin = this.records.margin;
 
           this.claimForm.controls['def_freeQuantity'].setValue(this.records.freeQuantity, { onlySelf: true });
           this.claimForm.value.def_freeQuantity = this.records.freeQuantity;

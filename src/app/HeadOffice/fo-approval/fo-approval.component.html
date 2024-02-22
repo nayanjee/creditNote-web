@@ -27,7 +27,23 @@
 
 <div class="main-card mb-3 card">
   <div class="card-body">
-    <div class="row row-cols-5">
+    <!-- <div class="row row-cols-5"> -->
+    <div class="row">
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="distributor" class="form-label fb">Distributor</label>
+          <select id="distributor" class="form-select" (change)="filterData($event)" style="display: none;">
+            <option value="" disabled hidden selected> -- Distributor -- </option>
+            <option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+              {{distributor.plant}} - {{distributor.organization | titlecase}}
+            </option>
+          </select>
+          <span id="err_distributor" class="text-danger" style="display: none;"></span>
+          <div id="distributor_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
+        </div>
+      </div>
       <div class="col">
         <div class="position-relative mb-3 required">
           <label for="stockiest" class="form-label fb">
@@ -67,7 +83,7 @@
           </label>
           <select id="division" class="form-select" (change)="filterData($event)">
             <option value="" selected> -- All -- </option>
-            <option *ngFor="let division of divisions" [value]="division.name">
+            <option *ngFor="let division of divisions" [value]="division.division">
               {{division.name | titlecase}}
             </option>
           </select>
@@ -148,13 +164,17 @@
                   style="display: none;"></div>
                 <div id="unapprovedIcon_{{record._id}}" title="Un-Approved" class="wpseo-score-icon bad"
                   style="display: none;"></div> -->
-                
 
-                <i *ngIf="record.isFoApproved" id="def_approvedIcon_{{record._id}}" title="Accepted" class="pe-7s-check icon-gradient bg-grow-early-np npicon"></i>
-                <i *ngIf="record.isFoUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Rejected" class="pe-7s-check icon-gradient bg-ripe-malin-np npicon"></i>
 
-                <i id="approvedIcon_{{record._id}}" title="Accepted" class="pe-7s-check icon-gradient bg-grow-early-np npicon" style="display: none;"></i>
-                <i id="unapprovedIcon_{{record._id}}" title="Rejected" class="pe-7s-check icon-gradient bg-ripe-malin-np npicon" style="display: none;"></i>
+                <i *ngIf="record.isFoApproved" id="def_approvedIcon_{{record._id}}" title="Accepted"
+                  class="pe-7s-check icon-gradient bg-grow-early-np npicon"></i>
+                <i *ngIf="record.isFoUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Rejected"
+                  class="pe-7s-check icon-gradient bg-ripe-malin-np npicon"></i>
+
+                <i id="approvedIcon_{{record._id}}" title="Accepted"
+                  class="pe-7s-check icon-gradient bg-grow-early-np npicon" style="display: none;"></i>
+                <i id="unapprovedIcon_{{record._id}}" title="Rejected"
+                  class="pe-7s-check icon-gradient bg-ripe-malin-np npicon" style="display: none;"></i>
 
                 <!-- <i title="star" class="pe-7s-star icon-gradient bg-grow-early-np npicon"></i>
                 <i title="star" class="pe-7s-star icon-gradient bg-ripe-malin-np npicon"></i> -->
@@ -182,14 +202,15 @@
               <td class="border-right tc">{{record.difference | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.totalDifference | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.amount | number : '1.2-2'}}</td>
-              
+
               <td class="tc">
                 <span class="option-icon pe-7s-check iconpe_green" title="Accept"
                   (click)="validateFoApproval(record, 'Approve')"></span>
                 <span class="option-icon pe-7s-close-circle iconpe_red" title="Reject"
                   (click)="validateFoApproval(record, 'Unapprove')"></span>
                 <span class="option-icon pe-7s-edit iconpe_blue" title="Edit" (click)="editRecord(record)"></span>
-                <span class="option-icon pe-7s-global iconpe_purp" title="Cancel" (click)="validateFoApproval(record, 'Cancel')"></span>
+                <span class="option-icon pe-7s-global iconpe_purp" title="Cancel"
+                  (click)="validateFoApproval(record, 'Cancel')"></span>
               </td>
             </tr>
           </table>
@@ -302,7 +323,18 @@
         </div>
         <div class="modal-body">
           <div class="row">
-            <div class="col-md-3">
+            <div class="col">
+              <div class="position-relative mb-3 required">
+                <label for="edit_distributor" class="form-label fb">Distributor</label>
+                <select id="edit_distributor" class="form-select" (change)="getStockiest_edit()">
+                  <option value="" disabled hidden selected> -- Distributor -- </option>
+                  <option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+                    {{distributor.plant}} - {{distributor.organization | titlecase}}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
               <div class="position-relative mb-3 required">
                 <label for="edit_stockiest" class="form-label fb">Stockiest</label>
                 <select id="edit_stockiest" class="form-select" [tabIndex]="1" (change)="validateClaim()">
@@ -313,7 +345,7 @@
                 </select>
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col">
               <div class="position-relative mb-3 required">
                 <label for="edit_type" class="form-label fb">Claim Type</label>
                 <select id="edit_type" class="form-select" [tabIndex]="2" (change)="validateClaim()">
@@ -324,7 +356,7 @@
                 </select>
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col">
               <div class="position-relative mb-3 required">
                 <label for="edit_month" class="form-label fb">Month</label>
                 <select id="edit_month" class="form-select" [tabIndex]="3" (change)="validateClaim()">
@@ -335,7 +367,7 @@
                 </select>
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col">
               <div class="position-relative mb-3 required">
                 <label for="edit_year" class="form-label fb">Year</label>
                 <select id="edit_year" class="form-select" [tabIndex]="4" (change)="validateClaim()">
@@ -351,13 +383,13 @@
             <table class="table" id="table1">
               <tr>
                 <th class="td-head">Ref. No.</th>
-                <th class="td-head">Batch</th>
                 <th class="td-head">Division</th>
                 <th class="td-head">Product</th>
-                <th class="td-head">Material</th>
+                <!-- <th class="td-head">Material</th> -->
+                <th class="td-head">Batch</th>
                 <th class="td-head">MRP</th>
                 <th class="td-head">PTS</th>
-                <th class="td-head">Margin</th>
+                <!-- <th class="td-head">Margin</th> -->
                 <th class="td-head">Billing Rate</th>
                 <th class="td-head">Free QTY</th>
                 <th class="td-head">Sale QTY</th>
@@ -371,6 +403,33 @@
                     (change)="validateClaim()" />
                 </td>
                 <td>
+                  <input type="text" class="form-control grf-am" id="edit_division" (keyup)="searchDivision($event)" />
+                  <img style="float:right;" id="edit_division_loader" src="./../../../assets/images/btn_loader.gif"
+                    style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                  <div class="suggestions" id="edit_division_suggestion" (click)="divisionSelection($event)"
+                    style="display: none;">
+                    <ul></ul>
+                  </div>
+
+                  <input type="hidden" id="edit_division_id" />
+                </td>
+                <td>
+                  <input type="text" class="form-control grf-am" id="edit_product" (keyup)="searchProduct($event)" />
+                  <img style="float:right;" id="edit_product_loader" src="./../../../assets/images/btn_loader.gif"
+                    style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                  <div class="suggestions" id="edit_product_suggestion" (click)="productSelection($event)"
+                    style="left: 18%; display: none;">
+                    <ul></ul>
+                  </div>
+
+                  <input type="hidden" id="edit_material" />
+                </td>
+                <!-- <td>
+                  <input type="text" class="form-control grf-am" id="edit_material" disabled />
+                </td> -->
+                <td>
                   <input type="text" class="form-control grf-am" id="edit_batch" [tabIndex]="6"
                     (keyup)="searchBatch($event)" autocomplete="off" />
 
@@ -378,18 +437,9 @@
                     style="position: absolute; margin: -35px 0 0 65px; display: none;" />
 
                   <div class="suggestions" id="edit_batch_suggestion" (click)="batchSelection($event)"
-                    style="left: 9%; display: none;">
+                    style="left: 26%; display: none;">
                     <ul></ul>
                   </div>
-                </td>
-                <td>
-                  <input type="text" class="form-control grf-am" id="edit_division" disabled />
-                </td>
-                <td>
-                  <input type="text" class="form-control grf-am" id="edit_product" disabled />
-                </td>
-                <td>
-                  <input type="text" class="form-control grf-am" id="edit_material" disabled />
                 </td>
                 <td>
                   <input type="text" class="form-control grf-am" id="edit_mrp" disabled />
@@ -398,11 +448,12 @@
                   <input type="text" class="form-control grf-am" id="edit_pts" disabled />
                   <input type="hidden" class="form-control grf-am" id="edit_ptr" />
                   <input type="hidden" class="form-control grf-am" id="edit_ptd" />
+                  <input type="hidden" class="form-control grf-am" id="edit_margin" />
                 </td>
-                <td>
+                <!-- <td>
                   <input type="text" class="form-control grf-am" id="edit_margin" [tabIndex]="8"
                     (keyup)="changeCalculation($event)" />
-                </td>
+                </td> -->
                 <td>
                   <input type="text" class="form-control grf-am" id="edit_billingRate" [tabIndex]="7"
                     (keyup)="changeCalculation($event)" />
@@ -478,8 +529,10 @@
           </div>
         </div>
         <div class="modal-footer" style="padding: 5px 15px;">
-          <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateCommentClaim()"> Update Now </button>
-          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeUpdateCommentModal()"> Close </button>
+          <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateCommentClaim()"> Update Now
+          </button>
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeUpdateCommentModal()"> Close
+          </button>
         </div>
       </div>
     </div>
