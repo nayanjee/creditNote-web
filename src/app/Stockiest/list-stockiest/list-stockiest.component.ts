@@ -6,31 +6,28 @@ import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@ang
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { AppServicesService } from './../../shared/service/app-services.service';
-
 declare var $: any;
 @Component({
-  selector: 'app-list-user',
-  templateUrl: './list-user.component.html',
-  styleUrls: ['./list-user.component.css']
+  selector: 'app-list-stockiest',
+  templateUrl: './list-stockiest.component.html',
+  styleUrls: ['./list-stockiest.component.css']
 })
-export class ListUserComponent implements OnInit {
+export class ListStockiestComponent implements OnInit {
 
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Add / Create User';
-  subheading = 'Create a user / stockist';
+  heading = 'Add / Create Stockiest';
+  subheading = 'Create a Stockiest';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
-
+  loading = false;
 
   loggedUserId: any = '';
-  users: any = [];
+  stockiest: any = [];
   dtOptions: DataTables.Settings = {};
   constructor(private router: Router,
     private fb: FormBuilder,
     private activatedRoute: ActivatedRoute,
-    private apiService: AppServicesService) {
-
-  }
+    private apiService: AppServicesService) { }
 
   ngOnInit(): void {
     const sessionData = sessionStorage.getItem("laUser");
@@ -41,25 +38,23 @@ export class ListUserComponent implements OnInit {
     this.dtOptions = {
       pagingType: 'full_numbers'
     };
-    this.getallusers();
+    this.getallstockiest();
   }
-
-  addNewUser() {
-    this.router.navigateByUrl('/users/addUser');
+  addNewStockiest() {
+    this.router.navigateByUrl('/stockiest/add');
   }
-  getallusers() {
-
-    this.apiService.fetch('/api/user/all').subscribe((response: any) => {
+  getallstockiest() {
+    this.loading = true;
+    this.apiService.fetch('/api/stockiest/all').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           //this.temp = [...response.data];
-          this.users = response.data;
+          this.stockiest = response.data;
+
 
         }
+        this.loading = false;
       }
     });
-
   }
-
-
 }

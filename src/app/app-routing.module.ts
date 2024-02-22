@@ -23,6 +23,9 @@ import { AddClaimComponent } from './Stockiest/add-claim/add-claim.component';
 import { EditClaimComponent } from './Stockiest/edit-claim/edit-claim.component';
 import { DraftClaimComponent } from './Stockiest/draft-claim/draft-claim.component';
 import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.component';
+import { ListStockiestComponent } from './Stockiest/list-stockiest/list-stockiest.component';
+import { AddStockiestComponent } from './Stockiest/add-stockiest/add-stockiest.component';
+import { EditStockiestComponent } from './Stockiest/edit-stockiest/edit-stockiest.component';
 
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
@@ -34,10 +37,15 @@ import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
 
 import { AddUserComponent } from './Users/add-user/add-user.component';
 import { ListUserComponent } from './Users/list-user/list-user.component';
+import { EditUserComponent } from './Users/edit-user/edit-user.component';
 
 import { AddDivisionComponent } from './Division/add-division/add-division.component';
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
 import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
+
+import { AddDistributorComponent } from './Distributor/add-distributor/add-distributor.component';
+import { EditDistributorComponent } from './Distributor/edit-distributor/edit-distributor.component';
+import { ListDistributorComponent } from './Distributor/list-distributor/list-distributor.component';
 
 import { TestComponent } from './Test/test.component';
 const routes: Routes = [
@@ -53,6 +61,9 @@ const routes: Routes = [
       { path: 'stockiest/updateClaim/:claimId', component: EditClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/draftClaim', component: DraftClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/claimStatus', component: ClaimStatusComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/add', component: AddStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/edit/:stockiestId', component: EditStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/list', component: ListStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
 
       { path: 'headoffice/stockiestClaim', component: StockiestClaimComponent, data: { extraParameter: 'hoElementsMenu' } },
       { path: 'headoffice/claimApproval/:month/:stockiest/:year/:type/:invoice', component: ClaimApprovalComponent, data: { extraParameter: 'hoElementsMenu' } },
@@ -68,11 +79,16 @@ const routes: Routes = [
 
       { path: 'users/addUser', component: AddUserComponent, data: { extraParameter: 'userElementMenu' } },
       { path: 'users/listUser', component: ListUserComponent, data: { extraParameter: 'userElementMenu' } },
+      { path: 'users/edit/:userId', component: EditUserComponent, data: { extraParameter: 'userElementMenu' } },
+
+      { path: 'division/add', component: AddDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
+      { path: 'division/list', component: ListDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
+      { path: 'division/edit/:divisionId', component: EditDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
 
 
-      { path: 'division/add', component: AddDivisionComponent, data: {} },
-      { path: 'division/list', component: ListDivisionComponent, data: {} },
-      { path: 'division/edit/:divisionId', component: EditDivisionComponent, data: {} },
+      { path: 'distributor/add', component: AddDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
+      { path: 'distributor/list', component: ListDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
+      { path: 'distributor/edit/:distId', component: EditDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
 
       { path: 'test/test', component: TestComponent, data: { extraParameter: 'userElementMenu' } },
     ]

@@ -74,6 +74,13 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { AddDivisionComponent } from './Division/add-division/add-division.component';
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
 import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
+import { EditUserComponent } from './Users/edit-user/edit-user.component';
+import { EditStockiestComponent } from './Stockiest/edit-stockiest/edit-stockiest.component';
+import { AddStockiestComponent } from './Stockiest/add-stockiest/add-stockiest.component';
+import { ListStockiestComponent } from './Stockiest/list-stockiest/list-stockiest.component';
+import { AddDistributorComponent } from './Distributor/add-distributor/add-distributor.component';
+import { ListDistributorComponent } from './Distributor/list-distributor/list-distributor.component';
+import { EditDistributorComponent } from './Distributor/edit-distributor/edit-distributor.component';
 
 
 
@@ -115,7 +122,14 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     TestComponent,
     AddDivisionComponent,
     ListDivisionComponent,
-    EditDivisionComponent
+    EditDivisionComponent,
+    EditUserComponent,
+    EditStockiestComponent,
+    AddStockiestComponent,
+    ListStockiestComponent,
+    AddDistributorComponent,
+    ListDistributorComponent,
+    EditDistributorComponent
 
 
   ],

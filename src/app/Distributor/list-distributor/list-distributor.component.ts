@@ -6,31 +6,28 @@ import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@ang
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { AppServicesService } from './../../shared/service/app-services.service';
-
 declare var $: any;
-@Component({
-  selector: 'app-list-user',
-  templateUrl: './list-user.component.html',
-  styleUrls: ['./list-user.component.css']
-})
-export class ListUserComponent implements OnInit {
 
+@Component({
+  selector: 'app-list-distributor',
+  templateUrl: './list-distributor.component.html',
+  styleUrls: ['./list-distributor.component.css']
+})
+export class ListDistributorComponent implements OnInit {
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Add / Create User';
-  subheading = 'Create a user / stockist';
+  heading = 'Add / Create Distributor';
+  subheading = 'Create a Distributor';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
-
+  loading = false;
 
   loggedUserId: any = '';
-  users: any = [];
+  distributors: any = [];
   dtOptions: DataTables.Settings = {};
   constructor(private router: Router,
     private fb: FormBuilder,
     private activatedRoute: ActivatedRoute,
-    private apiService: AppServicesService) {
-
-  }
+    private apiService: AppServicesService) { }
 
   ngOnInit(): void {
     const sessionData = sessionStorage.getItem("laUser");
@@ -41,25 +38,26 @@ export class ListUserComponent implements OnInit {
     this.dtOptions = {
       pagingType: 'full_numbers'
     };
-    this.getallusers();
+    this.getalldistributors();
   }
-
-  addNewUser() {
-    this.router.navigateByUrl('/users/addUser');
+  addNewDistributor() {
+    this.router.navigateByUrl('/distributor/add');
   }
-  getallusers() {
-
-    this.apiService.fetch('/api/user/all').subscribe((response: any) => {
+  getalldistributors() {
+    this.loading = true;
+    this.apiService.fetch('/api/distributor/all').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           //this.temp = [...response.data];
-          this.users = response.data;
+          this.distributors = response.data;
+
 
         }
+        this.loading = false;
       }
     });
-
   }
+
 
 
 }
