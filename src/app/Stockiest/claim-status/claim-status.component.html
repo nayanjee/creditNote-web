@@ -20,6 +20,21 @@
     <div class="row">
       <div class="col">
         <div class="position-relative mb-3 required">
+          <label for="distributor" class="form-label fb">Distributor</label>
+          <select id="distributor" class="form-select" (change)="getStockiest()" style="display: none;">
+            <option value="" disabled hidden selected> -- Distributor -- </option>
+            <option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+              {{distributor.plant}} - {{distributor.organization | titlecase}}
+            </option>
+          </select>
+          <span id="err_distributor" class="text-danger" style="display: none;"></span>
+          <div id="distributor_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="position-relative mb-3 required">
           <label for="stockiest" class="form-label fb">Stockiest</label>
           <select id="stockiest" class="form-select" style="display: none;">
             <option value="" disabled hidden selected> -- Stockiest -- </option>
@@ -187,9 +202,6 @@
       <div class="modal-footer">
         <button type="button" class="mt-1 btn btn-warning" (click)="newTab(clickedFile)" style="padding: 6px 30px;">Open
           in new tab</button>
-
-        <button type="button" class="mt-1 btn btn-danger" (click)="confirmBoxDeleteFile(clickedFile)"
-          style="padding: 6px 30px;">Delete</button>
 
         <button type="button" class="btn btn-secondary" (click)="c('Close click')"
           style="padding: 6px 30px;">Close</button>

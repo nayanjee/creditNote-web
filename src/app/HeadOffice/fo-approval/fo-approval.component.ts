@@ -22,15 +22,13 @@ export class FoApprovalComponent implements OnInit {
 
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Field Officer Approval';
-  subheading = 'Approve claim sent by stockist.';
+  heading = 'Approval';
+  subheading = 'To approve the claim sent by the stockist.';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
 
-  claimForm: FormGroup;
   loading = true;
   showData = true;
   submitted = false;
-  btnLoader = false;
   selectedYear: any;
   selectedMonth: any;
 
@@ -70,8 +68,8 @@ export class FoApprovalComponent implements OnInit {
   uploadFile: any;
   tempRecords: any = [];
   sessionData: any = '';
-  loggedUserId: any = '';
   selectedFields: any = [];
+  divisions_edit: any = [];
   alignedStockiest: any = [];
   requiredFileType: string;
   pdfSource: string = '';
@@ -86,6 +84,7 @@ export class FoApprovalComponent implements OnInit {
   userDistributors: any = [];
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
+  clickedRecord: any = [];
 
   constructor(
     private router: Router,
@@ -100,10 +99,9 @@ export class FoApprovalComponent implements OnInit {
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
-    this.sessionData = sessionData;
+    this.sessionData = JSON.parse(sessionData);
 
-    // Logged-in user id
-    this.loggedUserId = JSON.parse(sessionData).id;
+    this.heading = this.sessionData.type === 'ho' ? 'HO Approval' : 'Field Approval';
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -159,7 +157,7 @@ export class FoApprovalComponent implements OnInit {
     this.getCategories();
     this.getProduct();
     this.getBatch();
-    this.getUserDistStockistDivision(this.loggedUserId);
+    this.getUserDistStockistDivision();
   }
 
   toast(typeIcon, message) {
@@ -213,8 +211,8 @@ export class FoApprovalComponent implements OnInit {
     });
   }
 
-  getUserDistStockistDivision(userId) {
-    this.apiService.get('/api/user/getDistStockistDivision', userId).subscribe((response: any) => {
+  getUserDistStockistDivision() {
+    this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           response.data.forEach(element => {
@@ -228,7 +226,6 @@ export class FoApprovalComponent implements OnInit {
 
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.stockists;
-            console.log(element.stockists);
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
@@ -246,12 +243,10 @@ export class FoApprovalComponent implements OnInit {
       stockists.push(Number(element));
     });
 
-
     this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
-          console.log(this.stockiests);
 
           this.delay(5).then(any => {
             $("#stockiest").val($("#stockiest option:eq(1)").val());
@@ -266,34 +261,11 @@ export class FoApprovalComponent implements OnInit {
     });
   }
 
-  getStockiest_edit() {
-    let stockists = [];
-    const distributor = $("#edit_distributor option:selected").val();
-    const stockist = this.userPlantStockists[distributor];
-    stockist.forEach(element => {
-      stockists.push(Number(element));
-    });
-
-
-    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.stockiests = response.data;
-
-          this.delay(5).then(any => {
-            $("#stockiest").val($("#stockiest option:eq(1)").val());
-            $('#stockiest_loader').hide();
-            $('#stockiest').show();
-          });
-        }
-      }
-    });
-  }
-
   getDivisions() {
     let divisions = [];
     this.divisions = [];
     const distributor = $("#distributor option:selected").val();
+    console.log(distributor);
     const division = this.userPlantDivisions[distributor];
     division.forEach(element => {
       divisions.push(Number(element));
@@ -303,6 +275,48 @@ export class FoApprovalComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
+          this.divisions_edit = response.data;
+        }
+      }
+    });
+  }
+
+  getStockiest_edit() {
+    let stockists = [];
+    const distributor = $("#edit_distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+    stockist.forEach(element => {
+      stockists.push(Number(element));
+    });
+
+    this.getDivisions_edit();
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#edit_stockiest").val($("#edit_stockiest option:eq(1)").val());
+          });
+        }
+      }
+    });
+  }
+
+  getDivisions_edit() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#edit_distributor option:selected").val();
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.divisions_edit = response.data;
         }
       }
     });
@@ -442,7 +456,6 @@ export class FoApprovalComponent implements OnInit {
   }
 
   viewPopup(content, data, invoice, id) {
-    console.log('content--', content, typeof content);
     this.pdfSource = '';
     this.clickedFile = data;
     this.clickedFile.invoice = invoice;
@@ -451,7 +464,6 @@ export class FoApprovalComponent implements OnInit {
       this.pdfSource = this.apiURL + '/uploads/files/' + this.clickedFile.filename;
     }
 
-    console.log(this.clickedFile);
     /* this.modalService.open(content, {
       size: 'lg'
     }); */
@@ -561,7 +573,7 @@ export class FoApprovalComponent implements OnInit {
               claimId: id,
               filename: element.filename,
               originalFilename: element.originalname,
-              createdBy: this.loggedUserId
+              createdBy: this.sessionData.id
             }
             images.push(img);
           });
@@ -632,7 +644,7 @@ export class FoApprovalComponent implements OnInit {
           _id: element._id,
           isDraft: false,
           isSubmit: true,
-          submittedBy: this.loggedUserId,
+          submittedBy: this.sessionData.id,
           submittedOn: moment().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
         };
         reqData.push(temp);
@@ -640,7 +652,6 @@ export class FoApprovalComponent implements OnInit {
       });
 
       this.apiService.post('/api/claim/submit', reqData).subscribe((response: any) => {
-        console.log('resp--', response);
         if (response.status === 200) {
           this.toast('success', 'Successfully submitted.');
           setTimeout(() => {
@@ -667,7 +678,6 @@ export class FoApprovalComponent implements OnInit {
 
     let results: any = [];
     const id = (i === -1) ? 'def' : i;
-    console.log('len--', inputVal.length, e.key);
 
     if (e.key != "Tab") {
       if (inputVal.length) {
@@ -714,7 +724,6 @@ export class FoApprovalComponent implements OnInit {
         }
       });
 
-      console.log('results--', matches);
       // Put value in textbox directly if there is only one match
       if (matches.length == 0) {
         $('#particulars_' + id).val('');
@@ -747,7 +756,6 @@ export class FoApprovalComponent implements OnInit {
 
     $('#particulars_' + id).val(e.target.innerText);
     //$('#division_def').focus();
-    console.log(e.target.innerText);
 
     suggestions.innerHTML = '';
     suggestions.classList.remove('has-suggestions');
@@ -862,7 +870,6 @@ export class FoApprovalComponent implements OnInit {
 
     $('#category_' + id).val(e.target.innerText);
     //$('#division_def').focus();
-    console.log(e.target.innerText);
 
     suggestions.innerHTML = '';
     suggestions.classList.remove('has-suggestions');
@@ -918,8 +925,7 @@ export class FoApprovalComponent implements OnInit {
   matchDivision(str) {
     let results = [];
     const val = str.toLowerCase();
-
-    results = this.divisions.filter(function (d) {
+    results = this.divisions_edit.filter(function (d) {
       return d.name.toLowerCase().indexOf(val) > -1;
     });
 
@@ -1247,14 +1253,65 @@ export class FoApprovalComponent implements OnInit {
 
     const claim = await this.getClaimById(record._id);
     if (claim) {
+      if (this.sessionData.type === 'field' && this.sessionData.workType === 'field' && claim['suhStatus'] != 0) {
+        Swal.fire(
+          'Sorry',
+          'Further process has been done on this claim so you cannot take any action now.',
+          'error'
+        );
+        return;
+      } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh' && claim['hoStatus'] != 0) {
+        Swal.fire(
+          'Sorry',
+          'Further process has been done on this claim so you cannot take any action now.',
+          'error'
+        );
+        return;
+      }
+
       if (event === 'Approve') {
-        if (claim['isFoApproved']) {
-          Swal.fire(
-            'Oops... can\'t proceed',
-            'This claim has already been approved.',
-            'error'
-          );
-          return;
+        if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+          if (claim['ftStatus'] === 1) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been accepted.',
+              'error'
+            );
+            return;
+          } else {
+            claim['ftStatus'] = 1;
+            claim['ftApprovalComment'] = null;
+            claim['ftActionBy'] = this.sessionData.id;
+            claim['ftActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
+        } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+          if (claim['ftStatus'] === 0) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'Claim has not been accepted or rejected by the field team.',
+              'error'
+            );
+            return;
+          } else if (claim['ftStatus'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'Claim has been rejected by the field team.',
+              'error'
+            );
+            return;
+          } else if (claim['suhStatus'] === 1) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been accepted.',
+              'error'
+            );
+            return;
+          } else {
+            claim['suhStatus'] = 1;
+            claim['suhApprovalComment'] = null;
+            claim['suhActionBy'] = this.sessionData.id;
+            claim['suhActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
         }
 
         if (!claim['claimType']) { errors = errors + "Enter claim type.<br>"; }
@@ -1270,29 +1327,44 @@ export class FoApprovalComponent implements OnInit {
         } else if (claim['billingRate'] && !claim['saleQuantity']) {
           errors = errors + "Enter sale quantity.<br>";
         }
-
-        claim['isFoApproved'] = true;
-        claim['isFoUnapproved'] = false;
-        claim['foApprovedBy'] = this.loggedUserId;
-        claim['foApprovedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
       } else if (event === 'Unapprove') {
-        if (claim['isFoUnapproved']) {
-          Swal.fire(
-            'Oops... can\'t proceed',
-            'This claim has already been unapproved.',
-            'error'
-          );
-          return;
+        if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+          if (claim['ftStatus'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been rejected.',
+              'error'
+            );
+            return;
+          } else {
+            claim['ftStatus'] = 2;
+            claim['ftActionBy'] = this.sessionData.id;
+            claim['ftActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
+        } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+          if (claim['ftStatus'] === 0) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'Claim has not been accepted or rejected by the field team.',
+              'error'
+            );
+            return;
+          } else if (claim['suhStatus'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been rejected.',
+              'error'
+            );
+            return;
+          } else {
+            claim['suhStatus'] = 2;
+            claim['suhActionBy'] = this.sessionData.id;
+            claim['suhActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
         }
-
-        claim['isFoApproved'] = false;
-        claim['isFoUnapproved'] = true;
-        claim['foUnapprovedBy'] = this.loggedUserId;
-        claim['foUnapprovedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-      } else if (event === 'Cancel') {
-        claim['isFoApproved'] = false;
-        claim['isFoUnapproved'] = false;
-      }
+      }/*  else if (event === 'Cancel') {
+        claim['ftStatus'] = 0;
+      } */
     } else {
       errors = errors + "Clam doesn't exists.<br>";
     }
@@ -1309,8 +1381,6 @@ export class FoApprovalComponent implements OnInit {
         confirmButtonAriaLabel: 'Thumbs up, great!'
       })
     } else {
-      //this.approvalClickedClaim = claim;
-      console.log('claim---', claim);
       if (event === 'Unapprove') {
         $('#comments').val('');
 
@@ -1321,9 +1391,7 @@ export class FoApprovalComponent implements OnInit {
       } else {
         this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
           if (response.status === 200) {
-            // $('#sproof_loader_' + id).hide();
             if (event === 'Approve') {
-              //this.getRemaining(claim);
               $('#def_approvedIcon_' + record._id).hide();
               $('#def_unapprovedIcon_' + record._id).hide();
               $('#approvedIcon_' + record._id).show();
@@ -1334,7 +1402,7 @@ export class FoApprovalComponent implements OnInit {
                 'You approved the claim successfully.',
                 'success'
               );
-            } else if (event === 'Cancel') {
+            }/*  else if (event === 'Cancel') {
               $('#def_approvedIcon_' + record._id).hide();
               $('#def_unapprovedIcon_' + record._id).hide();
               $('#approvedIcon_' + record._id).hide();
@@ -1345,10 +1413,8 @@ export class FoApprovalComponent implements OnInit {
                 'You canceled the claim successfully.',
                 'success'
               );
-            }
+            } */
           } else {
-            // $('#sproof_' + id).val('');
-            // this.toast('error', 'Something went wrong please try again.');
             Swal.fire(
               'Oops',
               'Something went wrong please try again.',
@@ -1359,322 +1425,6 @@ export class FoApprovalComponent implements OnInit {
       }
 
     }
-  }
-
-  async validateApproval(record, event) {
-    let errors = '';
-    this.allotedQty = 0;
-    this.allotedInvoiceQty = [];
-    this.salesAndRemainings = [];
-    this.allotedHoInvoiceQty = [];
-    this.approvalClickedClaim = [];
-
-    const claim = await this.getClaimById(record._id);
-    if (claim) {
-      if (event === 'Approve') {
-        if (claim['isApproved']) {
-          Swal.fire(
-            'Oops... can\'t proceed',
-            'This claim has already been approved.',
-            'error'
-          );
-          return;
-        }
-
-        let categoryMatched = false;
-        let particularsMatched = false;
-
-        if (!claim['claimType']) { errors = errors + "Enter claim type.<br>"; }
-        if (!claim['invoice']) { errors = errors + "Enter reference number.<br>"; }
-        if (!claim['divisionName']) { errors = errors + "Enter division.<br>"; }
-        if (!claim['materialName']) { errors = errors + "Enter product.<br>"; }
-        if (!claim['batch']) { errors = errors + "Enter batch.<br>"; }
-
-        if (!claim['billingRate'] && !claim['freeQuantity']) {
-          errors = errors + "Enter billing rate or free quantity.<br>";
-        } else if (!claim['billingRate'] && !claim['saleQuantity']) {
-          errors = errors + "Enter free quantity and/or sale quantity.<br>";
-        } else if (claim['billingRate'] && !claim['saleQuantity']) {
-          errors = errors + "Enter sale quantity.<br>";
-        }
-
-        const tempParticulars = $('#particulars_' + record._id).val();
-        if (tempParticulars) {
-          this.particulars.forEach(element => {
-            if (tempParticulars === element.name) {
-              particularsMatched = true;
-              return;
-            }
-          });
-          if (!particularsMatched) {
-            errors = errors + "Particulars not matched.<br>";
-          } else {
-            claim['particulars'] = tempParticulars;
-          }
-        } else {
-          errors = errors + "Enter particulars.<br>";
-        }
-
-        const tempCategory = $('#category_' + record._id).val();
-        if (tempCategory) {
-          this.categories.forEach(element => {
-            if (tempCategory === element.name) {
-              categoryMatched = true;
-              return;
-            }
-          });
-          if (!categoryMatched) {
-            errors = errors + "Category not matched.<br>";
-          } else {
-            claim['category'] = tempCategory;
-          }
-        } else {
-          errors = errors + "Enter category.<br>";
-        }
-
-        const tempSupplyProof = $('#sproof_' + record._id).val();
-        if (!tempSupplyProof) {
-          errors = errors + "Select supply proof.<br>";
-        } else {
-          claim['supplyProof'] = tempSupplyProof;
-        }
-
-        const tempPurchaseOrder = $('#porder_' + record._id).val();
-        if (!tempPurchaseOrder) {
-          errors = errors + "Select purchase order.<br>";
-        } else {
-          claim['purchaseOrder'] = tempPurchaseOrder;
-        }
-      } else if (event === 'Unapprove') {
-        if (claim['isUnapproved']) {
-          Swal.fire(
-            'Oops... can\'t proceed',
-            'This claim has already been unapproved.',
-            'error'
-          );
-          return;
-        }
-
-        const tempParticulars = $('#particulars_' + record._id).val();
-        claim['particulars'] = tempParticulars;
-
-        const tempCategory = $('#category_' + record._id).val();
-        claim['category'] = tempCategory;
-
-        const tempSupplyProof = $('#sproof_' + record._id).val();
-        claim['supplyProof'] = tempSupplyProof;
-
-        const tempPurchaseOrder = $('#porder_' + record._id).val();
-        claim['purchaseOrder'] = tempPurchaseOrder;
-
-        claim['isApproved'] = false;
-        claim['isUnapproved'] = true;
-        claim['unapprovedBy'] = this.loggedUserId;
-        claim['unapprovedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-      } else if (event === 'Cancel') {
-        claim['isApproved'] = false;
-        claim['isUnapproved'] = false;
-        claim['canceledBy'] = this.loggedUserId;
-        claim['canceledOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-      }
-    } else {
-      errors = errors + "Clam doesn't exists.<br>";
-    }
-
-    if (errors) {
-      Swal.fire({
-        title: 'Please correct the points:',
-        icon: 'info',
-        html: errors,
-        showCloseButton: true,
-        showCancelButton: false,
-        focusConfirm: false,
-        confirmButtonText: 'Okay!',
-        confirmButtonAriaLabel: 'Thumbs up, great!'
-      })
-    } else {
-      this.approvalClickedClaim = claim;
-
-      const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
-      if (allocatedQty.length) {
-        allocatedQty.forEach(async element => {
-          const reqData = {
-            billDocNumber: element['stkInvoiceNo'],
-            billToParty: this.approvalClickedClaim['customerId'],
-            batch: this.approvalClickedClaim['batch'],
-            allocatedQty: element['allocatedQty'],
-            claimId: this.approvalClickedClaim['_id']
-          }
-          const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
-        });
-      }
-
-      this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
-        if (response.status === 200) {
-          // $('#sproof_loader_' + id).hide();
-          if (event === 'Approve') {
-            this.getRemaining(claim);
-          } else if (event === 'Unapprove') {
-            $('#def_approvedIcon_' + record._id).hide();
-            $('#def_unapprovedIcon_' + record._id).hide();
-            $('#approvedIcon_' + record._id).hide();
-            $('#unapprovedIcon_' + record._id).show();
-
-            Swal.fire(
-              'Un-Approved!',
-              'You un-approved the claim successfully.',
-              'success'
-            );
-          } else if (event === 'Cancel') {
-            $('#def_approvedIcon_' + record._id).hide();
-            $('#def_unapprovedIcon_' + record._id).hide();
-            $('#approvedIcon_' + record._id).hide();
-            $('#unapprovedIcon_' + record._id).hide();
-
-            Swal.fire(
-              'Canceled!',
-              'You canceled the claim successfully.',
-              'success'
-            );
-          }
-        } else {
-          // $('#sproof_' + id).val('');
-          // this.toast('error', 'Something went wrong please try again.');
-          Swal.fire(
-            'Oops',
-            'Something went wrong please try again.',
-            'error'
-          );
-        }
-      });
-    }
-  }
-
-  findUpdateRemaining(data) {
-    return new Promise(resolve => {
-      this.apiService.post('/api/remaining/findUpdateRemaining', data).subscribe((resp: any) => {
-        if (resp.status === 200) {
-          resolve(resp);
-        } else {
-          resolve([]);
-        }
-      });
-    });
-  }
-
-  async getRemaining(demand) {
-    const reqData = {
-      customerId: demand.customerId,
-      batch: demand.batch
-    };
-    const hoInvoice: any = await this.hoInvoice(reqData);
-    console.log('hoInvoice.length', hoInvoice.length);
-    if (hoInvoice.length) {
-      this.allotedHoInvoiceQty.push(hoInvoice[0]);
-
-      const salesAndRemainingQuantity: any = await this.salesAndRemainingQuantity(reqData);
-      console.log('salesAndRemainingQuantity--', salesAndRemainingQuantity);
-      if (salesAndRemainingQuantity) {
-        let allotedQty = 0;
-        this.salesAndRemainings.push(salesAndRemainingQuantity);
-
-        salesAndRemainingQuantity.forEach(async (remaining) => {
-          if (allotedQty >= demand.saleQuantity) {
-            // console.log('Break foreach');
-            return; // Break foreach loop
-          } else {
-            let allotQty = 0;
-            const requiredQty = demand.saleQuantity - allotedQty;
-            const remainingStock = (remaining.remainingData.length) ? remaining.remainingData[0].quantity : remaining.saleUnit;
-
-            if (remainingStock >= demand.saleQuantity) {
-              allotQty = requiredQty;
-            } else {
-              allotQty = (requiredQty >= remainingStock) ? remainingStock : requiredQty;
-            }
-            allotedQty = allotedQty + allotQty;
-
-            const margin = demand.margin ? demand.margin : 10;
-
-            const claimData = {
-              claimId: demand._id,
-              customerId: demand.customerId,
-              invoice: demand.invoice,
-              batch: remaining.batch,
-              division: remaining.divisionName,
-              product: remaining.materialDesc,
-              material: remaining.material,
-              particulars: '',
-              category: '',
-              distInvoice: '',
-              distInvQty: '',
-              stkInvoice: remaining.billDocNumber,
-              stkInvoiceQty: remaining.saleUnit,
-              //stkRemnQty: remaining.saleUnit - allotQty,
-              stkRemnQty: remainingStock - allotQty,
-              hdnStkRemnQty: remainingStock,
-              mrp: remaining.mrp,
-              pts: remaining.pts,
-              billingRate: demand.billingRate,
-              margin: margin,
-              freeQuantity: demand.freeQuantity,
-              saleQuantity: allotQty,
-              difference: (remaining.pts - demand.billingRate).toFixed(2),
-              totalDifference: ((remaining.pts - demand.billingRate) + (demand.billingRate * margin / 100)).toFixed(2),
-              amount: (((remaining.pts - demand.billingRate) + (demand.billingRate * margin / 100)) * allotQty).toFixed(2),
-              totalSaleQuantity: allotQty,
-              ptd: remaining.ptd,
-              totalPtdAmt: (remaining.ptd * allotQty).toFixed(2),
-              image: ''
-            };
-            this.allotedInvoiceQty.push(claimData);
-          }
-        });
-
-        if (this.allotedInvoiceQty) {
-          this.allotedQty = allotedQty;
-          this.requestedQty = demand.saleQuantity;
-          this.openPopup();
-        }
-      } else {
-        Swal.fire(
-          'Oops... can\'t proceed',
-          'The stockist has no stock of this batch/material.',
-          'error'
-        );
-      }
-    } else {
-      Swal.fire(
-        'Oops... can\'t proceed',
-        'There has been no billing to the distributor for this batch/material within 1 year.',
-        'error'
-      );
-    }
-  }
-
-  hoInvoice(requestData) {
-    return new Promise(resolve => {
-      console.log('hoInvoice---', requestData);
-      this.apiService.post('/api/sales/ho/invoice', requestData).subscribe((resp: any) => {
-        if (resp.status === 200 && resp.data) {
-          resolve([resp.data]);
-        } else {
-          resolve([]);
-        }
-      });
-    });
-  }
-
-  salesAndRemainingQuantity(requestData) {
-    return new Promise(resolve => {
-      this.apiService.post('/api/sales/remainingQuantity', requestData).subscribe((resp: any) => {
-        if (resp.status === 200 && resp.data.length) {
-          resolve(resp.data);
-        } else {
-          resolve([]);
-        }
-      });
-    });
   }
 
   getClaimById(id) {
@@ -1711,7 +1461,7 @@ export class FoApprovalComponent implements OnInit {
 
           this.approvalClickedClaim['isApproved'] = true;
           this.approvalClickedClaim['isUnapproved'] = false;
-          this.approvalClickedClaim['approvedBy'] = this.loggedUserId;
+          this.approvalClickedClaim['approvedBy'] = this.sessionData.id;
           this.approvalClickedClaim['approvedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
 
           this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
@@ -1750,7 +1500,7 @@ export class FoApprovalComponent implements OnInit {
 
       this.approvalClickedClaim['isApproved'] = true;
       this.approvalClickedClaim['isUnapproved'] = false;
-      this.approvalClickedClaim['approvedBy'] = this.loggedUserId;
+      this.approvalClickedClaim['approvedBy'] = this.sessionData.id;
       this.approvalClickedClaim['approvedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
 
       this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
@@ -1780,7 +1530,6 @@ export class FoApprovalComponent implements OnInit {
 
   allocateQuantity(invoices) {
     return new Promise(resolve => {
-      console.log('allocateQuantity---', invoices);
       this.apiService.post('/api/sales/allocateQuantity', invoices).subscribe((resp: any) => {
         if (resp.status === 200) {
           resolve(resp);
@@ -1807,7 +1556,31 @@ export class FoApprovalComponent implements OnInit {
   }
 
   editRecord(record) {
-    //this.getBatch();
+    if (this.sessionData.type === 'field' && this.sessionData.workType === 'field' && record['suhStatus'] != 0) {
+      Swal.fire(
+        'Sorry',
+        'Further process has been done on this claim so you cannot take any action now.',
+        'error'
+      );
+      return;
+    } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+      if (record['hoStatus'] != 0) {
+        Swal.fire(
+          'Sorry',
+          'Further process has been done on this claim so you cannot take any action now.',
+          'error'
+        );
+        return;
+      } else if (record['ftStatus'] === 2) {
+        Swal.fire(
+          'Oops... can\'t proceed',
+          'Claim has been rejected by the field team.',
+          'error'
+        );
+        return;
+      }
+    }
+
     $('#edit_id').val(record._id);
     $('#edit_distributor').val(record.plant);
     $('#edit_stockiest').val(record.customerId);
@@ -1855,7 +1628,12 @@ export class FoApprovalComponent implements OnInit {
   rejectClaim() {
     const comments = $.trim($('#comments').val());
     if (comments) {
-      this.approvalClickedClaim['foUnapprovedComment'] = comments;
+      if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+        this.approvalClickedClaim['ftApprovalComment'] = comments;
+      } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+        this.approvalClickedClaim['suhApprovalComment'] = comments;
+      }
+      
       this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
         if (response.status === 200) {
           Swal.fire(
@@ -1914,10 +1692,15 @@ export class FoApprovalComponent implements OnInit {
       saleQuantity: $('#edit_saleQuantity').val(),
       difference: $('#edit_difference').val(),
       totalDifference: $('#edit_totalDifference').val(),
-      amount: $('#edit_amount').val(),
-      isApproved: false,
-      isUnapproved: false,
-      updateComment: $('#update_comments').val()
+      amount: $('#edit_amount').val()
+    }
+
+    if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+      reqData['ftUpdateComment'] = $('#update_comments').val();
+    } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+      reqData['suhUpdateComment'] = $('#update_comments').val();
+    } else {
+      reqData['ftUpdateComment'] = $('#update_comments').val();
     }
 
     this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
@@ -2104,57 +1887,6 @@ export class FoApprovalComponent implements OnInit {
       $('#update_comments').val('');
       var modal = document.getElementById("updateModalComment");
       modal.style.display = "block";
-
-      /* const reqData = {
-        _id: $('#edit_id').val(),
-        customerId: $('#edit_stockiest').val(),
-        claimType: $('#edit_type').val(),
-        claimMonth: $('#edit_month').val(),
-        claimYear: $('#edit_year').val(),
-        invoice: $('#edit_invoice').val(),
-        batch: $('#edit_batch').val(),
-        divisionName: $('#edit_division').val(),
-        material: $('#edit_material').val(),
-        materialName: $('#edit_product').val(),
-        mrp: $('#edit_mrp').val(),
-        pts: $('#edit_pts').val(),
-        ptr: $('#edit_ptr').val(),
-        ptd: $('#edit_ptd').val(),
-        billingRate: $('#edit_billingRate').val(),
-        margin: $('#edit_margin').val(),
-        freeQuantity: $('#edit_freeQuantity').val(),
-        saleQuantity: $('#edit_saleQuantity').val(),
-        difference: $('#edit_difference').val(),
-        totalDifference: $('#edit_totalDifference').val(),
-        amount: $('#edit_amount').val(),
-        isApproved: false,
-        isUnapproved: false
-      }
-
-      const allocatedQty: any = await this.getAllocatedQuantity(reqData._id);
-      if (allocatedQty.length) {
-        allocatedQty.forEach(async element => {
-          const reqData2 = {
-            billDocNumber: element['stkInvoiceNo'],
-            billToParty: reqData.customerId,
-            batch: reqData.batch,
-            allocatedQty: element['allocatedQty'],
-            claimId: reqData._id
-          }
-          const findUpdateRemaining: any = await this.findUpdateRemaining(reqData2);
-        });
-      }
-
-      this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
-        if (response.status === 200) {
-          this.toast('success', 'Successfully updated.');
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        } else {
-          this.toast('error', 'Something went wrong. Try refreshing the page or try again later.');
-        }
-      }); */
     }
 
   }
@@ -2171,6 +1903,21 @@ export class FoApprovalComponent implements OnInit {
 
   newTab(file) {
     window.open(this.apiURL + '/uploads/files/' + this.clickedFile.filename);
+  }
+
+  comments(data) {
+    console.log(data);
+    this.clickedRecord = data;
+    console.log(this.clickedRecord);
+
+    var modal = document.getElementById("modalComments");
+    modal.style.display = "block";
+
+    
+  }
+  closeCommentsModal() {
+    var modal = document.getElementById("modalComments");
+    modal.style.display = "none";
   }
 
   errorHandling(error: any) {

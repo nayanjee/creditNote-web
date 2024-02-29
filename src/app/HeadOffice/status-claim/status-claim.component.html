@@ -11,17 +11,20 @@
         </div>
       </div>
     </div>
-    
+    <div class="page-title-actions" *ngIf="loggedInUser.permissions.includes('7')">
+      <button type="button" (click)="exportToExcel()" class="btn-shadow d-inline-flex align-items-center btn btn-success">
+        <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
+        Export to Excel
+      </button>
+    </div>
   </div>
-  <div style="text-align: right;" *ngIf="loggedInUser.permissions.includes(6)">
-    <button type="button" class="btn btn-warning" (click)="exportToExcel()">ExportToExcel</button>
-  </div>
+  
 </div>
 
 <div class="main-card mb-3 card">
   <div class="card-body">
     <!-- <form class="form" [formGroup]="myForm" (ngSubmit)="onHeaderSubmit()" autocomplete="off"> -->
-    <div class="row row-cols-7">
+    <div class="row">
       <div class="col">
         <div class="position-relative mb-3 required">
           <label for="stockiest" class="form-label fb">Stockiest *</label>

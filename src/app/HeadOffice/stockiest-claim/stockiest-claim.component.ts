@@ -22,15 +22,13 @@ export class StockiestClaimComponent implements OnInit {
 
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Stockiest Claim';
-  subheading = 'Claim sent by stockiest or field officer.';
+  heading = 'Approval';
+  subheading = 'To approve the claim sent by the stockist.';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
 
-  claimForm: FormGroup;
   loading = true;
   showData = true;
   submitted = false;
-  btnLoader = false;
   selectedYear: any;
   selectedMonth: any;
 
@@ -60,17 +58,19 @@ export class StockiestClaimComponent implements OnInit {
   records: any = [];
   modalReference: any;
   batches: any = [];
+  products: any = [];
   fileNames: any = [];
   divisions: any = [];
   stockiests: any = [];
   categories: any = [];
   particulars: any = [];
   clickedFile: any = [];
+  batchPrices: any = [];
   uploadFile: any;
   tempRecords: any = [];
   sessionData: any = '';
-  loggedUserId: any = '';
   selectedFields: any = [];
+  divisions_edit: any = [];
   alignedStockiest: any = [];
   requiredFileType: string;
   pdfSource: string = '';
@@ -81,6 +81,11 @@ export class StockiestClaimComponent implements OnInit {
   requestedQty: number = 0;
   displayStyle: string = "none";
   approvalClickedClaim: any = [];
+  distributors: any = [];
+  userDistributors: any = [];
+  userPlantStockists: any = [];
+  userPlantDivisions: any = [];
+  clickedRecord: any = [];
 
   constructor(
     private router: Router,
@@ -95,16 +100,9 @@ export class StockiestClaimComponent implements OnInit {
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
-    this.sessionData = sessionData;
+    this.sessionData = JSON.parse(sessionData);
 
-    // Logged-in user id
-    this.loggedUserId = JSON.parse(sessionData).id;
-
-    // Number of stockists aligned with the user
-    this.alignedStockiest = JSON.parse(sessionData).stockiest;
-
-    this.getStockiest();
-    this.getDivision();
+    this.heading = this.sessionData.type === 'ho' ? 'HO Approval' : 'Field Approval';
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -123,36 +121,44 @@ export class StockiestClaimComponent implements OnInit {
       if (parseInt(currentMonth) - 1 <= 0) {
         this.selectedYear = parseInt(currentYear) - 1;
         this.selectedMonth = 12;
-       } else {
+      } else {
         this.selectedYear = currentYear;
         this.selectedMonth = parseInt(currentMonth) - 1;
-       }
+      }
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
-      $("#stockiest").val($("#stockiest option:eq(1)").val());  // Keep second option selected from the stockist's select box
-      $('#stockiest_loader').hide();
-      $('#stockiest').show();
 
-      const stockiest = $("#stockiest option:selected").val();
-      const month = $("#month option:selected").val();
-      const year = $("#year option:selected").val();
+      $("#distributor").val($("#distributor option:eq(1)").val());
+      $('#distributor_loader').hide();
+      $('#distributor').show();
 
-      this.getData(stockiest, month, year);
-      this.getParticulars();
-      this.getCategories();
-      this.getBatch();
+      this.getStockiest();
+      this.getDivisions();
 
-      // Put default selected field value
-      this.selectedFields['stockiest'] = stockiest;
-      this.selectedFields['type'] = '';
-      this.selectedFields['division'] = '';
-      this.selectedFields['month'] = month;
-      this.selectedFields['year'] = year;
+      this.delay(1000).then(any => {
+        const distributor = $("#distributor option:selected").val();
+        const stockiest = $("#stockiest option:selected").val();
+        const month = $("#month option:selected").val();
+        const year = $("#year option:selected").val();
 
-      // this.delay(1000).then(any => {
-      //   this.editRecord();
-      // });
+        // Put default selected field value
+        this.selectedFields['distributor'] = distributor;
+        this.selectedFields['stockiest'] = stockiest;
+        this.selectedFields['type'] = '';
+        this.selectedFields['division'] = '';
+        this.selectedFields['month'] = month;
+        this.selectedFields['year'] = year;
+
+        this.getData();
+      });
     });
+
+    this.getDistributors();
+    this.getParticulars();
+    this.getCategories();
+    this.getProduct();
+    this.getBatch();
+    this.getUserDistStockistDivision();
   }
 
   toast(typeIcon, message) {
@@ -185,34 +191,154 @@ export class StockiestClaimComponent implements OnInit {
     }
   }
 
+  getDistributors() {
+    this.apiService.fetch('/api/distributor/getDistributor9000').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          // Getting a unique distributor
+          const map = new Map();
+          for (const item of response.data) {
+            if (!map.has(item.plant)) {
+              map.set(item.plant, true);
+              this.distributors.push({
+                plant: item.plant,
+                organization: item.organization
+              });
+            }
+          }
+          // EOF Getting a unique distributor
+        }
+      }
+    });
+  }
+
+  getUserDistStockistDivision() {
+    this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          response.data.forEach(element => {
+            // get user's distributor
+            const result = this.distributors.filter(element2 => {
+              return element.plant === element2.plant;
+            });
+            this.userDistributors.push(result[0]);
+            // EOF get user's distributor
+
+
+            // get user's stockist plant wise
+            this.userPlantStockists[element.plant] = element.stockists;
+
+            // get user's division plant wise
+            this.userPlantDivisions[element.plant] = element.divisions;
+          });
+        }
+      }
+    });
+  }
+
   getStockiest() {
-    this.apiService.post('/api/getStockiest', this.alignedStockiest).subscribe((response: any) => {
+    let stockists = [];
+    const distributor = $("#distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+    stockist.forEach(element => {
+      stockists.push(Number(element));
+    });
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+
+            const stockiest = $("#stockiest option:selected").val();
+            this.selectedFields['stockiest'] = stockiest;
+          });
         }
       }
     });
   }
 
-  getDivision() {
-    this.apiService.fetch('/api/division/all').subscribe((response: any) => {
+  getDivisions() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#distributor option:selected").val();
+    console.log(distributor);
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
+          this.divisions_edit = response.data;
         }
       }
     });
   }
 
-  getData(stockiest, month, year, type = '', division = '') {
+  getStockiest_edit() {
+    let stockists = [];
+    const distributor = $("#edit_distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+    stockist.forEach(element => {
+      stockists.push(Number(element));
+    });
+
+    this.getDivisions_edit();
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#edit_stockiest").val($("#edit_stockiest option:eq(1)").val());
+          });
+        }
+      }
+    });
+  }
+
+  getDivisions_edit() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#edit_distributor option:selected").val();
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.divisions_edit = response.data;
+        }
+      }
+    });
+  }
+
+  getData() {
     this.loading = this.showData = true;
     this.records = this.tempRecords = [];
 
+    let divisions = [];
+    const dvsion = this.userPlantDivisions[this.selectedFields['distributor']];
+    dvsion.forEach(element => {
+      divisions.push(Number(element));
+    });
+
     const requestData = {
-      customerId: stockiest,
-      month: month,
-      year: year
+      plant: this.selectedFields['distributor'],
+      customerId: this.selectedFields['stockiest'],
+      divisions: divisions,
+      month: this.selectedFields['month'],
+      year: this.selectedFields['year']
     };
 
     this.apiService.post('/api/claimForApproval', requestData).subscribe((response: any) => {
@@ -221,9 +347,10 @@ export class StockiestClaimComponent implements OnInit {
           response.data.sort((a, b) => a.invoice - b.invoice);
           this.records = response.data;
           this.tempRecords = response.data;
+          console.log('records--', this.records);
 
-          if (type || division) {
-            this.filterDataTwice(type, division);
+          if (this.selectedFields['type'] || this.selectedFields['division']) {
+            this.filterDataTwice(this.selectedFields['type'], this.selectedFields['division']);
           }
 
           this.loading = false;
@@ -262,16 +389,33 @@ export class StockiestClaimComponent implements OnInit {
   }
 
   filterData(e) {
+    this.loading = true;
+    this.showData = true;
+
     const targetId = e.target.id;
     this.selectedFields[targetId] = e.target.value;
     $("#divisionCode").text('');
-    console.log(targetId);
 
     const type = this.selectedFields.type;
     const division = this.selectedFields.division;
 
+    if (targetId === 'distributor') {
+      this.getStockiest();
+      this.getDivisions();
+
+      this.delay(1000).then(any => {
+        this.getData();
+
+        this.selectedFields.type = '';
+        this.selectedFields.division = '';
+
+        $("#type").val(this.selectedFields.type);
+        $("#division").val(this.selectedFields.division);
+      });
+    }
+
     if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
-      this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+      this.getData();
 
       this.selectedFields.type = '';
       this.selectedFields.division = '';
@@ -282,7 +426,7 @@ export class StockiestClaimComponent implements OnInit {
 
     if (division) {
       const div = this.divisions.filter(function (el) {
-        return el.name == division;
+        return el.division == Number(division);
       });
       const divisionCode = div[0].division;
       $("#divisionCode").text('(' + divisionCode + ')');
@@ -290,7 +434,7 @@ export class StockiestClaimComponent implements OnInit {
 
     if (type && division) {
       this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type && el.divisionName == division;
+        return el.claimType == type && el.divisionId === Number(division);
       });
     } else if (type && !division) {
       this.tempRecords = this.records.filter(function (el) {
@@ -298,15 +442,22 @@ export class StockiestClaimComponent implements OnInit {
       });
     } else if (!type && division) {
       this.tempRecords = this.records.filter(function (el) {
-        return el.divisionName == division;
+        return el.divisionId === Number(division);
       });
     } else if (!type && !division) {
       this.tempRecords = this.records;
     }
+
+    if (this.tempRecords.length) {
+      this.loading = false;
+      this.showData = true;
+    } else {
+      this.loading = false;
+      this.showData = false;
+    }
   }
 
   viewPopup(content, data, invoice, id) {
-    console.log('content--', content, typeof content);
     this.pdfSource = '';
     this.clickedFile = data;
     this.clickedFile.invoice = invoice;
@@ -315,7 +466,6 @@ export class StockiestClaimComponent implements OnInit {
       this.pdfSource = this.apiURL + '/uploads/files/' + this.clickedFile.filename;
     }
 
-    console.log(this.clickedFile);
     /* this.modalService.open(content, {
       size: 'lg'
     }); */
@@ -346,7 +496,7 @@ export class StockiestClaimComponent implements OnInit {
         let reqData = { _id: id };
         this.apiService.update('/api/claim/delete', reqData).subscribe((response: any) => {
           if (response.status === 200) {
-            this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year, type, division);
+            this.getData();
             Swal.fire(
               'Deleted!',
               'Your imaginary record has been deleted.',
@@ -374,13 +524,10 @@ export class StockiestClaimComponent implements OnInit {
       cancelButtonText: 'No, keep it'
     }).then((result) => {
       if (result.value) {
-        const type = this.selectedFields.type;
-        const division = this.selectedFields.division;
-
         let reqData = { _id: file._id };
         this.apiService.update('/api/claim/deleteFile', reqData).subscribe((response: any) => {
           if (response.status === 200) {
-            this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year, type, division);
+            this.getData();
             Swal.fire(
               'Deleted!',
               'Your imaginary record has been deleted.',
@@ -428,14 +575,14 @@ export class StockiestClaimComponent implements OnInit {
               claimId: id,
               filename: element.filename,
               originalFilename: element.originalname,
-              createdBy: this.loggedUserId
+              createdBy: this.sessionData.id
             }
             images.push(img);
           });
           this.apiService.post('/api/claim/fileUpload', images).subscribe((response: any) => {
             if (response.status === 200) {
               this.modalReference.close();
-              this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+              this.getData();
               Swal.fire(
                 'Uploaded!',
                 'Your image/file has been uploaded.',
@@ -499,7 +646,7 @@ export class StockiestClaimComponent implements OnInit {
           _id: element._id,
           isDraft: false,
           isSubmit: true,
-          submittedBy: this.loggedUserId,
+          submittedBy: this.sessionData.id,
           submittedOn: moment().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
         };
         reqData.push(temp);
@@ -507,7 +654,6 @@ export class StockiestClaimComponent implements OnInit {
       });
 
       this.apiService.post('/api/claim/submit', reqData).subscribe((response: any) => {
-        console.log('resp--', response);
         if (response.status === 200) {
           this.toast('success', 'Successfully submitted.');
           setTimeout(() => {
@@ -534,7 +680,6 @@ export class StockiestClaimComponent implements OnInit {
 
     let results: any = [];
     const id = (i === -1) ? 'def' : i;
-    console.log('len--', inputVal.length, e.key);
 
     if (e.key != "Tab") {
       if (inputVal.length) {
@@ -581,7 +726,6 @@ export class StockiestClaimComponent implements OnInit {
         }
       });
 
-      console.log('results--', matches);
       // Put value in textbox directly if there is only one match
       if (matches.length == 0) {
         $('#particulars_' + id).val('');
@@ -614,7 +758,6 @@ export class StockiestClaimComponent implements OnInit {
 
     $('#particulars_' + id).val(e.target.innerText);
     //$('#division_def').focus();
-    console.log(e.target.innerText);
 
     suggestions.innerHTML = '';
     suggestions.classList.remove('has-suggestions');
@@ -624,21 +767,6 @@ export class StockiestClaimComponent implements OnInit {
     // this.saveParticulars(id, e.target.innerText);
   }
   /***** EOF Particulars key-up functionality *****/
-
-  /* saveParticulars(id, value) {
-    const reqData = {
-      id: id,
-      particulars: value
-    }
-    this.apiService.post('/api/claim/saveParticulars', reqData).subscribe((response: any) => {
-      if (response.status === 200) {
-        $('#particulars_loader_' + id).hide();
-      } else {
-        $('#particulars_' + id).val('');
-        this.toast('error', 'Something went wrong please try again.');
-      }
-    });
-  } */
 
   getCategories() {
     this.apiService.fetch('/api/category/all').subscribe((response: any) => {
@@ -729,7 +857,6 @@ export class StockiestClaimComponent implements OnInit {
 
     $('#category_' + id).val(e.target.innerText);
     //$('#division_def').focus();
-    console.log(e.target.innerText);
 
     suggestions.innerHTML = '';
     suggestions.classList.remove('has-suggestions');
@@ -740,57 +867,232 @@ export class StockiestClaimComponent implements OnInit {
   }
   /***** EOF Category key-up functionality *****/
 
-  /* saveCategory(id, value) {
-    const reqData = {
-      id: id,
-      category: value
+  /***** Division key-up functionality *****/
+  searchDivision(e) {
+    const inputVal = e.currentTarget.value;
+
+    $('#edit_division_id').val('');
+    $('#edit_product').val('');
+    $('#edit_material').val('');
+    $('#edit_batch').val('');
+    $('#edit_mrp').val(Number(0).toFixed(2));
+    $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_billingRate').val('');
+
+    this.changeCalculation(e);
+
+    if (inputVal.length) {
+      $('#edit_division_loader').show();
+      let results: any = [];
+      results = this.matchDivision(inputVal);
+
+      this.delay(10).then(any => {
+        this.divisionSuggestions(results, inputVal);
+      });
+    } else {
+      $('#edit_division_suggestion').hide();
     }
-    this.apiService.post('/api/claim/saveCategory', reqData).subscribe((response: any) => {
-      if (response.status === 200) {
-        $('#category_loader_' + id).hide();
-      } else {
-        $('#category_' + id).val('');
-        this.toast('error', 'Something went wrong please try again.');
-      }
+  }
+
+  matchDivision(str) {
+    let results = [];
+    const val = str.toLowerCase();
+    results = this.divisions_edit.filter(function (d) {
+      return d.name.toLowerCase().indexOf(val) > -1;
     });
-  } */
+
+    return results;
+  }
+
+  divisionSuggestions(results, inputVal) {
+    const suggestions = document.querySelector('#edit_division_suggestion' + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.name.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#edit_division_suggestion').show();
+      $('#edit_division_loader').hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#edit_division_suggestion').hide();
+      $('#edit_division_loader').hide();
+    }
+  }
+
+  divisionSelection(e) {
+    const suggestions = document.querySelector('#edit_division_suggestion' + ' ul');
+
+    $('#edit_division').val(e.target.innerText);
+
+    let results = [];
+    results = this.divisions.filter(function (d) {
+      return d.name.toLowerCase().indexOf(e.target.innerText.toLowerCase()) > -1;
+    });
+
+    if (results.length > 1) {
+      console.log('...More then one division...', results);
+      $('#edit_division_id').val('');
+    } else {
+      $('#edit_division_id').val(results[0].division);
+    }
+
+    suggestions.innerHTML = '';
+    suggestions.classList.remove('has-suggestions');
+    $('#edit_division_suggestion').hide();
+  }
+  /***** EOF Division key-up functionality *****/
+
+  /***** Product key-up functionality *****/
+  searchProduct(e) {
+    const inputVal = e.currentTarget.value;
+
+    $('#edit_material').val('');
+    $('#edit_batch').val('');
+    $('#edit_mrp').val(Number(0).toFixed(2));
+    $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_billingRate').val('');
+
+    this.changeCalculation(e);
+
+    if (inputVal.length) {
+      $('#edit_product_loader').show();
+
+      let results: any = [];
+      results = this.matchProduct(inputVal);
+
+      this.delay(10).then(any => {
+        this.productSuggestions(results, inputVal);
+      });
+    } else {
+      $('#edit_product_suggestion').hide();
+    }
+  }
+
+  matchProduct(str) {
+    const val = str.toLowerCase();
+    const divisionId = $('#edit_division_id').val();
+
+    let results = [];
+    results = this.products.filter(element => {
+      return element.materialName.toLowerCase().indexOf(val) > -1 &&
+        element.division === Number(divisionId); /*  && 
+              element.plant === Number(plantId); */
+    });
+
+    return results;
+  }
+
+  productSuggestions(results, inputVal) {
+    const suggestions = document.querySelector('#edit_product_suggestion' + ' ul');
+    suggestions.innerHTML = '';
+
+    if (results.length > 0) {
+      results.forEach((element, index) => {
+        // Match word from start
+        const match = element.materialName.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
+      });
+
+      suggestions.classList.add('has-suggestions');
+      $('#edit_product_suggestion').show();
+
+      $('#edit_product_loader').hide();
+    } else {
+      results = [];
+
+      // If no result remove all <li>
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('has-suggestions');
+      $('#edit_product_suggestion').hide();
+
+      $('#edit_product_loader').hide();
+    }
+  }
+
+  productSelection(e) {
+    let results = [];
+    results = this.products.filter(function (d) {
+      return d.materialName.toLowerCase() === e.target.innerText.toLowerCase();
+    });
+
+    let material = '';
+    if (results.length > 1) {
+      results.forEach((element, index) => {
+        if (index + 1 == results.length) {
+          material += element.material;
+        } else {
+          material += element.material + ',';
+        }
+
+      });
+    } else {
+      material = results[0].material;
+    }
+
+    const suggestions = document.querySelector('#edit_product_suggestion' + ' ul');
+    suggestions.innerHTML = '';
+    suggestions.classList.remove('has-suggestions');
+
+    $('#edit_product').val(e.target.innerText);
+    $('#edit_material').val(material);
+    $('#edit_product_suggestion').hide();
+  }
+  /***** EOF Product key-up functionality *****/
 
   /***** Batch key-up functionality *****/
   searchBatch(e) {
     const inputVal = e.currentTarget.value;
 
-    let results: any = [];
-    if (e.key != "Tab") {
-      $('#edit_division').val('');
-      $('#edit_product').val('');
-      $('#edit_material').val('');
-      $('#edit_mrp').val(Number(0).toFixed(2));
-      $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_batch').val('');
+    $('#edit_mrp').val(Number(0).toFixed(2));
+    $('#edit_pts').val(Number(0).toFixed(2));
+    $('#edit_billingRate').val('');
 
-      if (inputVal.length > 2) {
-        $('#edit_batch_loader').show();
+    this.changeCalculation(e);
 
-        results = this.matchBatch(inputVal);
+    if (inputVal.length) {
+      $('#edit_batch_loader').show();
+      let results: any = [];
+      results = this.matchBatch(inputVal);
 
-        this.delay(10).then(any => {
-          this.batchSuggestions(results, inputVal);
-        });
-      } else {
-        const suggestions = document.querySelector('#edit_batch_suggestion' + ' ul');
-        suggestions.innerHTML = '';
-        suggestions.classList.remove('has-suggestions');
-        $('#edit_batch_suggestion').hide();
-      }
+      this.delay(10).then(any => {
+        this.batchSuggestions(results, inputVal);
+      });
+    } else {
+      $('#edit_batch_suggestion').hide();
     }
-    this.validateClaim();
   }
 
   matchBatch(str) {
-    let results = [];
     const val = str.toLowerCase();
+    const divisionId = $('#edit_division_id').val();
+    const productId = $('#edit_material').val();
+    const explodeProductId = productId.split(",");
 
-    results = this.batches.filter(function (d) {
-      return d.batch.toLowerCase().indexOf(val) > -1;
+    let results = [];
+    explodeProductId.forEach(element => {
+      let result = [];
+      result = this.batches.filter(element2 => {
+        return element2.material === Number(element) &&
+          element2.division === Number(divisionId) &&
+          element2.batch.toLowerCase().indexOf(val) > -1;
+      });
+
+      if (result.length) results.push(result);
     });
 
     return results;
@@ -802,11 +1104,13 @@ export class StockiestClaimComponent implements OnInit {
 
     if (results.length > 0) {
       results.forEach((element, index) => {
-        // Match word from start
-        const match = element.batch.match(new RegExp('^' + inputVal, 'i'));
-        if (match) {
-          suggestions.innerHTML += `<li>${match.input}</li>`;
-        }
+        element.forEach(element2 => {
+          // Match word from start
+          const match = element2.batch.match(new RegExp('^' + inputVal, 'i'));
+          if (match) {
+            suggestions.innerHTML += `<li>${match.input}</li>`;
+          }
+        });
       });
 
       suggestions.classList.add('has-suggestions');
@@ -840,17 +1144,13 @@ export class StockiestClaimComponent implements OnInit {
     const pts = (filtered.length) ? filtered[0].pts : 0;
     const ptr = (filtered.length) ? filtered[0].ptr : 0;
     const ptd = (filtered.length) ? filtered[0].ptd : 0;
-    const division = (filtered.length) ? filtered[0].division : 0;
-    const material = (filtered.length) ? filtered[0].material : 0;
+    const material = (filtered.length) ? filtered[0].material : '';
 
-    if (division) this.getBatchDivision(division);
-    if (material) this.getBatchProduct(material);
-
+    $('#edit_material').val(material);
     $('#edit_mrp').val(mrp.toFixed(2));
     $('#edit_pts').val(pts.toFixed(2));
     $('#edit_ptr').val(ptr.toFixed(2));
     $('#edit_ptd').val(ptd.toFixed(2));
-    $('#edit_material').val(material);
   }
   /***** EOF Batch key-up functionality *****/
 
@@ -864,60 +1164,250 @@ export class StockiestClaimComponent implements OnInit {
     });
   }
 
-  getBatchDivision(division) {
-    this.apiService.get('/api/division', division).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data) {
-          $('#edit_division').val(response.data.name);
+  async validateHo1Approval(record, event) {
+    const claim = await this.getClaimById(record._id);
+    if (claim) {
+      if (event === 'Approve') {
+        if (claim['ho1Status'] === 1) {
+          Swal.fire(
+            'Oops... can\'t proceed',
+            'This claim has already been accepted.',
+            'error'
+          );
+          return;
+        } else {
+          const reqData = {
+            _id: claim['_id'],
+            ho1Status: 1,
+            ho1ApprovalComment: null,
+            ho1ActionBy: this.sessionData.id,
+            ho1ActionOn: moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")
+          }
+          this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+            if (response.status === 200) {
+              Swal.fire(
+                'Approved!',
+                'You approved the claim successfully.',
+                'success'
+              );
+            } else {
+              Swal.fire(
+                'Oops',
+                'Something went wrong please try again.',
+                'error'
+              );
+            }
+
+            $('#def_approvedIcon_' + claim['_id']).hide();
+            $('#def_unapprovedIcon_' + claim['_id']).hide();
+            $('#approvedIcon_' + claim['_id']).show();
+            $('#unapprovedIcon_' + claim['_id']).hide();
+          });
+        }
+      } else if (event === 'Unapprove') {
+        $('#comments').val('');
+        if (claim['ho1Status'] === 2) {
+          Swal.fire(
+            'Oops... can\'t proceed',
+            'This claim has already been rejected.',
+            'error'
+          );
+          return;
+        } else {
+          $('#comments_id').val(claim['_id']);
+          var modal = document.getElementById("myModalComment");
+          modal.style.display = "block";
         }
       }
-    });
+    } else {
+      Swal.fire(
+        'Oops... can\'t proceed',
+        'Clam doesn\'t exists.',
+        'error'
+      );
+      return;
+    }
   }
 
-  getBatchProduct(material) {
-    this.apiService.get('/api/product', material).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data) {
-          $('#edit_product').val(response.data.materialName);
-          this.validateClaim();
+  async validateFoApproval(record, event) {
+    let errors = '';
+    this.approvalClickedClaim = [];
+
+    const claim = await this.getClaimById(record._id);
+    if (claim) {
+      if (this.sessionData.type === 'field' && this.sessionData.workType === 'field' && claim['suhStatus'] != 0) {
+        Swal.fire(
+          'Sorry',
+          'Further process has been done on this claim so you cannot take any action now.',
+          'error'
+        );
+        return;
+      } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh' && claim['hoStatus'] != 0) {
+        Swal.fire(
+          'Sorry',
+          'Further process has been done on this claim so you cannot take any action now.',
+          'error'
+        );
+        return;
+      }
+
+      if (event === 'Approve') {
+        if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+          if (claim['ftStatus'] === 1) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been accepted.',
+              'error'
+            );
+            return;
+          } else {
+            claim['ftStatus'] = 1;
+            claim['ftApprovalComment'] = null;
+            claim['ftActionBy'] = this.sessionData.id;
+            claim['ftActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
+        } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+          if (claim['ftStatus'] === 0) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'Claim has not been accepted or rejected by the field team.',
+              'error'
+            );
+            return;
+          } else if (claim['ftStatus'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'Claim has been rejected by the field team.',
+              'error'
+            );
+            return;
+          } else if (claim['suhStatus'] === 1) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been accepted.',
+              'error'
+            );
+            return;
+          } else {
+            claim['suhStatus'] = 1;
+            claim['suhApprovalComment'] = null;
+            claim['suhActionBy'] = this.sessionData.id;
+            claim['suhActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
         }
-      }
-    });
-  }
 
-  /* updateSupplyProof(e, id) {
-    $('#sproof_loader_' + id).show();
-    const selected = $("#sproof_" + id + " option:selected").val();
-    const reqData = {
-      id: id,
-      supplyProof: selected
-    }
-    this.apiService.post('/api/claim/saveSupplyProof', reqData).subscribe((response: any) => {
-      if (response.status === 200) {
-        $('#sproof_loader_' + id).hide();
-      } else {
-        $('#sproof_' + id).val('');
-        this.toast('error', 'Something went wrong please try again.');
-      }
-    });
-  }
+        if (!claim['claimType']) { errors = errors + "Enter claim type.<br>"; }
+        if (!claim['invoice']) { errors = errors + "Enter reference number.<br>"; }
+        if (!claim['divisionName']) { errors = errors + "Enter division.<br>"; }
+        if (!claim['materialName']) { errors = errors + "Enter product.<br>"; }
+        if (!claim['batch']) { errors = errors + "Enter batch.<br>"; }
 
-  UpdatePurchaseOrder(e, id) {
-    $('#porder_loader_' + id).show();
-    const selected = $("#porder_" + id + " option:selected").val();
-    const reqData = {
-      id: id,
-      purchaseOrder: selected
+        if (!claim['billingRate'] && !claim['freeQuantity']) {
+          errors = errors + "Enter billing rate or free quantity.<br>";
+        } else if (!claim['billingRate'] && !claim['saleQuantity']) {
+          errors = errors + "Enter free quantity and/or sale quantity.<br>";
+        } else if (claim['billingRate'] && !claim['saleQuantity']) {
+          errors = errors + "Enter sale quantity.<br>";
+        }
+      } else if (event === 'Unapprove') {
+        if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+          if (claim['ftStatus'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been rejected.',
+              'error'
+            );
+            return;
+          } else {
+            claim['ftStatus'] = 2;
+            claim['ftActionBy'] = this.sessionData.id;
+            claim['ftActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
+        } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+          if (claim['ftStatus'] === 0) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'Claim has not been accepted or rejected by the field team.',
+              'error'
+            );
+            return;
+          } else if (claim['suhStatus'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been rejected.',
+              'error'
+            );
+            return;
+          } else {
+            claim['suhStatus'] = 2;
+            claim['suhActionBy'] = this.sessionData.id;
+            claim['suhActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
+        }
+      }/*  else if (event === 'Cancel') {
+        claim['ftStatus'] = 0;
+      } */
+    } else {
+      errors = errors + "Clam doesn't exists.<br>";
     }
-    this.apiService.post('/api/claim/savePurchaseOrder', reqData).subscribe((response: any) => {
-      if (response.status === 200) {
-        $('#porder_loader_' + id).hide();
+
+    if (errors) {
+      Swal.fire({
+        title: 'Please correct the points:',
+        icon: 'info',
+        html: errors,
+        showCloseButton: true,
+        showCancelButton: false,
+        focusConfirm: false,
+        confirmButtonText: 'Okay!',
+        confirmButtonAriaLabel: 'Thumbs up, great!'
+      })
+    } else {
+      if (event === 'Unapprove') {
+        $('#comments').val('');
+
+        this.approvalClickedClaim = claim;
+
+        var modal = document.getElementById("myModalComment");
+        modal.style.display = "block";
       } else {
-        $('#porder_' + id).val('');
-        this.toast('error', 'Something went wrong please try again.');
+        this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+          if (response.status === 200) {
+            if (event === 'Approve') {
+              $('#def_approvedIcon_' + record._id).hide();
+              $('#def_unapprovedIcon_' + record._id).hide();
+              $('#approvedIcon_' + record._id).show();
+              $('#unapprovedIcon_' + record._id).hide();
+
+              Swal.fire(
+                'Approved!',
+                'You approved the claim successfully.',
+                'success'
+              );
+            }/*  else if (event === 'Cancel') {
+              $('#def_approvedIcon_' + record._id).hide();
+              $('#def_unapprovedIcon_' + record._id).hide();
+              $('#approvedIcon_' + record._id).hide();
+              $('#unapprovedIcon_' + record._id).hide();
+
+              Swal.fire(
+                'Canceled!',
+                'You canceled the claim successfully.',
+                'success'
+              );
+            } */
+          } else {
+            Swal.fire(
+              'Oops',
+              'Something went wrong please try again.',
+              'error'
+            );
+          }
+        });
       }
-    });
-  } */
+
+    }
+  }
 
   async validateApproval(record, event) {
     let errors = '';
@@ -929,115 +1419,105 @@ export class StockiestClaimComponent implements OnInit {
 
     const claim = await this.getClaimById(record._id);
     if (claim) {
-      if (claim['isFoApproved']) {
-        if (event === 'Approve') {
-          if (claim['isApproved']) { 
-            Swal.fire(
-              'Oops... can\'t proceed',
-              'This claim has already been approved.',
-              'error'
-            );
-            return;
-          }
-
-          let categoryMatched = false;
-          let particularsMatched = false;
-
-          if (!claim['claimType']) { errors = errors + "Enter claim type.<br>"; }
-          if (!claim['invoice']) { errors = errors + "Enter reference number.<br>"; }
-          if (!claim['divisionName']) { errors = errors + "Enter division.<br>"; }
-          if (!claim['materialName']) { errors = errors + "Enter product.<br>"; }
-          if (!claim['batch']) { errors = errors + "Enter batch.<br>"; }
-
-          if (!claim['billingRate'] && !claim['freeQuantity']) {
-            errors = errors + "Enter billing rate or free quantity.<br>";
-          } else if (!claim['billingRate'] && !claim['saleQuantity']) {
-            errors = errors + "Enter free quantity and/or sale quantity.<br>";
-          } else if (claim['billingRate'] && !claim['saleQuantity']) {
-            errors = errors + "Enter sale quantity.<br>";
-          }
-
-          const tempParticulars = $('#particulars_' + record._id).val();
-          if (tempParticulars) {
-            this.particulars.forEach(element => {
-              if (tempParticulars === element.name) {
-                particularsMatched = true;
-                return;
-              }
-            });
-            if (!particularsMatched) {
-              errors = errors + "Particulars not matched.<br>";
-            } else {
-              claim['particulars'] = tempParticulars;
-            }
-          } else {
-            errors = errors + "Enter particulars.<br>";
-          }
-
-          const tempCategory = $('#category_' + record._id).val();
-          if (tempCategory) {
-            this.categories.forEach(element => {
-              if (tempCategory === element.name) {
-                categoryMatched = true;
-                return;
-              }
-            });
-            if (!categoryMatched) {
-              errors = errors + "Category not matched.<br>";
-            } else {
-              claim['category'] = tempCategory;
-            }
-          } else {
-            errors = errors + "Enter category.<br>";
-          }
-
-          const tempSupplyProof = $('#sproof_' + record._id).val();
-          if (!tempSupplyProof) {
-            errors = errors + "Select supply proof.<br>";
-          } else {
-            claim['supplyProof'] = tempSupplyProof;
-          }
-
-          const tempPurchaseOrder = $('#porder_' + record._id).val();
-          if (!tempPurchaseOrder) {
-            errors = errors + "Select purchase order.<br>";
-          } else {
-            claim['purchaseOrder'] = tempPurchaseOrder;
-          }
-        } else if (event === 'Unapprove') {
-          if (claim['isUnapproved']) { 
-            Swal.fire(
-              'Oops... can\'t proceed',
-              'This claim has already been unapproved.',
-              'error'
-            );
-            return;
-          }
-
-          const tempParticulars = $('#particulars_' + record._id).val();
-          claim['particulars'] = tempParticulars;
-
-          const tempCategory = $('#category_' + record._id).val();
-          claim['category'] = tempCategory;
-
-          const tempSupplyProof = $('#sproof_' + record._id).val();
-          claim['supplyProof'] = tempSupplyProof;
-
-          const tempPurchaseOrder = $('#porder_' + record._id).val();
-          claim['purchaseOrder'] = tempPurchaseOrder;
-
-          claim['isApproved'] = false;
-          claim['isUnapproved'] = true;
-          claim['unapprovedBy'] = this.loggedUserId;
-          claim['unapprovedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-        } else if (event === 'Cancel') {
-          claim['isApproved'] = false;
-          claim['isUnapproved'] = false;
-          claim['canceledBy'] = this.loggedUserId;
-          claim['canceledOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+      if (event === 'Approve') {
+        if (claim['hoStatus'] === 1) {
+          Swal.fire(
+            'Oops... can\'t proceed',
+            'This claim has already been approved.',
+            'error'
+          );
+          return;
         }
-      } else {
-        errors = errors + "Claim has not been accepted by FO.<br>";
+
+        let categoryMatched = false;
+        let particularsMatched = false;
+
+        if (!claim['claimType']) { errors = errors + "Enter claim type.<br>"; }
+        if (!claim['invoice']) { errors = errors + "Enter reference number.<br>"; }
+        if (!claim['divisionName']) { errors = errors + "Enter division.<br>"; }
+        if (!claim['materialName']) { errors = errors + "Enter product.<br>"; }
+        if (!claim['batch']) { errors = errors + "Enter batch.<br>"; }
+
+        if (!claim['billingRate'] && !claim['freeQuantity']) {
+          errors = errors + "Enter billing rate or free quantity.<br>";
+        } else if (!claim['billingRate'] && !claim['saleQuantity']) {
+          errors = errors + "Enter free quantity and/or sale quantity.<br>";
+        } else if (claim['billingRate'] && !claim['saleQuantity']) {
+          errors = errors + "Enter sale quantity.<br>";
+        }
+
+        const tempParticulars = $('#particulars_' + record._id).val();
+        if (tempParticulars) {
+          this.particulars.forEach(element => {
+            if (tempParticulars === element.name) {
+              particularsMatched = true;
+              return;
+            }
+          });
+          if (!particularsMatched) {
+            errors = errors + "Particulars not matched.<br>";
+          } else {
+            claim['particulars'] = tempParticulars;
+          }
+        } else {
+          errors = errors + "Enter particulars.<br>";
+        }
+
+        const tempCategory = $('#category_' + record._id).val();
+        if (tempCategory) {
+          this.categories.forEach(element => {
+            if (tempCategory === element.name) {
+              categoryMatched = true;
+              return;
+            }
+          });
+          if (!categoryMatched) {
+            errors = errors + "Category not matched.<br>";
+          } else {
+            claim['category'] = tempCategory;
+          }
+        } else {
+          errors = errors + "Enter category.<br>";
+        }
+
+        const tempSupplyProof = $('#sproof_' + record._id).val();
+        if (!tempSupplyProof) {
+          errors = errors + "Select supply proof.<br>";
+        } else {
+          claim['supplyProof'] = tempSupplyProof;
+        }
+
+        const tempPurchaseOrder = $('#porder_' + record._id).val();
+        if (!tempPurchaseOrder) {
+          errors = errors + "Select purchase order.<br>";
+        } else {
+          claim['purchaseOrder'] = tempPurchaseOrder;
+        }
+      } else if (event === 'Unapprove') {
+        if (claim['hoStatus'] === 2) {
+          Swal.fire(
+            'Oops... can\'t proceed',
+            'This claim has already been unapproved.',
+            'error'
+          );
+          return;
+        }
+
+        const tempParticulars = $('#particulars_' + record._id).val();
+        claim['particulars'] = tempParticulars;
+
+        const tempCategory = $('#category_' + record._id).val();
+        claim['category'] = tempCategory;
+
+        const tempSupplyProof = $('#sproof_' + record._id).val();
+        claim['supplyProof'] = tempSupplyProof;
+
+        const tempPurchaseOrder = $('#porder_' + record._id).val();
+        claim['purchaseOrder'] = tempPurchaseOrder;
+
+        claim['hoStatus'] = 2;
+        claim['hoActionBy'] = this.sessionData.id;
+        claim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
       }
     } else {
       errors = errors + "Clam doesn't exists.<br>";
@@ -1056,59 +1536,52 @@ export class StockiestClaimComponent implements OnInit {
       })
     } else {
       this.approvalClickedClaim = claim;
+      if (event === 'Unapprove') {
+        $('#comments').val('');
 
-      const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
-      if (allocatedQty.length) {
-        allocatedQty.forEach(async element => {
-          const reqData = {
-            billDocNumber: element['stkInvoiceNo'],
-            billToParty: this.approvalClickedClaim['customerId'],
-            batch: this.approvalClickedClaim['batch'],
-            allocatedQty: element['allocatedQty'],
-            claimId: this.approvalClickedClaim['_id']
+        var modal = document.getElementById("myModalComment");
+        modal.style.display = "block";
+      } else {
+        const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
+        if (allocatedQty.length) {
+          allocatedQty.forEach(async element => {
+            const reqData = {
+              billDocNumber: element['stkInvoiceNo'],
+              billToParty: this.approvalClickedClaim['customerId'],
+              batch: this.approvalClickedClaim['batch'],
+              allocatedQty: element['allocatedQty'],
+              claimId: this.approvalClickedClaim['_id']
+            }
+            const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
+          });
+        }
+
+        this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+          if (response.status === 200) {
+            // $('#sproof_loader_' + id).hide();
+            if (event === 'Approve') {
+              this.getRemaining(claim);
+            } else if (event === 'Unapprove') {
+              $('#def_approvedIcon_' + record._id).hide();
+              $('#def_unapprovedIcon_' + record._id).hide();
+              $('#approvedIcon_' + record._id).hide();
+              $('#unapprovedIcon_' + record._id).show();
+
+              Swal.fire(
+                'Un-Approved!',
+                'You un-approved the claim successfully.',
+                'success'
+              );
+            }
+          } else {
+            Swal.fire(
+              'Oops',
+              'Something went wrong please try again.',
+              'error'
+            );
           }
-          const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
         });
       }
-      
-      this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
-        if (response.status === 200) {
-          // $('#sproof_loader_' + id).hide();
-          if (event === 'Approve') {
-            this.getRemaining(claim);
-          } else if (event === 'Unapprove') {
-            $('#def_approvedIcon_' + record._id).hide();
-            $('#def_unapprovedIcon_' + record._id).hide();
-            $('#approvedIcon_' + record._id).hide();
-            $('#unapprovedIcon_' + record._id).show();
-
-            Swal.fire(
-              'Un-Approved!',
-              'You un-approved the claim successfully.',
-              'success'
-            );
-          } else if (event === 'Cancel') {
-            $('#def_approvedIcon_' + record._id).hide();
-            $('#def_unapprovedIcon_' + record._id).hide();
-            $('#approvedIcon_' + record._id).hide();
-            $('#unapprovedIcon_' + record._id).hide();
-
-            Swal.fire(
-              'Canceled!',
-              'You canceled the claim successfully.',
-              'success'
-            );
-          }
-        } else {
-          // $('#sproof_' + id).val('');
-          // this.toast('error', 'Something went wrong please try again.');
-          Swal.fire(
-            'Oops',
-            'Something went wrong please try again.',
-            'error'
-          );
-        }
-      });
     }
   }
 
@@ -1125,17 +1598,28 @@ export class StockiestClaimComponent implements OnInit {
   }
 
   async getRemaining(demand) {
+    console.log(demand);
+    const distributorCustomerIds = [];
+    const distCustIds: any = await this.getDistributorByPlant(demand.plant);
+    if (distCustIds.length) {
+      distCustIds.forEach(element => {
+        distributorCustomerIds.push(element.customerId);
+      });
+    }
+
     const reqData = {
-      customerId: demand.customerId,
+      customerId: { $in: distributorCustomerIds },
       batch: demand.batch
     };
     const hoInvoice: any = await this.hoInvoice(reqData);
-    console.log('hoInvoice.length', hoInvoice.length);
     if (hoInvoice.length) {
       this.allotedHoInvoiceQty.push(hoInvoice[0]);
 
-      const salesAndRemainingQuantity: any = await this.salesAndRemainingQuantity(reqData);
-      console.log('salesAndRemainingQuantity--', salesAndRemainingQuantity);
+      const reqDataSales = {
+        customerId: demand.customerId,
+        batch: demand.batch
+      }
+      const salesAndRemainingQuantity: any = await this.salesAndRemainingQuantity(reqDataSales);
       if (salesAndRemainingQuantity) {
         let allotedQty = 0;
         this.salesAndRemainings.push(salesAndRemainingQuantity);
@@ -1208,7 +1692,7 @@ export class StockiestClaimComponent implements OnInit {
     } else {
       Swal.fire(
         'Oops... can\'t proceed',
-        'There has been no billing to the distributor for this batch/material within 1 year.',
+        'There has been no billing to the distributor for this batch/material within 2 year.',
         'error'
       );
     }
@@ -1216,7 +1700,6 @@ export class StockiestClaimComponent implements OnInit {
 
   hoInvoice(requestData) {
     return new Promise(resolve => {
-      console.log('hoInvoice---', requestData);
       this.apiService.post('/api/sales/ho/invoice', requestData).subscribe((resp: any) => {
         if (resp.status === 200 && resp.data) {
           resolve([resp.data]);
@@ -1232,6 +1715,18 @@ export class StockiestClaimComponent implements OnInit {
       this.apiService.post('/api/sales/remainingQuantity', requestData).subscribe((resp: any) => {
         if (resp.status === 200 && resp.data.length) {
           resolve(resp.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  getDistributorByPlant(plant) {
+    return new Promise(resolve => {
+      this.apiService.get('/api/getCustomer', plant).subscribe((response: any) => {
+        if (response.status === 200 && response.data.length) {
+          resolve(response.data);
         } else {
           resolve([]);
         }
@@ -1267,15 +1762,30 @@ export class StockiestClaimComponent implements OnInit {
         showCancelButton: true,
         confirmButtonText: 'Yes, approve it!',
         cancelButtonText: 'No, keep it'
-      }).then(async(result) => {
+      }).then(async (result) => {
         if (result.value) {
           const allocatQty = await this.allocateQuantity(this.allotedInvoiceQty);
 
-          this.approvalClickedClaim['isApproved'] = true;
-          this.approvalClickedClaim['isUnapproved'] = false;
-          this.approvalClickedClaim['approvedBy'] = this.loggedUserId;
-          this.approvalClickedClaim['approvedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-      
+          let amount = 0;
+          const pts = this.approvalClickedClaim['pts'];
+          const freeQuantity = this.approvalClickedClaim['freeQuantity'];
+          const saleQuantity = this.approvalClickedClaim['saleQuantity'];
+          if (freeQuantity) {
+            amount = pts * this.allotedQty;
+          } else if (saleQuantity) {
+            const margin = this.approvalClickedClaim['margin'];
+            const billingRate = this.approvalClickedClaim['billingRate'];
+            const difference = pts - billingRate;
+            const totalDifference = difference + (billingRate * margin / 100);
+            amount = totalDifference * this.allotedQty;
+          }
+
+          this.approvalClickedClaim['approvedQty'] = this.allotedQty;
+          this.approvalClickedClaim['approvedAmount'] = amount;
+          this.approvalClickedClaim['hoStatus'] = 1;
+          this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
+          this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+
           this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
             if (response.status === 200) {
               $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
@@ -1296,7 +1806,7 @@ export class StockiestClaimComponent implements OnInit {
               );
             }
           });
-          
+
           this.closePopup();
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           Swal.fire(
@@ -1309,11 +1819,11 @@ export class StockiestClaimComponent implements OnInit {
       });
     } else {
       const allocatQty = await this.allocateQuantity(this.allotedInvoiceQty);
-      
-      this.approvalClickedClaim['isApproved'] = true;
-      this.approvalClickedClaim['isUnapproved'] = false;
-      this.approvalClickedClaim['approvedBy'] = this.loggedUserId;
-      this.approvalClickedClaim['approvedOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+
+      this.approvalClickedClaim['cnQty'] = this.allotedQty;
+      this.approvalClickedClaim['hoStatus'] = 1;
+      this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
+      this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
 
       this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
         if (response.status === 200) {
@@ -1335,14 +1845,13 @@ export class StockiestClaimComponent implements OnInit {
           );
         }
       });
-      
+
       this.closePopup();
     }
   }
 
   allocateQuantity(invoices) {
     return new Promise(resolve => {
-      console.log('allocateQuantity---', invoices);
       this.apiService.post('/api/sales/allocateQuantity', invoices).subscribe((resp: any) => {
         if (resp.status === 200) {
           resolve(resp);
@@ -1369,40 +1878,57 @@ export class StockiestClaimComponent implements OnInit {
   }
 
   editRecord(record) {
-    if (record.isFoApproved) {
-      $('#edit_id').val(record._id);
-      $('#edit_stockiest').val(record.customerId);
-      $('#edit_type').val(record.claimType);
-      $('#edit_month').val(record.claimMonth);
-      $('#edit_year').val(record.claimYear);
-
-      $('#edit_invoice').val(record.invoice);
-      $('#edit_batch').val(record.batch);
-      $('#edit_division').val(record.divisionName);
-      $('#edit_product').val(record.materialName);
-      $('#edit_material').val(record.batchDetail[0].material);
-      $('#edit_mrp').val(record.mrp);
-      $('#edit_pts').val(record.pts);
-      $('#edit_billingRate').val(record.billingRate);
-      $('#edit_margin').val(record.margin);
-      $('#edit_freeQuantity').val(record.freeQuantity);
-      $('#edit_saleQuantity').val(record.saleQuantity);
-      $('#edit_difference').val(record.difference);
-      $('#edit_totalDifference').val(record.totalDifference);
-      $('#edit_amount').val(record.amount);
-
-      var modal = document.getElementById("myModal");
-      modal.style.display = "block";
-
-      this.validateClaim();
-    } else {
-      // You can update only the claims accepted by the FO.
+    if (this.sessionData.type === 'field' && this.sessionData.workType === 'field' && record['suhStatus'] != 0) {
       Swal.fire(
         'Sorry',
-        'You can update only the claims accepted by the FO.',
+        'Further process has been done on this claim so you cannot take any action now.',
         'error'
       );
+      return;
+    } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+      if (record['hoStatus'] != 0) {
+        Swal.fire(
+          'Sorry',
+          'Further process has been done on this claim so you cannot take any action now.',
+          'error'
+        );
+        return;
+      } else if (record['ftStatus'] === 2) {
+        Swal.fire(
+          'Oops... can\'t proceed',
+          'Claim has been rejected by the field team.',
+          'error'
+        );
+        return;
+      }
     }
+
+    $('#edit_id').val(record._id);
+    $('#edit_distributor').val(record.plant);
+    $('#edit_stockiest').val(record.customerId);
+    $('#edit_type').val(record.claimType);
+    $('#edit_month').val(record.claimMonth);
+    $('#edit_year').val(record.claimYear);
+
+    $('#edit_invoice').val(record.invoice);
+    $('#edit_batch').val(record.batch);
+    $('#edit_division').val(record.divisionName);
+    $('#edit_product').val(record.materialName);
+    $('#edit_material').val(record.batchDetail[0].material);
+    $('#edit_mrp').val(record.mrp);
+    $('#edit_pts').val(record.pts);
+    $('#edit_billingRate').val(record.billingRate);
+    $('#edit_margin').val(record.margin);
+    $('#edit_freeQuantity').val(record.freeQuantity);
+    $('#edit_saleQuantity').val(record.saleQuantity);
+    $('#edit_difference').val(record.difference);
+    $('#edit_totalDifference').val(record.totalDifference);
+    $('#edit_amount').val(record.amount);
+
+    var modal = document.getElementById("myModal");
+    modal.style.display = "block";
+
+    this.validateClaim();
   }
 
   closeEditModal() {
@@ -1411,6 +1937,156 @@ export class StockiestClaimComponent implements OnInit {
 
     var modal = document.getElementById("myModal");
     modal.style.display = "none";
+  }
+
+  closeCommentModal() {
+    $('.form-select').removeClass('errorClass');
+    $('.form-control').removeClass('errorClass');
+
+    var modal = document.getElementById("myModalComment");
+    modal.style.display = "none";
+  }
+
+  async rejectClaim() {
+    const comments = $.trim($('#comments').val());
+    if (comments) {
+      if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
+        const id = $.trim($('#comments_id').val());
+        const reqData = {
+          _id: id,
+          ho1Status: 2,
+          ho1ApprovalComment: comments,
+          ftActionBy: this.sessionData.id,
+          ftActionOn: moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")
+        }
+        this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+          if (response.status === 200) {
+            Swal.fire(
+              'Un-Approved!',
+              'You un-approved the claim successfully.',
+              'success'
+            );
+          } else {
+            Swal.fire(
+              'Oops',
+              'Something went wrong please try again.',
+              'error'
+            );
+          }
+
+          $('#def_approvedIcon_' + id).hide();
+          $('#def_unapprovedIcon_' + id).hide();
+          $('#approvedIcon_' + id).hide();
+          $('#unapprovedIcon_' + id).show();
+          this.closeCommentModal();
+        });
+      } else {
+        if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+          this.approvalClickedClaim['ftApprovalComment'] = comments;
+        } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+          this.approvalClickedClaim['suhApprovalComment'] = comments;
+        } else if (this.sessionData.type === 'ho') {
+          this.approvalClickedClaim['hoApprovalComment'] = comments;
+          this.approvalClickedClaim['approvedAmount'] = 0;
+          this.approvalClickedClaim['approvedQty'] = 0;
+
+          // Update/reduce/manage Allocated quantity
+          const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
+          if (allocatedQty.length) {
+            allocatedQty.forEach(async element => {
+              const reqData = {
+                billDocNumber: element['stkInvoiceNo'],
+                billToParty: this.approvalClickedClaim['customerId'],
+                batch: this.approvalClickedClaim['batch'],
+                allocatedQty: element['allocatedQty'],
+                claimId: this.approvalClickedClaim['_id']
+              }
+              const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
+            });
+          }
+          // EOF Update/reduce/manage Allocated quantity
+        }
+
+        this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
+          if (response.status === 200) {
+            Swal.fire(
+              'Un-Approved!',
+              'You un-approved the claim successfully.',
+              'success'
+            );
+          } else {
+            Swal.fire(
+              'Oops',
+              'Something went wrong please try again.',
+              'error'
+            );
+          }
+
+          $('#def_approvedIcon_' + this.approvalClickedClaim._id).hide();
+          $('#def_unapprovedIcon_' + this.approvalClickedClaim._id).hide();
+          $('#approvedIcon_' + this.approvalClickedClaim._id).hide();
+          $('#unapprovedIcon_' + this.approvalClickedClaim._id).show();
+          this.closeCommentModal();
+        });
+      }
+    } else {
+      Swal.fire(
+        'Sorry',
+        'Please write the reason for rejection.',
+        'error'
+      );
+    }
+  }
+
+  closeUpdateCommentModal() {
+    var modal = document.getElementById("updateModalComment");
+    modal.style.display = "none";
+  }
+
+  async updateCommentClaim() {
+    const reqData = {
+      _id: $('#edit_id').val(),
+      plant: $('#edit_distributor').val(),
+      customerId: $('#edit_stockiest').val(),
+      claimType: $('#edit_type').val(),
+      claimMonth: $('#edit_month').val(),
+      claimYear: $('#edit_year').val(),
+      invoice: $('#edit_invoice').val(),
+      batch: $('#edit_batch').val(),
+      divisionName: $('#edit_division').val(),
+      material: $('#edit_material').val(),
+      materialName: $('#edit_product').val(),
+      mrp: $('#edit_mrp').val(),
+      pts: $('#edit_pts').val(),
+      ptr: $('#edit_ptr').val(),
+      ptd: $('#edit_ptd').val(),
+      billingRate: $('#edit_billingRate').val(),
+      margin: $('#edit_margin').val(),
+      freeQuantity: $('#edit_freeQuantity').val(),
+      saleQuantity: $('#edit_saleQuantity').val(),
+      difference: $('#edit_difference').val(),
+      totalDifference: $('#edit_totalDifference').val(),
+      amount: $('#edit_amount').val()
+    }
+
+    if (this.sessionData.type === 'field' && this.sessionData.workType === 'field') {
+      reqData['ftUpdateComment'] = $('#update_comments').val();
+    } else if (this.sessionData.type === 'field' && this.sessionData.workType === 'suh') {
+      reqData['suhUpdateComment'] = $('#update_comments').val();
+    } else {
+      reqData['ftUpdateComment'] = $('#update_comments').val();
+    }
+
+    this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        this.toast('success', 'Successfully updated.');
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        this.toast('error', 'Something went wrong. Try refreshing the page or try again later.');
+      }
+    });
   }
 
   changeCalculation(e) {
@@ -1465,7 +2141,7 @@ export class StockiestClaimComponent implements OnInit {
         $('#edit_amount').val(amount.toFixed(2));
       }
     }
-    this.validateClaim();
+    //this.validateClaim();
   }
 
   validateClaim() {
@@ -1566,6 +2242,16 @@ export class StockiestClaimComponent implements OnInit {
     $('#edit_error').val(error);
   }
 
+  getProduct() {
+    this.apiService.fetch('/api/product/all').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.products = response.data;
+        }
+      }
+    });
+  }
+
   async updateClaim() {
     this.validateClaim();
     const error = $('#edit_error').val();
@@ -1575,118 +2261,8 @@ export class StockiestClaimComponent implements OnInit {
       $('#update_comments').val('');
       var modal = document.getElementById("updateModalComment");
       modal.style.display = "block";
-
-      /* const reqData = {
-        _id: $('#edit_id').val(),
-        customerId: $('#edit_stockiest').val(),
-        claimType: $('#edit_type').val(),
-        claimMonth: $('#edit_month').val(),
-        claimYear: $('#edit_year').val(),
-        invoice: $('#edit_invoice').val(),
-        batch: $('#edit_batch').val(),
-        divisionName: $('#edit_division').val(),
-        material: $('#edit_material').val(),
-        materialName: $('#edit_product').val(),
-        mrp: $('#edit_mrp').val(),
-        pts: $('#edit_pts').val(),
-        ptr: $('#edit_ptr').val(),
-        ptd: $('#edit_ptd').val(),
-        billingRate: $('#edit_billingRate').val(),
-        margin: $('#edit_margin').val(),
-        freeQuantity: $('#edit_freeQuantity').val(),
-        saleQuantity: $('#edit_saleQuantity').val(),
-        difference: $('#edit_difference').val(),
-        totalDifference: $('#edit_totalDifference').val(),
-        amount: $('#edit_amount').val(),
-        isApproved: false,
-        isUnapproved: false
-      }
-
-      const allocatedQty: any = await this.getAllocatedQuantity(reqData._id);
-      if (allocatedQty.length) {
-        allocatedQty.forEach(async element => {
-          const reqData2 = {
-            billDocNumber: element['stkInvoiceNo'],
-            billToParty: reqData.customerId,
-            batch: reqData.batch,
-            allocatedQty: element['allocatedQty'],
-            claimId: reqData._id
-          }
-          const findUpdateRemaining: any = await this.findUpdateRemaining(reqData2);
-        });
-      }
-
-      this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
-        if (response.status === 200) {
-          this.toast('success', 'Successfully updated.');
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        } else {
-          this.toast('error', 'Something went wrong. Try refreshing the page or try again later.');
-        }
-      }); */
     }
 
-  }
-
-  closeUpdateCommentModal() {
-    var modal = document.getElementById("updateModalComment");
-    modal.style.display = "none";
-  }
-
-  async updateCommentClaim() {
-    const reqData = {
-      _id: $('#edit_id').val(),
-      customerId: $('#edit_stockiest').val(),
-      claimType: $('#edit_type').val(),
-      claimMonth: $('#edit_month').val(),
-      claimYear: $('#edit_year').val(),
-      invoice: $('#edit_invoice').val(),
-      batch: $('#edit_batch').val(),
-      divisionName: $('#edit_division').val(),
-      material: $('#edit_material').val(),
-      materialName: $('#edit_product').val(),
-      mrp: $('#edit_mrp').val(),
-      pts: $('#edit_pts').val(),
-      ptr: $('#edit_ptr').val(),
-      ptd: $('#edit_ptd').val(),
-      billingRate: $('#edit_billingRate').val(),
-      margin: $('#edit_margin').val(),
-      freeQuantity: $('#edit_freeQuantity').val(),
-      saleQuantity: $('#edit_saleQuantity').val(),
-      difference: $('#edit_difference').val(),
-      totalDifference: $('#edit_totalDifference').val(),
-      amount: $('#edit_amount').val(),
-      isApproved: false,
-      isUnapproved: false,
-      updateComment: $('#update_comments').val()
-    }
-
-    const allocatedQty: any = await this.getAllocatedQuantity(reqData._id);
-    if (allocatedQty.length) {
-      allocatedQty.forEach(async element => {
-        const reqData2 = {
-          billDocNumber: element['stkInvoiceNo'],
-          billToParty: reqData.customerId,
-          batch: reqData.batch,
-          allocatedQty: element['allocatedQty'],
-          claimId: reqData._id
-        }
-        const findUpdateRemaining: any = await this.findUpdateRemaining(reqData2);
-      });
-    }
-
-    this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
-      if (response.status === 200) {
-        this.toast('success', 'Successfully updated.');
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      } else {
-        this.toast('error', 'Something went wrong. Try refreshing the page or try again later.');
-      }
-    });
   }
 
   private getDismissReason(reason: any): string {
@@ -1701,6 +2277,102 @@ export class StockiestClaimComponent implements OnInit {
 
   newTab(file) {
     window.open(this.apiURL + '/uploads/files/' + this.clickedFile.filename);
+  }
+
+  comments(data) {
+    this.clickedRecord = data;
+
+    var modal = document.getElementById("modalComments");
+    modal.style.display = "block";
+  }
+  closeCommentsModal() {
+    var modal = document.getElementById("modalComments");
+    modal.style.display = "none";
+  }
+
+  showMrp(data, material, id) {
+    $('#batchMrp_id').val('');
+
+    this.batchPrices = [];
+    data.forEach(element => {
+      if (element.material === material) {
+        const mrp = {
+          mrp: element.mrp,
+          pts: element.pts
+        };
+        this.batchPrices.push(mrp);
+
+        if (element.mrp2) {
+          const mrp2 = {
+            mrp: element.mrp2,
+            pts: element.pts2
+          };
+          this.batchPrices.push(mrp2);
+        }
+
+        if (element.mrp3) {
+          const mrp3 = {
+            mrp: element.mrp3,
+            pts: element.pts3
+          };
+          this.batchPrices.push(mrp3);
+        }
+
+        if (element.mrp4) {
+          const mrp4 = {
+            mrp: element.mrp4,
+            pts: element.pts4
+          };
+          this.batchPrices.push(mrp4);
+        }
+      }
+    });
+
+    $('#batchMrp_id').val(id);
+
+    var modal = document.getElementById("modalBatchPrice");
+    modal.style.display = "block";
+  }
+
+  closeBatchPriceModal() {
+    var modal = document.getElementById("modalBatchPrice");
+    modal.style.display = "none";
+  }
+
+  confirmBatchPrice() {
+    const id = $('#batchMrp_id').val();
+    const checkedMrp = $('input[name="batchMrp"]:checked').val();
+
+    const reqData = {
+      _id: id,
+      mrp: this.batchPrices[checkedMrp].mrp,
+      pts: this.batchPrices[checkedMrp].pts
+    }
+    this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        $('#err_batchMrp_' + id).css('color', '#495057');
+        $('#err_batchMrp_' + id).text(parseFloat(this.batchPrices[checkedMrp].mrp).toFixed(2));
+        $('#pts_' + id).text(parseFloat(this.batchPrices[checkedMrp].pts).toFixed(2));
+        $('#batchMrp_' + id).hide();
+        $('#err_batchMrp_' + id).show();
+
+        this.closeBatchPriceModal();
+
+        Swal.fire(
+          'MRP PTS',
+          'Updated successfully.',
+          'success'
+        );
+      } else {
+        this.closeBatchPriceModal();
+        
+        Swal.fire(
+          'Oops',
+          'Something went wrong please try again.',
+          'error'
+        );
+      }
+    });
   }
 
   errorHandling(error: any) {

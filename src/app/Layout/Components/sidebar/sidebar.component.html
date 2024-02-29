@@ -38,139 +38,66 @@
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('7')">
+            <!-- <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('4')">
               <a routerLink="/headoffice/foApproval" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-check"></i>
-                <span class="vsm-title">Approve Claim (FO)</span>
-              </a>
-            </div>
-
-            <!-- <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(7)">
-              <a routerLink="/stockiest/acceptance" routerLinkActive="active-item" class="vsm-link">
-                <i class="vsm-icon pe-7s-sun"></i>
-                <span class="vsm-title">Claim Acceptance</span>
+                <span class="vsm-title">Claim Approval (Field)</span>
               </a>
             </div> -->
+
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('5')">
+              <a routerLink="/headoffice/stockiestClaim" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-check"></i>
+                <span class="vsm-title">Claim Approval</span>
+              </a>
+            </div>
 
             <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
               <a routerLink="/stockiest/claimStatus" routerLinkActive="active-item" class="vsm-link">
-                <i class="vsm-icon pe-7s-check"></i>
-                <span class="vsm-title">Approved/InProgress Claim</span>
-              </a>
-            </div>
-
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('4')">
-              <a routerLink="/headoffice/stockiestClaim" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-id"></i>
-                <span class="vsm-title">Stockiest Claim</span>
-              </a>
-            </div>
-
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('5')">
-              <a routerLink="/headoffice/claimStatus" routerLinkActive="active-item" class="vsm-link">
-                <i class="vsm-icon pe-7s-check"></i>
                 <span class="vsm-title">Claim Status</span>
               </a>
             </div>
-            <!-- <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
-              <a routerLink="users/listUser" routerLinkActive="active-item" class="vsm-link">
-                <i class="vsm-icon pe-7s-users"></i>
-                <span class="vsm-title">Users</span>
-              </a>
-            </div>
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
-              <a routerLink="division/list" routerLinkActive="active-item" class="vsm-link">
-                <i class="vsm-icon pe-7s-portfolio"></i>
-                <span class="vsm-title">Divisions</span>
-              </a>
-            </div>
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
-              <a routerLink="stockiest/list" routerLinkActive="active-item" class="vsm-link">
-                <i class="vsm-icon pe-7s-portfolio"></i>
-                <span class="vsm-title">Stockiest</span>
-              </a>
-            </div>
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes(3)">
-              <a routerLink="distributor/list" routerLinkActive="active-item" class="vsm-link">
-                <i class="vsm-icon pe-7s-portfolio"></i>
-                <span class="vsm-title">Distributors</span>
-              </a>
-            </div> -->
 
-            <!-- <ngb-accordion [destroyOnHide]="false" [closeOthers]="true" [activeIds]="extraParameter">
-              <ngb-panel id="ownersMenu">
-                <ng-template ngbPanelHeader>
-                  <button ngbPanelToggle class="vsm-link">
-                    <i class="vsm-icon pe-7s-upload"></i>
-                    <span class="vsm-title">Upload Data</span>
-                    <i class="vsm-arrow"></i>
-                  </button>
-                </ng-template>
-                <ng-template ngbPanelContent>
-                  <div class="vsm-dropdown">
-                    <div class="vsm-list">
-                      <div class="vsm-item">
-                        <a routerLink="/upload/salesHo" routerLinkActive="active-item" [routerLinkActiveOptions]="{exact: true}" class="vsm-link">
-                          <span class="vsm-title">Sales HO (2000)</span>
-                        </a>
-                      </div>
-                      <div class="vsm-item">
-                        <a routerLink="/upload/salesDist" routerLinkActive="active-item" [routerLinkActiveOptions]="{exact: true}" class="vsm-link">
-                          <span class="vsm-title">Sales Dist. (9000)</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </ng-template>
-              </ngb-panel>
-            </ngb-accordion> -->
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('6')">
+              <a routerLink="/headoffice/claimStatus" routerLinkActive="active-item" class="vsm-link">
+                <i class="vsm-icon pe-7s-id"></i>
+                <span class="vsm-title">Claim Status (HO)</span>
+              </a>
+            </div>
+            
             <ngb-accordion [destroyOnHide]="false" [closeOthers]="true" [activeIds]="extraParameter">
               <ngb-panel id="formElementsMenu">
                 <ng-template ngbPanelHeader>
                   <button ngbPanelToggle class="vsm-link">
                     <i class="vsm-icon pe-7s-helm"></i>
-                    <span class="vsm-title">Settings</span>
+                    <span class="vsm-title">Master Management</span>
                     <i class="vsm-arrow"></i>
                   </button>
                 </ng-template>
                 <ng-template ngbPanelContent>
                   <div class="vsm-dropdown">
                     <div class="vsm-list">
-
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
                         <a routerLink="users/listUser" routerLinkActive="active-item" class="vsm-link">
-
                           <span class="vsm-title">Users</span>
                         </a>
                       </div>
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
                         <a routerLink="division/list" routerLinkActive="active-item" class="vsm-link">
-
                           <span class="vsm-title">Divisions</span>
                         </a>
                       </div>
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
                         <a routerLink="stockiest/list" routerLinkActive="active-item" class="vsm-link">
-
                           <span class="vsm-title">Stockiest</span>
                         </a>
                       </div>
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
                         <a routerLink="distributor/list" routerLinkActive="active-item" class="vsm-link">
-
                           <span class="vsm-title">Distributors</span>
                         </a>
                       </div>
-
-
-                      <!-- <div class="vsm-item">
-                        <a routerLinkActive="active-item" routerLink="/forms/controls" class="vsm-link"><span
-                            class="vsm-title">Controls</span></a>
-                      </div>
-                      <div class="vsm-item">
-                        <a routerLinkActive="active-item" routerLink="/forms/layouts" class="vsm-link"><span
-                            class="vsm-title">Layouts</span></a>
-                      </div> -->
                     </div>
                   </div>
                 </ng-template>

@@ -155,29 +155,57 @@
             <tr class="border-bottom tc" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
               <td class="border-right tc">{{i + 1}}</td>
               <td class="border-right tc">
-                <!-- <div *ngIf="record.isFoApproved" id="def_approvedIcon_{{record._id}}" title="Approved"
-                  class="wpseo-score-icon good"></div>
-                <div *ngIf="record.isFoUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Un-Approved"
-                  class="wpseo-score-icon bad"></div>
+                <div class="fl"
+                  *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
+                  <div *ngIf="record.ftStatus === 1" placement="bottom" ngbTooltip="Accepted by FT"
+                    class="legend-bullet mlr8 fl approved"></div>
+                  <div *ngIf="record.ftStatus === 2" placement="bottom" ngbTooltip="Rejected by FT"
+                    class="legend-bullet mlr8 fl rejected"></div>
 
-                <div id="approvedIcon_{{record._id}}" title="Approved" class="wpseo-score-icon good"
-                  style="display: none;"></div>
-                <div id="unapprovedIcon_{{record._id}}" title="Un-Approved" class="wpseo-score-icon bad"
-                  style="display: none;"></div> -->
+                  <div *ngIf="record.suhStatus === 1" placement="bottom" ngbTooltip="Accepted by SUH"
+                    class="legend-bullet mlr8 fl approved"></div>
+                  <div *ngIf="record.suhStatus === 2" placement="bottom" ngbTooltip="Rejected by SUH"
+                    class="legend-bullet mlr8 fl rejected"></div>
 
+                  <div *ngIf="record.hoStatus === 1" id="def_approvedIcon_{{record._id}}" placement="bottom"
+                    ngbTooltip="Accepted" class="legend-bullet mlr8 fl approved"></div>
+                  <div *ngIf="record.hoStatus === 2" id="def_unapprovedIcon_{{record._id}}" placement="bottom"
+                    ngbTooltip="Rejected" class="legend-bullet mlr8 fl rejected"></div>
 
-                <i *ngIf="record.isFoApproved" id="def_approvedIcon_{{record._id}}" title="Accepted"
-                  class="pe-7s-check icon-gradient bg-grow-early-np npicon"></i>
-                <i *ngIf="record.isFoUnapproved" id="def_unapprovedIcon_{{record._id}}" title="Rejected"
-                  class="pe-7s-check icon-gradient bg-ripe-malin-np npicon"></i>
+                  <div id="approvedIcon_{{record._id}}" placement="bottom" ngbTooltip="Accepted"
+                    class="legend-bullet mlr8 fl approved" style="display: none;"></div>
+                  <div id="unapprovedIcon_{{record._id}}" placement="bottom" ngbTooltip="Rejected"
+                    class="legend-bullet mlr8 fl rejected" style="display: none;"></div>
+                </div>
 
-                <i id="approvedIcon_{{record._id}}" title="Accepted"
-                  class="pe-7s-check icon-gradient bg-grow-early-np npicon" style="display: none;"></i>
-                <i id="unapprovedIcon_{{record._id}}" title="Rejected"
-                  class="pe-7s-check icon-gradient bg-ripe-malin-np npicon" style="display: none;"></i>
+                <div class="fl" *ngIf="sessionData['type'] === 'field' && sessionData['workType'] === 'suh'">
+                  <div *ngIf="record.ftStatus === 1" placement="bottom" ngbTooltip="Accepted by FT"
+                    class="legend-bullet mlr8 fl approved"></div>
+                  <div *ngIf="record.ftStatus === 2" placement="bottom" ngbTooltip="Rejected by FT"
+                    class="legend-bullet mlr8 fl rejected"></div>
 
-                <!-- <i title="star" class="pe-7s-star icon-gradient bg-grow-early-np npicon"></i>
-                <i title="star" class="pe-7s-star icon-gradient bg-ripe-malin-np npicon"></i> -->
+                  <div *ngIf="record.suhStatus === 1" id="def_approvedIcon_{{record._id}}" placement="bottom"
+                    ngbTooltip="Accepted" class="legend-bullet mlr8 fl approved"></div>
+                  <div *ngIf="record.suhStatus === 2" id="def_unapprovedIcon_{{record._id}}" placement="bottom"
+                    ngbTooltip="Rejected" class="legend-bullet mlr8 fl rejected"></div>
+
+                  <div id="approvedIcon_{{record._id}}" placement="bottom" ngbTooltip="Accepted"
+                    class="legend-bullet mlr8 fl approved" style="display: none;"></div>
+                  <div id="unapprovedIcon_{{record._id}}" placement="bottom" ngbTooltip="Rejected"
+                    class="legend-bullet mlr8 fl rejected" style="display: none;"></div>
+                </div>
+
+                <div class="fl" *ngIf="sessionData['type'] === 'field' && sessionData['workType'] === 'field'">
+                  <div *ngIf="record.ftStatus === 1" id="def_approvedIcon_{{record._id}}" placement="bottom"
+                    ngbTooltip="Accepted" class="legend-bullet mlr8 fl approved"></div>
+                  <div *ngIf="record.ftStatus === 2" id="def_unapprovedIcon_{{record._id}}" placement="bottom"
+                    ngbTooltip="Rejected" class="legend-bullet mlr8 fl rejected"></div>
+
+                  <div id="approvedIcon_{{record._id}}" placement="bottom" ngbTooltip="Accepted"
+                    class="legend-bullet mlr8 fl approved" style="display: none;"></div>
+                  <div id="unapprovedIcon_{{record._id}}" placement="bottom" ngbTooltip="Rejected"
+                    class="legend-bullet mlr8 fl rejected" style="display: none;"></div>
+                </div>
               </td>
               <td class="border-right">
                 <div *ngIf="record.files">
@@ -204,13 +232,38 @@
               <td class="border-right tc">{{record.amount | number : '1.2-2'}}</td>
 
               <td class="tc">
-                <span class="option-icon pe-7s-check iconpe_green" title="Accept"
-                  (click)="validateFoApproval(record, 'Approve')"></span>
-                <span class="option-icon pe-7s-close-circle iconpe_red" title="Reject"
-                  (click)="validateFoApproval(record, 'Unapprove')"></span>
-                <span class="option-icon pe-7s-edit iconpe_blue" title="Edit" (click)="editRecord(record)"></span>
-                <span class="option-icon pe-7s-global iconpe_purp" title="Cancel"
-                  (click)="validateFoApproval(record, 'Cancel')"></span>
+                <span style="padding: 0px;"
+                  *ngIf="record.suhStatus === 1 && sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
+                  <span class="option-icon pe-7s-check iconpe_green" placement="bottom" ngbTooltip="Accept"
+                    (click)="validateFoApproval(record, 'Approve')"></span>
+                  <span class="option-icon pe-7s-close-circle iconpe_red" placement="bottom" ngbTooltip="Reject"
+                    (click)="validateFoApproval(record, 'Unapprove')"></span>
+                  <span class="option-icon pe-7s-edit iconpe_blue" placement="bottom" ngbTooltip="Edit"
+                    (click)="editRecord(record)"></span>
+                </span>
+
+                <span style="padding: 0px;"
+                  *ngIf="record.ftStatus === 1 && sessionData['type'] === 'field' && (sessionData['workType'] === 'suh')">
+                  <span class="option-icon pe-7s-check iconpe_green" placement="bottom" ngbTooltip="Accept"
+                    (click)="validateFoApproval(record, 'Approve')"></span>
+                  <span class="option-icon pe-7s-close-circle iconpe_red" placement="bottom" ngbTooltip="Reject"
+                    (click)="validateFoApproval(record, 'Unapprove')"></span>
+                </span>
+
+                <span style="padding: 0px;"
+                  *ngIf="sessionData['type'] === 'field' && (sessionData['workType'] === 'field')">
+                  <span class="option-icon pe-7s-check iconpe_green" placement="bottom" ngbTooltip="Accept"
+                    (click)="validateFoApproval(record, 'Approve')"></span>
+                  <span class="option-icon pe-7s-close-circle iconpe_red" placement="bottom" ngbTooltip="Reject"
+                    (click)="validateFoApproval(record, 'Unapprove')"></span>
+                  <span class="option-icon pe-7s-edit iconpe_blue" placement="bottom" ngbTooltip="Edit"
+                    (click)="editRecord(record)"></span>
+                </span>
+
+                <img style="padding: 0 0px 8px 0px; margin: 0 0px 0px 2px; cursor: pointer;"
+                  *ngIf="record.ftUpdateComment || record.hoUpdateComment || record.ftStatus === 2 || record.suhStatus === 2 || record.hoStatus === 2 || record.ho1Status === 2"
+                  src="./../../../assets/images/message.png" placement="bottom" ngbTooltip="Comments"
+                  (click)="comments(record)">
               </td>
             </tr>
           </table>
@@ -275,44 +328,6 @@
           style="padding: 6px 30px;">Close</button>
       </div>
     </ng-template>
-
-    <!-- Invoice allocation popup -->
-    <div class="modal" tabindex="-1" role="dialog" style="display:{{displayStyle}}">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 755px; margin:auto;">
-          <div class="modal-header">
-            <h4 class="modal-title">Invoice/Quantity Status</h4>
-          </div>
-          <div class="modal-body">
-            <!-- <p style="text-align: center; letter-spacing: 0.5px;">
-              <b>80</b> out of <b>100</b> quantities are being allotted.
-            </p> -->
-            <table style="width: 720px; overflow-x: auto;">
-              <tr style="font-weight: 600; height: 50px;">
-                <td class="tc" style="width: 120px;">Distributor<br>Invoice No.</td>
-                <td class="tc" style="width: 120px;">Distributor<br>Invoice QTY.</td>
-                <td class="tc" style="width: 120px;">Stockiest<br>Invoice No.</td>
-                <td class="tc" style="width: 120px;">Stockiest<br>Invoice QTY.</td>
-                <td class="tc" style="width: 120px;">Stockiest Remn.<br>Invoice QTY.</td>
-                <td class="tc" style="width: 120px;">Total Sale QTY.</td>
-              </tr>
-              <tr *ngFor="let allotment of allotedInvoiceQty" style="height: 30px;">
-                <td class="tc">{{allotedHoInvoiceQty[0].billDocNumber}}</td>
-                <td class="tc">{{allotedHoInvoiceQty[0].salesQty}}</td>
-                <td class="tc">{{allotment.stkInvoice}}</td>
-                <td class="tc">{{allotment.stkInvoiceQty}}</td>
-                <td class="tc">{{allotment.stkRemnQty}}</td>
-                <td class="tc">{{allotment.totalSaleQuantity}}</td>
-              </tr>
-            </table>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-success" (click)="approve()"> Approve </button>
-            <button type="button" class="btn btn-danger" (click)="closePopup()"> Close </button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Update Modal -->
     <div id="myModal" class="modal">
@@ -532,6 +547,55 @@
           <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateCommentClaim()"> Update Now
           </button>
           <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeUpdateCommentModal()"> Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comments popup -->
+    <div id="modalComments" class="modal">
+      <div class="modal-content" style="width: 500px; margin:auto;">
+        <div class="modal-header" style="padding: 5px 15px;">
+          <h2 style="font-size: 20px;">Comment / Reason</h2>
+          <span class="close" (click)="closeCommentsModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding-top: 18px;">
+          <div class="row">
+            <table style="overflow-x: hidden; overflow-y: auto; max-height: 330px;">
+              <tr>
+                <th style="padding: 0 0 0 5px; text-align: center; width: 20%;">Reason</th>
+                <th style="padding: 0 0 0 5px; width: 80%">Message</th>
+              </tr>
+              <tr *ngIf="clickedRecord.ftUpdateComment">
+                <td style="padding: 0 0 0 5px; text-align: center;">Updated<br>by FT</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ftUpdateComment}}</td>
+                <!-- <td style="padding: 0 0 0 5px; text-align: center;">FT</td> -->
+              </tr>
+              <tr *ngIf="clickedRecord.ftStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by FT</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ftApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.suhStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by SUH</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.suhApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.hoUpdateComment">
+                <td style="padding: 0 0 0 5px; text-align: center;">Updated<br>by HO</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.hoUpdateComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.hoStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by HO</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.hoApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.ho1Status === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by HO1</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ho1ApprovalComment}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 5px 15px;">
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeCommentsModal()"> Close
           </button>
         </div>
       </div>

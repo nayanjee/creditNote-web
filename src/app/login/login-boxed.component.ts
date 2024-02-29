@@ -78,24 +78,23 @@ export class LoginBoxedComponent implements OnInit {
       return;
     }
 
-    if (this.selectedType === 1 && !this.selectedPortal) {
+    /* if (this.selectedType === 1 && !this.selectedPortal) {
       $('#err-portal').html('Portal is required.');
       $('#portal').addClass("is-invalid");
       $('#err-portal').show();
       return;
-    }
+    } */
     
-    const portal = (this.selectedType === 2 || this.selectedType === 3) ? 'creditNoteApp' : this.selectedPortal.slug;
+    // const portal = (this.selectedType === 2 || this.selectedType === 3) ? 'creditNoteApp' : this.selectedPortal.slug;
 
     this.submitted = true;
     
     const reqData = {
       email:      email,
       password:   password,
-      portal:     portal,
+      portal:     'creditNoteApp',
       type:       this.selectedType
     }
-    // console.log('reqData---', reqData);
 
     /* Remove all session storage if any */ 
     sessionStorage.removeItem('laUser')
@@ -109,9 +108,7 @@ export class LoginBoxedComponent implements OnInit {
           img: response.data.image,
           name: response.data.name,
           type: response.data.type,
-          isOfficer: response.isOfficer,
-          portal: response.data.portal,
-          // stockiest: response.data.stockiest,
+          workType: response.data.workType,
           permissions: response.data.permissions
         }
         sessionStorage.setItem('laUser', JSON.stringify(storage));

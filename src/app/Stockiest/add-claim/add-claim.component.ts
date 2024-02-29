@@ -96,7 +96,6 @@ export class AddClaimComponent implements OnInit {
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;
 
-
     // Current Month and Year
     const currentMonth = moment().format("MM");
     this.currentMonth = parseInt(currentMonth);
@@ -367,7 +366,6 @@ export class AddClaimComponent implements OnInit {
             });
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
-            
             
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.stockists;
@@ -679,8 +677,6 @@ export class AddClaimComponent implements OnInit {
     explodeProductId.forEach(element => {
       let result = [];
       result = this.batches.filter(element2 => {
-        console.log('-', element2.material, Number(element));
-
         return element2.material === Number(element) &&
           element2.division === Number(divisionId) &&
           element2.batch.toLowerCase().indexOf(val) > -1;
@@ -688,8 +684,6 @@ export class AddClaimComponent implements OnInit {
 
       if (result.length) results.push(result);
     });
-
-    console.log('matched products--', results);
 
     return results;
   }
@@ -1105,9 +1099,7 @@ export class AddClaimComponent implements OnInit {
       }
     }
 
-    console.log(this.claimForm.value)
     this.apiService.post('/api/claim/create', this.claimForm.value).subscribe((response: any) => {
-      console.log('response--', response)
       if (response.status === 200) {
         this.toast('success', 'Successfully saved in draft.');
         setTimeout(() => {
