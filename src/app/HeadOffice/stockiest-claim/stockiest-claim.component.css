@@ -1,5 +1,8 @@
 .errorClass { border:  1px solid #FF0013; }
 
+.fl {
+  float: left;
+}
 .fb {
     font-weight: 600;
 }
@@ -15,6 +18,9 @@
 }
 .m8 {
     margin: 8px 8px;
+}
+.mlr8 {
+  margin: 0px 4px;
 }
 .option-tr {
   font-weight: 600;
@@ -32,6 +38,11 @@
 
 .option-span {
   margin: 0 4px;
+}
+#distributor_loader {
+  border: 1px solid #ced4da;
+  height: 35px;
+  border-radius: 5px;
 }
 #stockiest_loader {
   border: 1px solid #ced4da;
@@ -88,7 +99,7 @@ td, th {
   border: 1px solid #CCCCCC;
   padding: 0px 0px 0px 5px;
   z-index: 1;
-  left: 61%;
+  left: 10%;
 }
 ul {
   display: none;
@@ -299,4 +310,28 @@ ul li:hover {
 }
 .bg-grow-early-np {
   background-image: linear-gradient(to top, #03AC13 0%, #03AC13 100%) !important;
+}
+
+
+.legend-bullet {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  border-radius: 50%;
+}
+.rejected {
+  background-color: rgb(223, 42, 74);
+}
+.approved {
+  background-color: rgb(0, 170, 99);
+}
+.inprogress {
+  background-color: rgb(232, 232, 235);
+}
+
+
+.question {
+  padding: 0px;
+  cursor: pointer;
+  margin-left: 5px;
 }
