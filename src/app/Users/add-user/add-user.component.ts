@@ -29,7 +29,7 @@ export class AddUserComponent implements OnInit {
   distributorField = false;
   stockistField = false;
 
-  portalId: number;
+  portalId: any;
   selectedusertype: number;
   loggedUserId: any = '';
   divisions: any = [];
@@ -69,7 +69,7 @@ export class AddUserComponent implements OnInit {
 
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;
-    this.portalId = JSON.parse(sessionData).portal;
+    this.portalId = "648946064477e07c9fc1b862";
 
     this.createForm();
     this.getAllDivision();

@@ -271,14 +271,15 @@
                 </div>
                 <div *ngIf="(sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')) 
                   && (record.batchDetail[0].mrp2 || record.batchDetail[0].mrp3 || record.batchDetail[0].mrp4)">
-                  <span *ngIf="record.hoStatus === 2" id="batchMrp_{{record._id}}">
+                  <!-- <span *ngIf="record.hoStatus != 0" id="batchMrp_{{record._id}}">
                     {{record.mrp | number : '1.2-2'}}
-                  </span>
-                  <span *ngIf="record.hoStatus === 0" id="err_batchMrp_{{record._id}}" style="color: #FF0013;">
+                  </span> -->
+                  <span id="err_batchMrp_{{record._id}}" style="color: #FF0013;">
                     {{record.mrp | number : '1.2-2'}}
                   </span>
                   <img src="./../../../assets/images/question.png" class="question"
                     (click)="showMrp(record.batchDetail, record.material, record._id)">
+                  <input type="hidden" id="batchMrp_selected_{{record._id}}" value="0">
                 </div>
               </td>
               <td class="border-right tc">
@@ -358,9 +359,9 @@
                 <span style="padding: 0px;"
                   *ngIf="record.hoStatus === 1 && sessionData['type'] === 'ho' && sessionData['workType'] === 'ho1'">
                   <span class="option-icon pe-7s-check iconpe_green" placement="bottom" ngbTooltip="Accept"
-                    (click)="validateHo1Approval(record, 'Approve')"></span>
+                    (click)="validateApproval(record, 'Approve')"></span>
                   <span class="option-icon pe-7s-close-circle iconpe_red" placement="bottom" ngbTooltip="Reject"
-                    (click)="validateHo1Approval(record, 'Unapprove')"></span>
+                    (click)="validateApproval(record, 'Unapprove')"></span>
                 </span>
 
                 <span style="padding: 0px;"
@@ -625,38 +626,14 @@
         <div class="modal-footer" style="padding: 5px 15px;">
           <input type="hidden" class="form-control" id="edit_id" value="" />
           <input type="hidden" class="form-control grf-am" id="edit_error" value="0" />
+          <input type="hidden" class="form-control" id="edit_hoStatus" value="0" />
           <button type="button" class="btn btn-success" [tabIndex]="12" (click)="updateClaim()"> Update </button>
           <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeEditModal()"> Close </button>
         </div>
       </div>
     </div>
 
-    <!-- Comment/Reason for unapproved popup -->
-    <div id="myModalComment" class="modal">
-      <div class="modal-content" style="width: 380px; margin:auto;">
-        <div class="modal-header" style="padding: 5px 15px;">
-          <h2 style="font-size: 20px;">Reason for rejection</h2>
-          <span class="close" (click)="closeCommentModal()">&times;</span>
-        </div>
-        <div class="modal-body" style="padding-top: 22px;">
-          <div class="row">
-            <div class="col-md-12">
-              <input type="hidden" id="comments_id" value="">
-              <div class="position-relative mb-3 required">
-                <!-- <label for="edit_stockiest" class="form-label fb">Stockiest</label> -->
-                <textarea id="comments" name="comments" rows="4" cols="50"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer" style="padding: 5px 15px;">
-          <button type="button" class="btn btn-success" [tabIndex]="12" (click)="rejectClaim()"> Submit </button>
-          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeCommentModal()"> Close </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Comment/Reason for update popup -->
+    <!-- Update Comment/Reason popup -->
     <div id="updateModalComment" class="modal">
       <div class="modal-content" style="width: 380px; margin:auto;">
         <div class="modal-header" style="padding: 5px 15px;">
@@ -681,7 +658,35 @@
       </div>
     </div>
 
-    <!-- Comments popup -->
+    <!-- Un-approved Comment/Reason popup -->
+    <div id="myModalComment" class="modal">
+      <div class="modal-content" style="width: 380px; margin:auto;">
+        <div class="modal-header" style="padding: 5px 15px;">
+          <h2 style="font-size: 20px;">Reason for rejection</h2>
+          <span class="close" (click)="closeCommentModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding-top: 22px;">
+          <div class="row">
+            <div class="col-md-12">
+              <input type="hidden" id="comments_id" value="">
+              <input type="hidden" id="comments_batch" value="">
+              <input type="hidden" id="comments_customerId" value="">
+
+              <div class="position-relative mb-3 required">
+                <!-- <label for="edit_stockiest" class="form-label fb">Stockiest</label> -->
+                <textarea id="comments" name="comments" rows="4" cols="50"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 5px 15px;">
+          <button type="button" class="btn btn-success" [tabIndex]="12" (click)="rejectClaim()"> Submit </button>
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeCommentModal()"> Close </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Comments popup -->
     <div id="modalComments" class="modal">
       <div class="modal-content" style="width: 500px; margin:auto;">
         <div class="modal-header" style="padding: 5px 15px;">
