@@ -5,6 +5,7 @@ import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@ang
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import * as moment from 'moment';
+import * as XLSX from 'xlsx-js-style';
 
 import { environment } from './../../../environments/environment';
 import { AppServicesService } from './../../shared/service/app-services.service';
@@ -22,7 +23,7 @@ export class ClaimStatusComponent implements OnInit {
   faStar = faStar;
   faPlus = faPlus;
   heading = 'Claim Status';
-  subheading = 'Approve/un-approved and inprogress stockiest claim.';
+  subheading = 'Approved/Accepted/Rejected and Inprogress claim.';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
 
   claimForm: FormGroup;
@@ -30,7 +31,9 @@ export class ClaimStatusComponent implements OnInit {
   btnLoader = false;
   loading = false;
   showData = true;
+  accField = false;
   tempRecords: any = [];
+  accAmount: number = 0;
   totalAmount: number = 0;
   selectedYear: any;
   selectedMonth: any;
@@ -61,6 +64,7 @@ export class ClaimStatusComponent implements OnInit {
   currentMonth: any;
   modalReference: any;
   records: any = [];
+  divisions: any = [];
   stockiests: any = [];
   loggedUserId: any = '';
   selectedFields: any = [];
@@ -118,6 +122,7 @@ export class ClaimStatusComponent implements OnInit {
       $('#distributor').show();
 
       this.getStockiest();
+      this.getDivisions();
     });
 
     this.getDistributors();
@@ -193,6 +198,52 @@ export class ClaimStatusComponent implements OnInit {
     });
   }
 
+  getStockiest() {
+    let stockists = [];
+    const distributor = $("#distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+
+    if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
+      stockist.forEach(element => {
+        stockists.push(Number(element));
+      });
+    } else if (this.sessionData.type === 'stockist') {
+      stockists.push(Number(stockist));
+    }
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+          });
+        }
+      }
+    });
+  }
+
+  getDivisions() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#distributor option:selected").val();
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.divisions = response.data;
+        }
+      }
+    });
+  }
+
   getUserDistStockistDivision() {
     this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
@@ -240,38 +291,17 @@ export class ClaimStatusComponent implements OnInit {
     });
   }
 
-  getStockiest() {
-    let stockists = [];
-    const distributor = $("#distributor option:selected").val();
-    const stockist = this.userPlantStockists[distributor];
-
-    if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
-      stockist.forEach(element => {
-        stockists.push(Number(element));
-      });
-    } else if (this.sessionData.type === 'stockist') {
-      stockists.push(Number(stockist));
-    }
-
-    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.stockiests = response.data;
-
-          this.delay(5).then(any => {
-            $("#stockiest").val($("#stockiest option:eq(1)").val());
-            $('#stockiest_loader').hide();
-            $('#stockiest').show();
-          });
-        }
-      }
-    });
+  distributorChange() {
+    this.getStockiest();
+    this.getDivisions();
   }
 
   async getData() {
     this.loading = this.showData = true;
+    this.accField = false;
     this.records = this.tempRecords = [];
     this.totalAmount = 0;
+    this.accAmount = 0;
 
     $('#err_stockiest').hide();
     $('#err_status').hide();
@@ -286,6 +316,7 @@ export class ClaimStatusComponent implements OnInit {
     const status = $("#status option:selected").val();
 
     if (!stockiest || !status) {
+      if (!distributor) $('#err_distributor').text('it\'s a required field.').show();
       if (!stockiest) $('#err_stockiest').text('it\'s a required field.').show();
       if (!status) $('#err_status').text('it\'s a required field.').show();
       return;
@@ -305,6 +336,7 @@ export class ClaimStatusComponent implements OnInit {
     };
 
     if (type) requestData['claimType'] = type;
+    if (division) requestData['division'] = division;
 
     this.apiService.post('/api/getApprovedClaim', requestData).subscribe((response: any) => {
       if (response.status === 200) {
@@ -312,17 +344,18 @@ export class ClaimStatusComponent implements OnInit {
           response.data.sort((a, b) => a.invoice - b.invoice);
           this.records = response.data;
           this.tempRecords = response.data;
-
-          if (type || division) {
-            this.filterDataTwice(type, division);
-          }
-
+          
           this.tempRecords.forEach(element => {
             this.totalAmount = this.totalAmount + element.amount;
+            this.accAmount = this.accAmount + element.approvedAmount;
           });
 
           this.loading = false;
           this.showData = true;
+
+          if (status === 'acceptedHo' || status === 'approved') {
+            this.accField = true;
+          }
         } else {
           this.loading = this.showData = false;
         }
@@ -332,28 +365,108 @@ export class ClaimStatusComponent implements OnInit {
     });
   }
 
-  filterDataTwice(type = '', division = '') {
-    this.selectedFields.type = type;
-    this.selectedFields.division = division;
+  exportToExcel() {
+    let fileName = 'ClaimStatus';
+    let finalData = [];
+    this.tempRecords.forEach(data => {
+      const invoiceData = {
+        'Stockiest': data.customerId,
+        'Claim Type': data.claimType,
+        'Month': data.claimMonth,
+        'Year': data.claimYear,
+        'Reference No': data.invoice,
+        'Batch': data.batch,
+        'Division': data.divisionName,
+        'Material': data.material,
+        'Material Name': data.materialName,
+        'MRP': data.mrp,
+        'PTS': data.pts,
+        /* 'PTR': data.ptr,
+        'PTD': data.ptd, */
+        'Billing Rate': data.billingRate,
+        'Margin': data.margin,
+        'Free QTY': data.freeQuantity,
+        'Sale QTY': data.saleQuantity,
+        'Difference': data.difference,
+        'Total Difference': data.totalDifference,
+        'Amount': data.amount
+      }
 
-    $("#type").val(this.selectedFields.type);
-    $("#division").val(this.selectedFields.division);
+      if (data.ftStatus === 1 && data.suhStatus === 1  && data.hoStatus === 1  && data.ho1Status === 1) {
+        if (data.approvedQty) invoiceData['Accepted QTY'] = data.approvedQty;
+        if (data.approvedAmount) invoiceData['Accepted Amount'] = data.approvedAmount;
+      }
 
-    if (type && division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type && el.divisionName == division;
-      });
-    } else if (type && !division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type;
-      });
-    } else if (!type && division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.divisionName == division;
-      });
-    } else if (!type && !division) {
-      this.tempRecords = this.records;
+      finalData.push(invoiceData);
+    });
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(finalData);
+    // Set colum width
+    ws['!cols'] = [
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 8 },
+      { wch: 5 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 40 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 }
+    ];
+    for (var i in ws) {
+      // console.log(ws[i]);
+      if (typeof ws[i] != 'object') continue;
+      let cell = XLSX.utils.decode_cell(i);
+
+      ws[i].s = {
+        alignment: {
+          vertical: 'center',
+          wrapText: 1
+        }
+      };
+
+      if (cell.r == 0) {
+        // first row
+        ws[i].s.alignment = { vertical: "center", wrapText: true };
+        ws[i].s.fill = { fgColor: { rgb: "585858" } };
+        ws[i].s.font = { bold: true, color: { rgb: "FFFFFF" } };
+        //ws[i].s.border.bottom = { style: 'thin', color: '000000' };
+      }
+
+      // if (cell.c == 6) {
+      //   // first column
+      //   ws[i].s.numFmt = 'DD-MM-YYYY'; // for dates
+      //   ws[i].z = 'DD-MM-YYYY';
+      // } else {
+      //   ws[i].s.numFmt = '00'; // other numbers
+      // }
+
+      // if (cell.r % 2) {
+      //   // every other row
+      //   ws[i].s.fill = {
+      //     // background color
+      //     patternType: 'solid',
+      //     fgColor: { rgb: 'b2b2b2' },
+      //     bgColor: { rgb: 'b2b2b2' },
+      //   };
+      // }
     }
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    XLSX.writeFile(wb, fileName + '.xlsx');
   }
 
   viewPopup(content, data) {
