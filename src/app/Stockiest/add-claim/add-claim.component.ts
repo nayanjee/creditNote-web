@@ -91,24 +91,21 @@ export class AddClaimComponent implements OnInit {
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
-    this.sessionData = sessionData;
-
-    // Logged-in user id
-    this.loggedUserId = JSON.parse(sessionData).id;
-
-    // Current Month and Year
-    const currentMonth = moment().format("MM");
-    this.currentMonth = parseInt(currentMonth);
-
-    // To show previous 2 years in dropdown
-    const currentYear = moment().format("YYYY");
-    this.currentYear = parseInt(currentYear);
-    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
-      const year = { id: i, name: i };
-      this.years.push(year);
-    }
+    this.sessionData = JSON.parse(sessionData);
 
     this.delay(1000).then(any => {
+      // Current Month and Year
+      const currentMonth = moment().format("MM");
+      this.currentMonth = parseInt(currentMonth);
+
+      // To show previous 2 years in dropdown
+      const currentYear = moment().format("YYYY");
+      this.currentYear = parseInt(currentYear);
+      for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+        const year = { id: i, name: i };
+        this.years.push(year);
+      }
+
       // To show this data as predefined in the form
       if (parseInt(currentMonth) - 1 <= 0) {
         this.selectedYear = parseInt(currentYear) - 1;
@@ -120,14 +117,6 @@ export class AddClaimComponent implements OnInit {
       $('#type').val('scheme');
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
-
-
-      $("#distributor").val($("#distributor option:eq(1)").val());
-      $('#distributor_loader').hide();
-      $('#distributor').show();
-
-      this.getStockiest();
-      this.getDivisions();
     });
 
     this.createForm();
@@ -135,11 +124,9 @@ export class AddClaimComponent implements OnInit {
     this.getProduct();
     this.getBatch();
 
-    if (JSON.parse(sessionData).type === 'ho' || JSON.parse(sessionData).type === 'field') {
-      this.getUserDistStockistDivision(this.loggedUserId);
-    } else if (JSON.parse(sessionData).type === 'stockist') {
-      this.getStockistDistDivision(this.loggedUserId);
-    }
+    this.delay(1000).then(any => {
+      this.isDistributors();
+    });
   }
 
   toast(typeIcon, message) {
@@ -355,8 +342,65 @@ export class AddClaimComponent implements OnInit {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
   }
 
-  getUserDistStockistDivision(userId) {
-    this.apiService.get('/api/user/getDistStockistDivision', userId).subscribe((response: any) => {
+  isDistributors() {
+    if (this.distributors[0]) {
+      if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
+        this.getUserDistStockistDivision();
+      } else if (this.sessionData.type === 'stockist') {
+        this.getStockistDistDivision();
+      } else if (this.sessionData.type === 'distributor') {
+        this.getDivisionCustomerIds();
+      }
+    } else {
+      this.getDistributors();
+
+      this.delay(1000).then(any => {
+        this.isDistributors();
+      });
+    }
+  }
+
+  getDivisionCustomerIds() {
+    this.apiService.get('/api/user/getDivisionCustomerIds', this.sessionData.id).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          if (response.data[0].distCustomerIds.length) {
+            const result = this.distributors.filter(element => {
+              return element.plant === response.data[0].code;
+            });
+            this.userDistributors.push(result[0]);
+
+            /* response.data[0].distCustomerIds.forEach(element => {
+              const org = (element.company === 3300) ? 'Frimline' : 'La Renon';
+              const data = {
+                customerId: element.customerId,
+                organization: element.customerId + ' - ' + org + ' (' + element.company + ')'
+              }
+              this.stockiests.push(data);
+            }); */
+
+            // get user's division plant wise
+            this.userPlantDivisions[response.data[0].code] = response.data[0].divisions[0].divisions;
+
+            this.delay(500).then(any => {
+              $("#distributor").val($("#distributor option:eq(1)").val());
+              $('#distributor_loader').hide();
+              $('#distributor').show();
+
+              $("#stockiest").val($("#stockiest option:eq(1)").val());
+              $('#stockiest_loader').hide();
+              $('#stockiest').show();
+
+              this.getDivisions();
+            });
+          }
+        }
+      }
+    });
+  }
+
+  getUserDistStockistDivision() {
+    this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           response.data.forEach(element => {
@@ -366,20 +410,28 @@ export class AddClaimComponent implements OnInit {
             });
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
-            
+
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.stockists;
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
           });
+
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+
+            this.getStockiest();
+          });
         }
       }
     });
   }
 
-  getStockistDistDivision(userId) {
-    this.apiService.get('/api/user/getStockistDistDivision', userId).subscribe((response: any) => {
+  getStockistDistDivision() {
+    this.apiService.get('/api/user/getStockistDistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           response.data.forEach(element => {
@@ -389,13 +441,21 @@ export class AddClaimComponent implements OnInit {
             });
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
-            
-            
+
+
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.customerId;
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
+          });
+
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+
+            this.getStockiest();
           });
         }
       }
@@ -632,7 +692,7 @@ export class AddClaimComponent implements OnInit {
       const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
       suggestions.innerHTML = '';
       suggestions.classList.remove('has-suggestions');
-
+  
       $('#product_' + id).val(e.target.innerText);
       $('#product_id_' + id).val(results[0].material);
     } */
@@ -814,16 +874,16 @@ export class AddClaimComponent implements OnInit {
     const distributor = $("#distributor option:selected").val();
     const stockist = this.userPlantStockists[distributor];
 
-    if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
+    if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
       stockist.forEach(element => {
         stockists.push(Number(element));
       });
-    } else if (JSON.parse(this.sessionData).type === 'stockist') {
+    } else if (this.sessionData.type === 'stockist') {
       stockists.push(Number(stockist));
     }
-    
+
     this.getDivisions();
-    
+
     this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
@@ -844,14 +904,28 @@ export class AddClaimComponent implements OnInit {
     this.divisions = [];
     const distributor = $("#distributor option:selected").val();
     const division = this.userPlantDivisions[distributor];
+
     division.forEach(element => {
       divisions.push(Number(element));
     });
-    
+
     this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
+          /* if (this.sessionData.type === 'distributor') {
+            const stockiest = $("#stockiest option:selected").text();
+            const regExp = /\((.+?)\)/;
+            const matches = regExp.exec(stockiest);
+            if (matches[1]) {
+              const result = response.data.filter(element => {
+                return element.plant === Number(matches[1]);
+              });
+              this.divisions = result;
+            }
+          } else {
+            this.divisions = response.data;
+          } */
         }
       }
     });
@@ -959,12 +1033,17 @@ export class AddClaimComponent implements OnInit {
     const claimType = $("#type option:selected").val();
     const ClaimMonth = $("#month option:selected").val();
     const claimYear = $("#year option:selected").val();
-
+    
     for (let row = -1; row <= totalRows; row++) {
       const reg = /^\d*\.?\d*$/;    // RegEx for number and decimal value
       const rowId = (row === -1) ? 'def' : row;
 
-      const header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.loggedUserId;
+      let header = '';
+      if (this.sessionData.type === 'distributor') {
+        header = distributor + '.::.' + distributor + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
+      } else {
+        header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
+      }
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
       const division = $('#division_' + rowId).val();
@@ -987,22 +1066,23 @@ export class AddClaimComponent implements OnInit {
         error = true;
         $('#invoice_' + rowId).addClass('grf-invalid');
       }
-
+      if (!division) {
+        error = true;
+        $('#division_' + rowId).addClass('grf-invalid');
+      }
+      if (!product) {
+        error = true;
+        $('#product_' + rowId).addClass('grf-invalid');
+      }
       if (!batch) {
         error = true;
         $('#batch_' + rowId).addClass('grf-invalid');
       }
 
-      if (!product) {
+      /* if (!billingRate) {
         error = true;
-        // $('#product_' + rowId).addClass('grf-invalid');
-        $('#batch_' + rowId).addClass('grf-invalid');
-      }
-
-      // if (!billingRate) {
-      //   error = true;
-      //   $('#billingRate_' + rowId).addClass('grf-invalid');
-      // }
+        $('#billingRate_' + rowId).addClass('grf-invalid');
+      } */
 
       if (!reg.test(billingRate)) {
         error = true;

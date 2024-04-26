@@ -43,7 +43,7 @@ export class AddUserComponent implements OnInit {
   selectedPermission: any = [];
   selectedDistributor: any = [];
   distributorStockists: any = [];
-  
+
   userTypes = [
     { id: 'ho', name: 'Head Office' },
     { id: 'field', name: 'Field' },
@@ -198,7 +198,7 @@ export class AddUserComponent implements OnInit {
         $('#distributor_' + row).val('');
       } else {
         this.getDistributorDivision(e, r);
-        this.getDistributorStockist(e, r);
+        this.getDistributorStockist(e, r, userType);
       }
     }
   }
@@ -252,7 +252,7 @@ export class AddUserComponent implements OnInit {
     });
   }
 
-  getDistributorStockist(e, r) {
+  getDistributorStockist(e, r, userType) {
     this.distributorStockists = [];
     const source = parseInt(e.target.value)
     const row = (r === -1) ? 'def' : r;
@@ -263,6 +263,13 @@ export class AddUserComponent implements OnInit {
 
     var listdiv = document.querySelector("#stockist_data_" + row);
     listdiv.innerHTML = '';
+
+    if (userType === 'ho') {
+      var div = document.createElement('div');
+      div.classList.add("col-sm-4");
+      div.innerHTML = '<input class="form-check-input" style="margin: 5px 0px 0px 0px;" type="checkbox" name="chkbox_' + row + '" id="inlineCheckbox_' + source + '_99999" value="' + source + '"><label class="form-check-label" style="margin: 2px 0px 2px 4px;" for="inlineCheckbox_' + source + '_99999">--- SELF ---</label>';
+      listdiv.appendChild(div);
+    }
 
     this.apiService.post('/api/stockiest/distributorStockiest', reqData).subscribe((response: any) => {
       if (response.status === 200) {
@@ -384,7 +391,7 @@ export class AddUserComponent implements OnInit {
 
   showFormFields(e) {
     this.supervisors = [];
-    
+
     this.commonFields = true;
     this.fieldFields = false;
     this.officeFields = false;
@@ -396,6 +403,7 @@ export class AddUserComponent implements OnInit {
     $('#dvson_all').hide();
 
     // $('#userTypes').removeClass('is-invalid');
+    console.log('target.value--', e.target.value);
     if (e.target.value == 'ho') {
       this.getSupervisor(e);
     }
@@ -431,6 +439,7 @@ export class AddUserComponent implements OnInit {
 
   getSupervisor(e) {
     this.supervisors = [];
+    console.log('e.target.value--', e.target.value);
     this.apiService.get('/api/userSupervisor', e.target.value).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
@@ -531,7 +540,7 @@ export class AddUserComponent implements OnInit {
         // EOF Get checked divisions
       }
       // EOF To collect all checked division
-      
+
       if (selectedDivisions.length === 0) {
         error = true;
         $('#division_div_def').css('border', '1px solid red');
@@ -575,7 +584,7 @@ export class AddUserComponent implements OnInit {
         const r = i - 1;
         const row = (r === -1) ? 'def' : r;
         const plant = $('#distributor_' + row + ' option:selected').val();
-        
+
         if (!plant) {
           error = true;
           $('#distributor_' + row).addClass('is-invalid');
@@ -594,7 +603,7 @@ export class AddUserComponent implements OnInit {
             sDivisions.push(value);
           }
         }
-        
+
         if (sDivisions.length === 0) {
           error = true;
           $('#division_sel_' + row).addClass('is-invalid');
@@ -608,6 +617,16 @@ export class AddUserComponent implements OnInit {
         // Get checked stockist
         const sStockists = [];
         const checkboxes = document.getElementsByName('chkbox_' + row);
+        console.log('checkboxes.length--', checkboxes.length);
+
+        // if SELF checkbox checked
+        const checkbox = $("#inlineCheckbox_" + plant + "_99999");
+        if (checkbox.is(":checked")) {
+          const value = checkbox.val();
+          sStockists.push(value);
+        }
+        // EOF if SELF checkbox checked
+
         for (var s = 0; s < checkboxes.length; s++) {
           const checkbox = $("#inlineCheckbox_" + plant + "_" + s);
           if (checkbox.is(":checked")) {
@@ -615,7 +634,7 @@ export class AddUserComponent implements OnInit {
             sStockists.push(value);
           }
         }
-        
+
         if (sStockists.length === 0) {
           error = true;
           $('#stockist_sel_' + row).addClass('is-invalid');
@@ -694,15 +713,15 @@ export class AddUserComponent implements OnInit {
 
       console.log('reqData--', reqData);
 
-      this.apiService.post('/api/user/createuser', reqData).subscribe((response: any) => {
-        console.log('-----',response.status);
+      /* this.apiService.post('/api/user/createuser', reqData).subscribe((response: any) => {
+        console.log('-----', response.status);
         if (response.status === 200) {
           this.toast('success', 'User added successfully.');
           //this.router.navigateByUrl('/users/listUser');
         } else {
           this.toast('error', response.message);
         }
-      });
+      }); */
     }
   }
 
