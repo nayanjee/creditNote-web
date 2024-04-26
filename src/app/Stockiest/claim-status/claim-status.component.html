@@ -41,12 +41,14 @@
       </div>
       <div class="col" style="padding: 0px 5px 0px 5px;">
         <div class="position-relative mb-3 required">
-          <label for="stockiest" class="form-label fb">Stockiest</label>
+          <label for="stockiest" class="form-label fb">Stockist</label>
           <select id="stockiest" class="form-select" style="display: none;">
             <option value="" disabled hidden selected> -- Stockiest -- </option>
             <option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
               {{stockiest.organization | titlecase}}
             </option>
+            <option *ngIf="sessionData.type === 'distributor'" value="self">-- Self --</option>
+            <option *ngIf="sessionData.workType === 'ho1'" value="all">-- All --</option>
           </select>
           <span id="err_stockiest" class="text-danger" style="display: none;"></span>
           <div id="stockiest_loader">
@@ -146,6 +148,7 @@
         <thead>
           <tr>
             <th class="border-right" style="width: 70px;">Sl.No.</th>
+            <th class="border-right" style="width: 90px;" *ngIf="allField">Stockist</th>
             <th class="border-right" style="width: 90px;">Invoice</th>
             <th class="border-right" style="width: 100px;">Claim Type</th>
             <th class="border-right" style="width: 140px;">Division</th>
@@ -164,12 +167,16 @@
             <th class="border-right" style="width: 70px;" *ngIf="accField">Acc. QTY</th>
             <th class="border-right" style="width: 70px;" *ngIf="accField">Acc. Amount</th>
             <!-- <th class="border-right" style="width: 80px;">Attachments</th> -->
-            <!-- <th class="border-right" style="width: 80px;">Options</th> -->
+            <th class="border-right" style="width: 80px;" *ngIf="optionField">Options</th>
           </tr>
         </thead>
         <tbody>
           <tr class="border-bottom" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
             <td class="border-right">{{i+1}}</td>
+            <td class="border-right" *ngIf="allField">
+              <span *ngIf="record.customerId === 0">Self</span>
+              <span *ngIf="record.customerId !== 0">{{record.stockiest[0].organization}}</span>
+            </td>
             <td class="border-right">{{record.invoice}}</td>
             <td class="border-right">{{record.claimType | titlecase}}</td>
             <td class="border-right tal">{{record.divisionName | titlecase}}</td>
@@ -197,6 +204,12 @@
               <div class="attch {{record.invoice}}" style="display: none;"> Upload Invoice
               </div>
             </td> -->
+            <td class="border-right" *ngIf="optionField">
+              <img style="padding: 0 0px 8px 0px; margin: 0 0px 0px 2px; cursor: pointer;"
+                  *ngIf="record.ftUpdateComment || record.hoUpdateComment || record.ftStatus === 2 || record.suhStatus === 2 || record.hoStatus === 2 || record.ho1Status === 2"
+                  src="./../../../assets/images/message.png" placement="bottom" ngbTooltip="Comments"
+                  (click)="comments(record)">
+            </td>
           </tr>
         </tbody>
       </table>
@@ -236,3 +249,52 @@
           style="padding: 6px 30px;">Close</button>
       </div>
     </ng-template>
+
+    <!-- View Comments popup -->
+    <div id="modalComments" class="modal" style="top: 70px !important;">
+      <div class="modal-content" style="width: 500px; margin:auto;">
+        <div class="modal-header" style="padding: 5px 15px;">
+          <h2 style="font-size: 20px;">Comment / Reason</h2>
+          <span class="close" (click)="closeCommentsModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding-top: 18px;">
+          <div class="row">
+            <table style="overflow-x: hidden; overflow-y: auto; max-height: 330px;">
+              <tr>
+                <th style="padding: 0 0 0 5px; text-align: center; width: 20%;">Reason</th>
+                <th style="padding: 0 0 0 5px; width: 80%">Message</th>
+              </tr>
+              <tr *ngIf="clickedRecord.ftUpdateComment">
+                <td style="padding: 0 0 0 5px; text-align: center;">Updated<br>by FT</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ftUpdateComment}}</td>
+                <!-- <td style="padding: 0 0 0 5px; text-align: center;">FT</td> -->
+              </tr>
+              <tr *ngIf="clickedRecord.ftStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by FT</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ftApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.suhStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by SUH</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.suhApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.hoUpdateComment">
+                <td style="padding: 0 0 0 5px; text-align: center;">Updated<br>by HO</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.hoUpdateComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.hoStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by HO</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.hoApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.ho1Status === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by HO1</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ho1ApprovalComment}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 5px 15px;">
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeCommentsModal()"> Close
+          </button>
+        </div>
+      </div>
+    </div>

@@ -89,24 +89,21 @@ export class DraftClaimComponent implements OnInit {
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
-    this.sessionData = sessionData;
-
-    // Logged-in user id
-    this.loggedUserId = JSON.parse(sessionData).id;
-
-    // Current Month and Year
-    const currentMonth = moment().format("MM");
-    this.currentMonth = parseInt(currentMonth);
-
-    // To show previous 2 years in dropdown
-    const currentYear = moment().format("YYYY");
-    this.currentYear = parseInt(currentYear);
-    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
-      const year = { id: i, name: i };
-      this.years.push(year);
-    }
+    this.sessionData = JSON.parse(sessionData);
 
     this.delay(1000).then(any => {
+      // Current Month and Year
+      const currentMonth = moment().format("MM");
+      this.currentMonth = parseInt(currentMonth);
+
+      // To show previous 2 years in dropdown
+      const currentYear = moment().format("YYYY");
+      this.currentYear = parseInt(currentYear);
+      for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+        const year = { id: i, name: i };
+        this.years.push(year);
+      }
+
       // To show this data as predefined in the form
       if (parseInt(currentMonth) - 1 <= 0) {
         this.selectedYear = parseInt(currentYear) - 1;
@@ -118,35 +115,15 @@ export class DraftClaimComponent implements OnInit {
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
 
-      $("#distributor").val($("#distributor option:eq(1)").val());
-      $('#distributor_loader').hide();
-      $('#distributor').show();
-
-      this.getStockiest();
-      this.getDivisions();
-
-      this.delay(1000).then(any => {
-        const stockiest = $("#stockiest option:selected").val();
-        const month = $("#month option:selected").val();
-        const year = $("#year option:selected").val();
-
-        this.getData(stockiest, month, year);
-
-        // Put default selected field value
-        this.selectedFields['stockiest'] = stockiest;
-        this.selectedFields['type'] = '';
-        this.selectedFields['division'] = '';
-        this.selectedFields['month'] = month;
-        this.selectedFields['year'] = year;
-      });
+      this.selectedFields['month'] = this.selectedMonth;
+      this.selectedFields['year'] = this.selectedYear;
     });
 
     this.getDistributors();
-    if (JSON.parse(sessionData).type === 'ho' || JSON.parse(sessionData).type === 'field') {
-      this.getUserDistStockistDivision(this.loggedUserId);
-    } else if (JSON.parse(sessionData).type === 'stockist') {
-      this.getStockistDistDivision(this.loggedUserId);
-    }
+
+    this.delay(1000).then(any => {
+      this.isDistributors();
+    });
   }
 
   toast(typeIcon, message) {
@@ -179,8 +156,60 @@ export class DraftClaimComponent implements OnInit {
     }
   }
 
-  getUserDistStockistDivision(userId) {
-    this.apiService.get('/api/user/getDistStockistDivision', userId).subscribe((response: any) => {
+  isDistributors() {
+    if (this.distributors[0]) {
+      if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
+        this.getUserDistStockistDivision();
+      } else if (this.sessionData.type === 'stockist') {
+        this.getStockistDistDivision();
+      } else if (this.sessionData.type === 'distributor') {
+        this.getDivisionCustomerIds();
+      }
+    } else {
+      this.getDistributors();
+
+      this.delay(1000).then(any => {
+        this.isDistributors();
+      });
+    }
+  }
+
+  getDivisionCustomerIds() {
+    this.apiService.get('/api/user/getDivisionCustomerIds', this.sessionData.id).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          if (response.data[0].distCustomerIds.length) {
+            const result = this.distributors.filter(element => {
+              return element.plant === response.data[0].code;
+            });
+            this.userDistributors.push(result[0]);
+
+            // get user's division plant wise
+            this.userPlantDivisions[response.data[0].code] = response.data[0].divisions[0].divisions;
+
+            this.delay(500).then(any => {
+              $("#distributor").val($("#distributor option:eq(1)").val());
+              $('#distributor_loader').hide();
+              $('#distributor').show();
+
+              $("#stockiest").val($("#stockiest option:eq(1)").val());
+              $('#stockiest_loader').hide();
+              $('#stockiest').show();
+
+              this.getDivisions();
+
+              this.delay(1000).then(any => {
+                this.getData();
+              });
+            });
+          }
+        }
+      }
+    });
+  }
+
+  getUserDistStockistDivision() {
+    this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           response.data.forEach(element => {
@@ -191,20 +220,28 @@ export class DraftClaimComponent implements OnInit {
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
 
-
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.stockists;
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
           });
+
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+
+            this.getStockiest();
+            this.getDivisions();
+          });
         }
       }
     });
   }
 
-  getStockistDistDivision(userId) {
-    this.apiService.get('/api/user/getStockistDistDivision', userId).subscribe((response: any) => {
+  getStockistDistDivision() {
+    this.apiService.get('/api/user/getStockistDistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           response.data.forEach(element => {
@@ -221,6 +258,15 @@ export class DraftClaimComponent implements OnInit {
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
+          });
+
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+
+            this.getStockiest();
+            this.getDivisions();
           });
         }
       }
@@ -252,12 +298,12 @@ export class DraftClaimComponent implements OnInit {
     let stockists = [];
     const distributor = $("#distributor option:selected").val();
     const stockist = this.userPlantStockists[distributor];
-
-    if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
+    console.log(33333333333333)
+    if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
       stockist.forEach(element => {
         stockists.push(Number(element));
       });
-    } else if (JSON.parse(this.sessionData).type === 'stockist') {
+    } else if (this.sessionData.type === 'stockist') {
       stockists.push(Number(stockist));
     }
 
@@ -273,6 +319,8 @@ export class DraftClaimComponent implements OnInit {
 
             const stockiest = $("#stockiest option:selected").val();
             this.selectedFields['stockiest'] = stockiest;
+
+            this.getData();
           });
         }
       }
@@ -297,15 +345,28 @@ export class DraftClaimComponent implements OnInit {
     });
   }
 
-  getData(stockiest, month, year, type = '', division = '') {
+  getData() {
     this.loading = this.showData = true;
     this.records = this.tempRecords = [];
 
+    const distributor = $("#distributor option:selected").val();
+    const stockiest = $("#stockiest option:selected").val();
+    const month = $("#month option:selected").val();
+    const year = $("#year option:selected").val();
+    const type = $("#type option:selected").val();
+    const division = $("#division option:selected").val();
+
     const requestData = {
+      plant: distributor,
       customerId: stockiest,
       month: month,
       year: year
     };
+
+    /* if (this.sessionData.type === 'distributor') {
+      requestData['plant'] = distributor;
+    } */
+    console.log(requestData)
 
     this.apiService.post('/api/getClaim', requestData).subscribe((response: any) => {
       if (response.status === 200) {
@@ -368,7 +429,7 @@ export class DraftClaimComponent implements OnInit {
       this.getDivisions();
 
       this.delay(1000).then(any => {
-        this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+        this.getData();
 
         this.selectedFields.type = '';
         this.selectedFields.division = '';
@@ -379,7 +440,7 @@ export class DraftClaimComponent implements OnInit {
     }
 
     if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
-      this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+      this.getData();
 
       this.selectedFields.type = '';
       this.selectedFields.division = '';
@@ -454,7 +515,7 @@ export class DraftClaimComponent implements OnInit {
         let reqData = { _id: id };
         this.apiService.update('/api/claim/delete', reqData).subscribe((response: any) => {
           if (response.status === 200) {
-            this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year, type, division);
+            this.getData();
             Swal.fire(
               'Deleted!',
               'Your imaginary record has been deleted.',
@@ -488,7 +549,7 @@ export class DraftClaimComponent implements OnInit {
         let reqData = { _id: file._id };
         this.apiService.update('/api/claim/deleteFile', reqData).subscribe((response: any) => {
           if (response.status === 200) {
-            this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year, type, division);
+            this.getData();
             Swal.fire(
               'Deleted!',
               'Your imaginary record has been deleted.',
@@ -536,14 +597,16 @@ export class DraftClaimComponent implements OnInit {
               claimId: id,
               filename: element.filename,
               originalFilename: element.originalname,
-              createdBy: this.loggedUserId
+              createdBy: this.sessionData.id
             }
             images.push(img);
           });
+          console.log('images---', images);
           this.apiService.post('/api/claim/fileUpload', images).subscribe((response: any) => {
+            console.log('response---', response.status);
             if (response.status === 200) {
               this.modalReference.close();
-              this.getData(this.selectedFields.stockiest, this.selectedFields.month, this.selectedFields.year);
+              this.getData();
               Swal.fire(
                 'Uploaded!',
                 'Your image/file has been uploaded.',
@@ -615,11 +678,11 @@ export class DraftClaimComponent implements OnInit {
               _id: element._id,
               isDraft: false,
               isSubmit: true,
-              submittedBy: this.loggedUserId,
+              submittedBy: this.sessionData.id,
               submittedOn: moment().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
             };
             reqData.push(temp);
-            // reqData[index]['submittedBy'] = this.loggedUserId;
+            // reqData[index]['submittedBy'] = this.sessionData.id;
           });
 
           this.apiService.post('/api/claim/submit', reqData).subscribe((response: any) => {

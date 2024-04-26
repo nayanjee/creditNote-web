@@ -32,6 +32,8 @@ export class ClaimStatusComponent implements OnInit {
   loading = false;
   showData = true;
   accField = false;
+  allField = false;
+  optionField = false;
   tempRecords: any = [];
   accAmount: number = 0;
   totalAmount: number = 0;
@@ -74,13 +76,14 @@ export class ClaimStatusComponent implements OnInit {
   userDistributors: any = [];
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
+  clickedRecord: any = [];
 
   constructor(
     private router: Router,
     private modalService: NgbModal,
     private apiService: AppServicesService
   ) {
-    
+
   }
 
   ngOnInit() {
@@ -113,26 +116,15 @@ export class ClaimStatusComponent implements OnInit {
         this.selectedMonth = parseInt(currentMonth) - 1;
       }
 
-      $('#type').val('scheme');
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
-
-      $("#distributor").val($("#distributor option:eq(1)").val());
-      $('#distributor_loader').hide();
-      $('#distributor').show();
-
-      this.getStockiest();
-      this.getDivisions();
     });
 
     this.getDistributors();
 
-    if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
-      this.getUserDistStockistDivision();
-    } else if (this.sessionData.type === 'stockist') {
-      this.getStockistDistDivision();
-    }
-
+    this.delay(1000).then(any => {
+      this.isDistributors();
+    });
   }
 
   toast(typeIcon, message) {
@@ -177,7 +169,91 @@ export class ClaimStatusComponent implements OnInit {
     $('#stockiest').show();
   }
 
+  isDistributors() {
+    if (this.distributors[0]) {
+      if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
+        this.getUserDistStockistDivision();
+      } else if (this.sessionData.type === 'stockist') {
+        this.getStockistDistDivision();
+      } else if (this.sessionData.type === 'distributor') {
+        this.getDivisionCustomerIds();
+      }
+    } else {
+      this.getDistributors();
+
+      this.delay(1000).then(any => {
+        this.isDistributors();
+      });
+    }
+  }
+
+  getDivisionCustomerIds() {
+    this.apiService.get('/api/user/getDivisionCustomerIds', this.sessionData.id).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          if (response.data[0].distCustomerIds.length) {
+            const result = this.distributors.filter(element => {
+              return element.plant === response.data[0].code;
+            });
+            this.userDistributors.push(result[0]);
+
+            // get user's division plant wise
+            this.userPlantDivisions[response.data[0].code] = response.data[0].divisions[0].divisions;
+
+            this.getDistributorStockists(result[0]);
+
+            this.delay(500).then(any => {
+              $("#distributor").val($("#distributor option:eq(1)").val());
+              $('#distributor_loader').hide();
+              $('#distributor').show();
+
+              $("#stockiest").val($("#stockiest option:eq(1)").val());
+              $('#stockiest_loader').hide();
+              $('#stockiest').show();
+
+              this.getStockiest();
+              this.getDivisions();
+            });
+          }
+        }
+      }
+    });
+  }
+
+  getDistributorStockists(plant) {
+    const reqData = {
+      plant: plant.plant
+    }
+    this.apiService.post('/api/stockiest/distributorStockiest', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data) {
+          const stockists = [];
+          response.data.forEach(element => {
+            stockists.push(element.customerId);
+          });
+
+          const reqCodes = {
+            codes: stockists
+          }
+          this.apiService.post('/api/user/getUserByCodes', reqCodes).subscribe((resp: any) => {
+            if (resp.status === 200) {
+              if (response.data) {
+                const userCode = [];
+                resp.data.forEach(element => {
+                  userCode.push(element.code);
+                });
+                
+                this.userPlantStockists[plant.plant] = userCode;
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
   getDistributors() {
+    this.distributors = [];
     this.apiService.fetch('/api/distributor/getDistributor9000').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
@@ -209,12 +285,24 @@ export class ClaimStatusComponent implements OnInit {
       });
     } else if (this.sessionData.type === 'stockist') {
       stockists.push(Number(stockist));
+    } else if (this.sessionData.type === 'distributor') {
+      stockists = stockist;
     }
 
     this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
+
+          // If user has access to approve claim of the distributor (self)
+          if (stockist.includes(distributor)) {
+            const self = {
+              customerId: 0,
+              organization: '-- SELF --'
+            }
+            this.stockiests.push(self);
+          }
+          // EOF If user has access to approve claim of the distributor (self)
 
           this.delay(5).then(any => {
             $("#stockiest").val($("#stockiest option:eq(1)").val());
@@ -247,6 +335,7 @@ export class ClaimStatusComponent implements OnInit {
   getUserDistStockistDivision() {
     this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
+        console.log('response.data--', response.data);
         if (response.data) {
           response.data.forEach(element => {
             // get user's distributor
@@ -261,6 +350,15 @@ export class ClaimStatusComponent implements OnInit {
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
+          });
+
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+
+            this.getStockiest();
+            this.getDivisions();
           });
         }
       }
@@ -278,13 +376,22 @@ export class ClaimStatusComponent implements OnInit {
             });
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
-            
-            
+
+
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.customerId;
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
+          });
+
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+
+            this.getStockiest();
+            this.getDivisions();
           });
         }
       }
@@ -299,6 +406,8 @@ export class ClaimStatusComponent implements OnInit {
   async getData() {
     this.loading = this.showData = true;
     this.accField = false;
+    this.allField = false;
+    this.optionField = false;
     this.records = this.tempRecords = [];
     this.totalAmount = 0;
     this.accAmount = 0;
@@ -328,7 +437,7 @@ export class ClaimStatusComponent implements OnInit {
     }
 
     const requestData = {
-      plant:distributor,
+      plant: distributor,
       customerId: stockiest,
       month: month,
       year: year,
@@ -344,7 +453,7 @@ export class ClaimStatusComponent implements OnInit {
           response.data.sort((a, b) => a.invoice - b.invoice);
           this.records = response.data;
           this.tempRecords = response.data;
-          
+
           this.tempRecords.forEach(element => {
             this.totalAmount = this.totalAmount + element.amount;
             this.accAmount = this.accAmount + element.approvedAmount;
@@ -353,8 +462,14 @@ export class ClaimStatusComponent implements OnInit {
           this.loading = false;
           this.showData = true;
 
-          if (status === 'acceptedHo' || status === 'approved') {
+          if (status === 'approved') {
             this.accField = true;
+          } else if (status === 'rejected') {
+            this.optionField = true;
+          }
+
+          if (stockiest === 'all') {
+            this.allField = true;
           }
         } else {
           this.loading = this.showData = false;
@@ -392,7 +507,7 @@ export class ClaimStatusComponent implements OnInit {
         'Amount': data.amount
       }
 
-      if (data.ftStatus === 1 && data.suhStatus === 1  && data.hoStatus === 1  && data.ho1Status === 1) {
+      if (data.ftStatus === 1 && data.suhStatus === 1 && data.hoStatus === 1 && data.ho1Status === 1) {
         if (data.approvedQty) invoiceData['Accepted QTY'] = data.approvedQty;
         if (data.approvedAmount) invoiceData['Accepted Amount'] = data.approvedAmount;
       }
@@ -505,6 +620,18 @@ export class ClaimStatusComponent implements OnInit {
 
   newTab(file) {
     window.open(this.apiURL + '/uploads/files/' + this.clickedFile.filename);
+  }
+
+  comments(data) {
+    this.clickedRecord = data;
+
+    var modal = document.getElementById("modalComments");
+    modal.style.display = "block";
+  }
+
+  closeCommentsModal() {
+    var modal = document.getElementById("modalComments");
+    modal.style.display = "none";
   }
 
   errorHandling(error: any) {

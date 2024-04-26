@@ -32,6 +32,7 @@
     "@swimlane/ngx-datatable": "^20.0.0",
     "angular-datatables": "^6.0.0",
     "animate-sass": "^0.8.2",
+    "bootstrap-select": "^1.13.18",
     "datatables.net": "^1.13.10",
     "datatables.net-bs5": "^1.11.3",
     "datatables.net-dt": "^1.13.10",

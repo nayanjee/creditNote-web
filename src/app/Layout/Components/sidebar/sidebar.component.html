@@ -31,7 +31,7 @@
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('2')">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('1')">
               <a routerLink="/stockiest/draftClaim" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-notebook"></i>
                 <span class="vsm-title">Draft Claim</span>
@@ -45,26 +45,26 @@
               </a>
             </div> -->
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('5')">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('4')">
               <a routerLink="/headoffice/stockiestClaim" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-check"></i>
                 <span class="vsm-title">Claim Approval</span>
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('3')">
+            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('2')">
               <a routerLink="/stockiest/claimStatus" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-id"></i>
                 <span class="vsm-title">Claim Status</span>
               </a>
             </div>
 
-            <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('6')">
+            <!-- <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('6')">
               <a routerLink="/headoffice/claimStatus" routerLinkActive="active-item" class="vsm-link">
                 <i class="vsm-icon pe-7s-id"></i>
                 <span class="vsm-title">Claim Status (HO)</span>
               </a>
-            </div>
+            </div> -->
             
             <ngb-accordion [destroyOnHide]="false" [closeOthers]="true" [activeIds]="extraParameter">
               <ngb-panel id="formElementsMenu">
@@ -78,22 +78,22 @@
                 <ng-template ngbPanelContent>
                   <div class="vsm-dropdown">
                     <div class="vsm-list">
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('5')">
                         <a routerLink="users/listUser" routerLinkActive="active-item" class="vsm-link">
                           <span class="vsm-title">Users</span>
                         </a>
                       </div>
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('7')">
                         <a routerLink="division/list" routerLinkActive="active-item" class="vsm-link">
                           <span class="vsm-title">Divisions</span>
                         </a>
                       </div>
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('9')">
                         <a routerLink="stockiest/list" routerLinkActive="active-item" class="vsm-link">
                           <span class="vsm-title">Stockiest</span>
                         </a>
                       </div>
-                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('8')">
+                      <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('12')">
                         <a routerLink="distributor/list" routerLinkActive="active-item" class="vsm-link">
                           <span class="vsm-title">Distributors</span>
                         </a>

@@ -49,7 +49,8 @@
           <label for="stockiest" class="form-label fb">
             Stockiest
             <span *ngIf="selectedFields.stockiest" style="color: orange; font-size: 12px;">
-              ({{selectedFields.stockiest}})
+              <span *ngIf="selectedFields.stockiest == 0">(Self)</span>
+              <span *ngIf="selectedFields.stockiest != 0">({{selectedFields.stockiest}})</span>
             </span>
           </label>
           <select id="stockiest" class="form-select" style="display: none;" (change)="filterData($event)">
@@ -757,7 +758,7 @@
               </tr>
               <tr *ngFor="let allotment of allotedInvoiceQty" style="height: 30px;">
                 <td class="tc">{{allotedHoInvoiceQty[0].billDocNumber}}</td>
-                <td class="tc">{{allotedHoInvoiceQty[0].salesQty}}</td>
+                <td class="tc">{{allotedHoInvoiceQty[0].saleUnit}}</td>
                 <td class="tc">{{allotment.stkInvoice}}</td>
                 <td class="tc">{{allotment.stkInvoiceQty}}</td>
                 <td class="tc">{{allotment.stkRemnQty}}</td>

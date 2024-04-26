@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+// import { Meta } from '@angular/platform-browser';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@angular/forms';
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -88,13 +89,17 @@ export class StockiestClaimComponent implements OnInit {
   clickedRecord: any = [];
 
   constructor(
+    // private meta: Meta,
     private router: Router,
     private fb: FormBuilder,
     private modalService: NgbModal,
     private activatedRoute: ActivatedRoute,
     private apiService: AppServicesService
   ) {
-
+    /* this.meta.addTags([ 
+      { name: 'description', content: 'This is an article about Angular Meta service' }, 
+      { name: 'keywords', content: 'angular, javascript, typescript, meta, seo' } 
+    ]); */
   }
 
   ngOnInit() {
@@ -104,19 +109,19 @@ export class StockiestClaimComponent implements OnInit {
 
     this.heading = this.sessionData.type === 'ho' ? 'HO Approval' : 'Field Approval';
 
-    // Current Month and Year
-    const currentMonth = moment().format("MM");
-    this.currentMonth = parseInt(currentMonth);
-
-    // To show previous 2 years in dropdown
-    const currentYear = moment().format("YYYY");
-    this.currentYear = parseInt(currentYear);
-    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
-      const year = { id: i, name: i };
-      this.years.push(year);
-    }
-
     this.delay(1000).then(any => {
+      // Current Month and Year
+      const currentMonth = moment().format("MM");
+      this.currentMonth = parseInt(currentMonth);
+
+      // To show previous 2 years in dropdown
+      const currentYear = moment().format("YYYY");
+      this.currentYear = parseInt(currentYear);
+      for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+        const year = { id: i, name: i };
+        this.years.push(year);
+      }
+
       // To show this data as predefined in the form
       if (parseInt(currentMonth) - 1 <= 0) {
         this.selectedYear = parseInt(currentYear) - 1;
@@ -125,32 +130,13 @@ export class StockiestClaimComponent implements OnInit {
         this.selectedYear = currentYear;
         this.selectedMonth = parseInt(currentMonth) - 1;
       }
+
+      $('#type').val('scheme');
       $('#month').val(this.selectedMonth);
       $('#year').val(this.selectedYear);
 
-      $("#distributor").val($("#distributor option:eq(1)").val());
-      $('#distributor_loader').hide();
-      $('#distributor').show();
-
-      this.getStockiest();
-      this.getDivisions();
-
-      this.delay(1000).then(any => {
-        const distributor = $("#distributor option:selected").val();
-        const stockiest = $("#stockiest option:selected").val();
-        const month = $("#month option:selected").val();
-        const year = $("#year option:selected").val();
-
-        // Put default selected field value
-        this.selectedFields['distributor'] = distributor;
-        this.selectedFields['stockiest'] = stockiest;
-        this.selectedFields['type'] = '';
-        this.selectedFields['division'] = '';
-        this.selectedFields['month'] = month;
-        this.selectedFields['year'] = year;
-
-        this.getData();
-      });
+      this.selectedFields['month'] = this.selectedMonth;
+      this.selectedFields['year'] = this.selectedYear;
     });
 
     this.getDistributors();
@@ -158,7 +144,10 @@ export class StockiestClaimComponent implements OnInit {
     this.getCategories();
     this.getProduct();
     this.getBatch();
-    this.getUserDistStockistDivision();
+
+    this.delay(1000).then(any => {
+      this.isDistributors();
+    });
   }
 
   toast(typeIcon, message) {
@@ -188,6 +177,18 @@ export class StockiestClaimComponent implements OnInit {
       $('#err_month').text('You can\'t claim for this month.').show();
     } else {
       this.filterData(e);
+    }
+  }
+
+  isDistributors() {
+    if (this.distributors[0]) {
+      this.getUserDistStockistDivision();
+    } else {
+      this.getDistributors();
+
+      this.delay(1000).then(any => {
+        this.isDistributors();
+      });
     }
   }
 
@@ -231,6 +232,18 @@ export class StockiestClaimComponent implements OnInit {
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
           });
+
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+
+            const distributor = $("#distributor option:selected").val();
+            this.selectedFields['distributor'] = distributor;
+
+            this.getStockiest();
+            this.getDivisions();
+          });
         }
       }
     });
@@ -249,6 +262,16 @@ export class StockiestClaimComponent implements OnInit {
         if (response.data.length) {
           this.stockiests = response.data;
 
+          // If user has access to approve claim of the distributor (self)
+          if (stockist.includes(distributor)) {
+            const self = {
+              customerId: 0,
+              organization: '-- SELF --'
+            }
+            this.stockiests.push(self);
+          }
+          // EOF If user has access to approve claim of the distributor (self)
+
           this.delay(5).then(any => {
             $("#stockiest").val($("#stockiest option:eq(1)").val());
             $('#stockiest_loader').hide();
@@ -256,6 +279,8 @@ export class StockiestClaimComponent implements OnInit {
 
             const stockiest = $("#stockiest option:selected").val();
             this.selectedFields['stockiest'] = stockiest;
+
+            this.getData();
           });
         }
       }
@@ -266,7 +291,6 @@ export class StockiestClaimComponent implements OnInit {
     let divisions = [];
     this.divisions = [];
     const distributor = $("#distributor option:selected").val();
-    console.log(distributor);
     const division = this.userPlantDivisions[distributor];
     division.forEach(element => {
       divisions.push(Number(element));
@@ -347,7 +371,6 @@ export class StockiestClaimComponent implements OnInit {
           response.data.sort((a, b) => a.invoice - b.invoice);
           this.records = response.data;
           this.tempRecords = response.data;
-          console.log('records--', this.records);
 
           if (this.selectedFields['type'] || this.selectedFields['division']) {
             this.filterDataTwice(this.selectedFields['type'], this.selectedFields['division']);
@@ -393,6 +416,7 @@ export class StockiestClaimComponent implements OnInit {
     this.showData = true;
 
     const targetId = e.target.id;
+    // console.log('targetId--', targetId);
     this.selectedFields[targetId] = e.target.value;
     $("#divisionCode").text('');
 
@@ -1383,7 +1407,6 @@ export class StockiestClaimComponent implements OnInit {
           }
 
           const batchMrp_select = $('#batchMrp_selected_' + record._id).val();
-          console.log('batchMrp_select---', batchMrp_select);
           if (batchMrp_select == 0) {
             Swal.fire(
               'Oops... can\'t proceed',
@@ -1528,7 +1551,8 @@ export class StockiestClaimComponent implements OnInit {
         modal.style.display = "block";
       } else {
         const duplicacy = await this.checkDuplicacy(this.approvalClickedClaim);
-        if (duplicacy['data']) {
+        console.log('duplicacy--', duplicacy);
+        if (duplicacy['data'] && duplicacy['data']['ho1Status'] === 1) {
           Swal.fire({
             title: 'Pay attention',
             text: 'Such claim has already been accepted!',
@@ -1602,6 +1626,76 @@ export class StockiestClaimComponent implements OnInit {
             }
           })
           return;
+          //} else if (duplicacy['data'] && duplicacy['data']['ho1Status'] === 1) {
+
+        } else {
+          const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
+          console.log('allocatedQty--', allocatedQty);
+          if (allocatedQty.length) {
+            if (this.sessionData.workType === 'ho1') {
+              claim['ho1Status'] = 1;
+              claim['ho1ActionBy'] = this.sessionData.id;
+              claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+              console.log("Aaa--", claim);
+
+              this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+                if (response.status === 200) {
+                  $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
+                  $('#def_unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+                  $('#approvedIcon_' + this.approvalClickedClaim['_id']).show();
+                  $('#unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+
+                  Swal.fire(
+                    'Approved!',
+                    'You approved the claim successfully.',
+                    'success'
+                  );
+
+                } else {
+                  Swal.fire(
+                    'Oops',
+                    'Something went wrong please try again.',
+                    'error'
+                  );
+                }
+              });
+            } else {
+              allocatedQty.forEach(async element => {
+                const reqData = {
+                  billDocNumber: element['stkInvoiceNo'],
+                  billToParty: this.approvalClickedClaim['customerId'],
+                  batch: this.approvalClickedClaim['batch'],
+                  allocatedQty: element['allocatedQty'],
+                  claimId: this.approvalClickedClaim['_id']
+                }
+                const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
+              });
+
+              this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+                if (response.status === 200) {
+                  this.getRemaining(claim);
+                } else {
+                  Swal.fire(
+                    'Oops',
+                    'Something went wrong please try again.',
+                    'error'
+                  );
+                }
+              });
+            }
+          } else {
+            this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+              if (response.status === 200) {
+                this.getRemaining(claim);
+              } else {
+                Swal.fire(
+                  'Oops',
+                  'Something went wrong please try again.',
+                  'error'
+                );
+              }
+            });
+          }
         }
       }
     }
@@ -1653,6 +1747,7 @@ export class StockiestClaimComponent implements OnInit {
       batch: demand.batch
     };
     const hoInvoice: any = await this.hoInvoice(reqData);
+    console.log('hoInvoice--', hoInvoice);
     if (hoInvoice.length) {
       this.allotedHoInvoiceQty.push(hoInvoice[0]);
 
@@ -1660,14 +1755,15 @@ export class StockiestClaimComponent implements OnInit {
         customerId: demand.customerId,
         batch: demand.batch
       }
+      console.log('reqDataSales--', reqDataSales);
       const salesAndRemainingQuantity: any = await this.salesAndRemainingQuantity(reqDataSales);
-      if (salesAndRemainingQuantity) {
+      if (salesAndRemainingQuantity.length) {
         let allotedQty = 0;
         this.salesAndRemainings.push(salesAndRemainingQuantity);
 
         salesAndRemainingQuantity.forEach(async (remaining) => {
           if (allotedQty >= demand.saleQuantity) {
-            // console.log('Break foreach');
+            console.log('Break foreach');
             return; // Break foreach loop
           } else {
             let allotQty = 0;
@@ -1714,6 +1810,7 @@ export class StockiestClaimComponent implements OnInit {
               totalPtdAmt: (remaining.ptd * allotQty).toFixed(2),
               image: ''
             };
+            console.log('claimData--', claimData);
             this.allotedInvoiceQty.push(claimData);
           }
         });
@@ -1869,10 +1966,31 @@ export class StockiestClaimComponent implements OnInit {
     } else {
       const allocatQty = await this.allocateQuantity(this.allotedInvoiceQty);
 
-      this.approvalClickedClaim['cnQty'] = this.allotedQty;
-      this.approvalClickedClaim['hoStatus'] = 1;
-      this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
-      this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+      let amount = 0;
+      const pts = this.approvalClickedClaim['pts'];
+      const freeQuantity = this.approvalClickedClaim['freeQuantity'];
+      const saleQuantity = this.approvalClickedClaim['saleQuantity'];
+      if (freeQuantity) {
+        amount = pts * this.allotedQty;
+      } else if (saleQuantity) {
+        const margin = this.approvalClickedClaim['margin'];
+        const billingRate = this.approvalClickedClaim['billingRate'];
+        const difference = pts - billingRate;
+        const totalDifference = difference + (billingRate * margin / 100);
+        amount = totalDifference * this.allotedQty;
+      }
+      this.approvalClickedClaim['approvedQty'] = this.allotedQty;
+      this.approvalClickedClaim['approvedAmount'] = amount;
+
+      if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
+        this.approvalClickedClaim['ho1Status'] = 1;
+        this.approvalClickedClaim['ho1ActionBy'] = this.sessionData.id;
+        this.approvalClickedClaim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+      } else {
+        this.approvalClickedClaim['hoStatus'] = 1;
+        this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
+        this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+      }
 
       this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
         if (response.status === 200) {
@@ -2149,9 +2267,16 @@ export class StockiestClaimComponent implements OnInit {
       this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
         if (response.status === 200) {
           this.toast('success', 'Successfully updated.');
+          this.getData();
+          
           setTimeout(() => {
-            window.location.reload();
+            this.closeUpdateCommentModal();
+            this.closeEditModal();
           }, 2000);
+
+          /* setTimeout(() => {
+            window.location.reload();
+          }, 2000); */
         } else {
           this.toast('error', 'Something went wrong. Try refreshing the page or try again later.');
         }
