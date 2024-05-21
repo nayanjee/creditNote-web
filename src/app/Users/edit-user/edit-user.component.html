@@ -61,7 +61,7 @@
                 <label for="workType" class="form-label col-sm-2 col-form-label">Work Type</label>
                 <div class="col-sm-10">
                     <select id="workType" class="form-select" formControlName="workType"
-                        (change)="getSupervisor($event)">
+                        (change)="getSupervisor($event.target.value)">
                         <option value="" disabled selected> Work Type </option>
                         <option *ngFor="let workType of workTypes" [value]="workType.id">
                             {{workType.name}}
@@ -179,7 +179,7 @@
                             {{i+2}}</label>
                         <div class="col-sm-8">
                             <select id="distributor_{{i}}" class="form-select" formControlName="distributor"
-                                (change)="getDistributorData($event, i)">
+                                (change)="getDistributorData($event.target.value, i)">
                                 <option value="" disabled selected> Distributor </option>
                                 <option *ngFor="let distributor of distributors" [value]="distributor.plant">
                                     {{distributor.plant}} - {{distributor.organization | titlecase}}

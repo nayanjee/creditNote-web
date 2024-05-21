@@ -4,6 +4,7 @@ import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@ang
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { AppServicesService } from './../../shared/service/app-services.service';
+import { JitCompilerFactory } from '@angular/platform-browser-dynamic';
 declare var $: any;
 
 @Component({
@@ -44,6 +45,7 @@ export class EditUserComponent implements OnInit {
   selectedStockiestDivision: any = [];
   StockiestDivision: any = [];
   selectedDistributor_divisions_id: any = [];
+  fieldDistributorStockists: any = [];
   records: any = [];
   selectedUser: any;
   userTypes = [
@@ -105,16 +107,12 @@ export class EditUserComponent implements OnInit {
       if (response.status === 200) {
 
         this.records = response.data;
-        console.log('this.records--', this.records[0]);
-        //console.log('this.records--', this.records[0].cn_stockist_divisions[0].plant);
-
-
-
         this.userForm.controls['userType'].setValue(this.records[0].userType, { onlySelf: true });
         this.userForm.value.userType = this.records[0].userType;
         this.userForm.controls['email'].setValue(this.records[0].email, { onlySelf: true });
         this.userForm.value.email = this.records[0].email;
         this.selectedPermission = this.records[0].gen_permissions[0]._id;
+        let fpermission = this.records[0].gen_permissions[0].permissions;
 
         this.showFormFields(this.records[0].userType);
         if (this.records[0].userType == "stockist") {
@@ -126,9 +124,6 @@ export class EditUserComponent implements OnInit {
 
           this.selectedStockiestDivision = this.records[0].cn_stockist_divisions[0]._id;
           let fdivision = this.records[0].cn_stockist_divisions[0].divisions;
-
-          let fpermission = this.records[0].gen_permissions[0].permissions;
-
           fdivision.forEach((item, key) => {
             this.userForm.controls['stockist_all'].setValue(this.records[0].cn_stockist_divisions[0].customerId, { onlySelf: true });
             this.userForm.value.stockist_all = this.records[0].cn_stockist_divisions[0].customerId;
@@ -138,46 +133,107 @@ export class EditUserComponent implements OnInit {
             });
 
           });
-          fpermission.forEach((item, key) => {
-            this.delay(1000).then(any => {
-              const checkBox = document.getElementById("permissionCheckbox_all_" + item);
-              checkBox['checked'] = true;
-              this.togglePermissionCheckbox(item);
-            });
-
-          });
-
-
-        }
-
-        if (this.records[0].userType == "distributor") {
+        } else if (this.records[0].userType == "distributor") {
           this.userForm.controls['distributor_def'].setValue(this.records[0].cn_distributor_divisions[0].plant, { onlySelf: true });
           this.userForm.value.distributor_def = this.records[0].cn_distributor_divisions[0].plant;
           let fdivision = this.records[0].cn_distributor_divisions[0].divisions;
-          let fpermission = this.records[0].gen_permissions[0].permissions;
-          this.selectedDistributor_divisions_id = this.records[0].cn_distributor_divisions[0]._id;
 
+          this.selectedDistributor_divisions_id = this.records[0].cn_distributor_divisions[0]._id;
           fdivision.forEach((item, key) => {
-            //this.userForm.controls['stockist_all'].setValue(this.records[0].cn_stockist_divisions[0].customerId, { onlySelf: true });
-            //this.userForm.value.stockist_all = this.records[0].cn_stockist_divisions[0].customerId;
             this.delay(1000).then(any => {
               const checkBox = document.getElementById("divisionCheckbox_all" + "_" + item);
               checkBox['checked'] = true;
             });
-
           });
-          fpermission.forEach((item, key) => {
-            this.delay(1000).then(any => {
-              const checkBox = document.getElementById("permissionCheckbox_all_" + item);
-              checkBox['checked'] = true;
-              this.togglePermissionCheckbox(item);
-            });
+        } else if (this.records[0].userType == "ho" || this.records[0].userType == "field") {
+          this.userForm.controls['username'].setValue(this.records[0].name, { onlySelf: true });
+          this.userForm.value.username = this.records[0].name;
+          this.userForm.controls['code'].setValue(this.records[0].code, { onlySelf: true });
+          this.userForm.value.code = this.records[0].code;
+          this.userForm.controls['workType'].setValue(this.records[0].workType, { onlySelf: true });
+          this.userForm.value.workType = this.records[0].workType;
+          this.getSupervisor(this.records[0].workType);
+          this.userForm.controls['supervisor'].setValue(this.records[0].supervisor, { onlySelf: true });
+          this.userForm.value.supervisor = this.records[0].supervisor;
+          const cn_emp_dist_stockist_divisions = this.records[0].cn_emp_dist_stockist_divisions;
+          if (cn_emp_dist_stockist_divisions.length > 0) {
+            let j = 0;
+            for (let i = 0; i < cn_emp_dist_stockist_divisions.length; i++) {
+              if (i === 0) {
+                this.userForm.controls['distributor_def'].setValue(this.records[0].cn_emp_dist_stockist_divisions[i].plant, { onlySelf: true });
+                this.userForm.value.distributor_def = this.records[i].cn_emp_dist_stockist_divisions[i].plant;
+                this.getDistributorData(this.records[0].cn_emp_dist_stockist_divisions[i].plant, -1);
+                let fdivision = this.records[0].cn_emp_dist_stockist_divisions[i].divisions;
+                fdivision.forEach((item, key) => {
+                  this.delay(1000).then(any => {
+                    const checkBoxDivision = document.getElementById("divisionCheckbox_" + this.records[0].cn_emp_dist_stockist_divisions[i].plant + "_" + item);
+                    checkBoxDivision['checked'] = true;
+                  });
+                });
+                let fstockiest = this.records[0].cn_emp_dist_stockist_divisions[i].stockists;
+                fstockiest.forEach((item, key) => {
+                  this.delay(1000).then(any => {
+                    this.delay(1000).then(any => {
+                      if (this.records[0].cn_emp_dist_stockist_divisions[i].plant == item) {
+                        const checkBoxStockiestself = document.getElementById("inlineCheckbox_" + this.records[0].cn_emp_dist_stockist_divisions[i].plant + "_99999");
+                        checkBoxStockiestself['checked'] = true;
+                      } else {
+                        const checkBoxStockiest = document.getElementById("inlineCheckbox_" + this.records[0].cn_emp_dist_stockist_divisions[i].plant + "_" + item);
+                        checkBoxStockiest['checked'] = true;
+                      }
+                    });
 
-          });
+                  });
 
+                });
+              } else {
+                this.addMore();
+                this.delay(1000).then(any => {
+                  this.getDistributorData(this.records[0].cn_emp_dist_stockist_divisions[i].plant, j);
+                });
 
+                this.delay(1000).then(any => {
+                  $('#distributor_' + j).val(this.records[0].cn_emp_dist_stockist_divisions[i].plant);
+                  j++;
+                });
+                let fdivision = this.records[0].cn_emp_dist_stockist_divisions[i].divisions;
+                this.delay(1000).then(any => {
+                  fdivision.forEach((item, key) => {
+                    this.delay(1000).then(any => {
+                      const checkBoxDivision = document.getElementById("divisionCheckbox_" + this.records[0].cn_emp_dist_stockist_divisions[i].plant + "_" + item);
+                      checkBoxDivision['checked'] = true;
+                    });
+                  });
+
+                });
+                let fstockiest = this.records[0].cn_emp_dist_stockist_divisions[i].stockists;
+                this.delay(1000).then(any => {
+                  fstockiest.forEach((item, key) => {
+                    this.delay(1000).then(any => {
+                      this.delay(1000).then(any => {
+                        if (this.records[0].cn_emp_dist_stockist_divisions[i].plant == item) {
+                          const checkBoxStockiestself = document.getElementById("inlineCheckbox_" + this.records[0].cn_emp_dist_stockist_divisions[i].plant + "_99999");
+                          checkBoxStockiestself['checked'] = true;
+                        } else {
+                          const checkBoxStockiest = document.getElementById("inlineCheckbox_" + this.records[0].cn_emp_dist_stockist_divisions[i].plant + "_" + item);
+                          checkBoxStockiest['checked'] = true;
+                        }
+                      });
+                    });
+                  });
+                });
+              }
+            }
+          }
         }
+        fpermission.forEach((item, key) => {
+          this.delay(1000).then(any => {
+            const checkBox = document.getElementById("permissionCheckbox_all_" + item);
+            checkBox['checked'] = true;
+            this.togglePermissionCheckbox(item);
+          });
 
+        });
 
 
 
@@ -233,6 +289,10 @@ export class EditUserComponent implements OnInit {
   }
 
   removeDistributor(i: number) {
+
+    this.fieldDistributorStockists.splice(i, 1);
+
+
     this.dist().removeAt(i);
   }
 
@@ -325,12 +385,10 @@ export class EditUserComponent implements OnInit {
 
     var listdiv = document.querySelector("#division_data_" + row);
     listdiv.innerHTML = '';
-
     this.apiService.post('/api/distributor/distributorDivison', reqData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.StockiestDivision = response.data[0].divisions;
-          console.log(this.StockiestDivision);
           response.data[0].divisions.forEach((item, key) => {
             const result = this.divisions.filter(element => {
               return element.division === Number(item);
@@ -346,8 +404,6 @@ export class EditUserComponent implements OnInit {
 
           $('#division_sel_' + row).hide();
           $('#division_div_' + row).show();
-
-          //console.log('avinash---');
         }
       }
     });
@@ -376,10 +432,11 @@ export class EditUserComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.distributorStockists = response.data;
+          this.fieldDistributorStockists[row] = response.data;
           $.each(response.data, function (key, item) {
             var div = document.createElement('div');
             div.classList.add("col-sm-4");
-            div.innerHTML = '<input class="form-check-input" style="margin: 5px 0px 0px 0px;" type="checkbox" name="chkbox_' + row + '" id="inlineCheckbox_' + source + '_' + key + '" value="' + item.customerId + '"><label class="form-check-label" style="margin: 2px 0px 2px 4px;" for="inlineCheckbox_' + source + '_' + key + '">' + item.organization + '</label>';
+            div.innerHTML = '<input class="form-check-input" style="margin: 5px 0px 0px 0px;" type="checkbox" name="chkbox_' + row + '" id="inlineCheckbox_' + source + '_' + item.customerId + '" value="' + item.customerId + '"><label class="form-check-label" style="margin: 2px 0px 2px 4px;" for="inlineCheckbox_' + source + '_' + key + '">' + item.organization + '</label>';
 
             listdiv.appendChild(div);
           });
@@ -542,7 +599,7 @@ export class EditUserComponent implements OnInit {
 
   getSupervisor(e) {
     this.supervisors = [];
-    //console.log('e.target.value--', e);
+
     this.apiService.get('/api/userSupervisor', e).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
@@ -601,7 +658,6 @@ export class EditUserComponent implements OnInit {
       // Get checked divisions
       //const daCheckboxes = document.getElementsByName('dchkbox_all');
       const daCheckboxes = this.divisions;
-      //console.log('distributordivision===', daCheckboxes)
       for (var d = 0; d < daCheckboxes.length; d++) {
         const checkbox = $("#divisionCheckbox_all_" + daCheckboxes[d].division);
         if (checkbox.is(":checked")) {
@@ -636,10 +692,10 @@ export class EditUserComponent implements OnInit {
         // Get checked divisions
         //const dCheckboxes = document.getElementsByName('dchkbox_' + row);
         const dCheckboxes = this.StockiestDivision;
-        //console.log('dCheckboxeslength: ' + dCheckboxes.length);
+
         for (var d = 0; d < dCheckboxes.length; d++) {
           const checkbox = $("#divisionCheckbox_" + plant + "_" + this.StockiestDivision[d]);
-          //console.log('divisionCheckbox====: ', "#divisionCheckbox_" + plant + "_" + this.StockiestDivision[d]);
+
           if (checkbox.is(":checked")) {
             const value = checkbox.val();
             selectedDivisions.push(value);
@@ -688,11 +744,11 @@ export class EditUserComponent implements OnInit {
       }
 
       const countDistributor = this.dist().controls.length;
+      let j = -1;
       for (var i = 0; i <= countDistributor; i++) {
         const r = i - 1;
         const row = (r === -1) ? 'def' : r;
         const plant = $('#distributor_' + row + ' option:selected').val();
-
         if (!plant) {
           error = true;
           $('#distributor_' + row).addClass('is-invalid');
@@ -703,19 +759,14 @@ export class EditUserComponent implements OnInit {
 
         // Get checked divisions
         const sDivisions = [];
-        const dCheckboxes = document.getElementsByName('dchkbox_' + row);
-
+        const dCheckboxes = this.StockiestDivision;
         for (var d = 0; d < dCheckboxes.length; d++) {
-
-
-          const checkbox = $("#divisionCheckbox_" + plant + "_" + d);
-
+          const checkbox = $("#divisionCheckbox_" + plant + "_" + this.StockiestDivision[d]);
           if (checkbox.is(":checked")) {
             const value = checkbox.val();
             sDivisions.push(value);
           }
         }
-
         if (sDivisions.length === 0) {
           error = true;
           $('#division_sel_' + row).addClass('is-invalid');
@@ -728,8 +779,12 @@ export class EditUserComponent implements OnInit {
 
         // Get checked stockist
         const sStockists = [];
-        const checkboxes = document.getElementsByName('chkbox_' + row);
-        //console.log('checkboxes.length--', checkboxes.length);
+        if (j === -1) {
+          var checkboxes = this.fieldDistributorStockists['def'];
+        } else {
+          var checkboxes = this.fieldDistributorStockists[j];
+        }
+
 
         // if SELF checkbox checked
         const checkbox = $("#inlineCheckbox_" + plant + "_99999");
@@ -740,10 +795,20 @@ export class EditUserComponent implements OnInit {
         // EOF if SELF checkbox checked
 
         for (var s = 0; s < checkboxes.length; s++) {
-          const checkbox = $("#inlineCheckbox_" + plant + "_" + s);
-          if (checkbox.is(":checked")) {
-            const value = checkbox.val();
-            sStockists.push(value);
+
+          if (row === 'def') {
+            const checkbox = $("#inlineCheckbox_" + plant + "_" + this.fieldDistributorStockists['def'][s].customerId);
+            if (checkbox.is(":checked")) {
+              const value = checkbox.val();
+              sStockists.push(value);
+            }
+          }
+          else {
+            const checkbox = $("#inlineCheckbox_" + plant + "_" + this.fieldDistributorStockists[row][s].customerId);
+            if (checkbox.is(":checked")) {
+              const value = checkbox.val();
+              sStockists.push(value);
+            }
           }
         }
 
@@ -755,10 +820,8 @@ export class EditUserComponent implements OnInit {
         } else {
           selectedStockists[i] = sStockists;
         }
-        // EOF Get checked stockist
-
-        //console.log('selectedDivisions--', selectedDivisions);
-        //console.log('selectedStockists--', selectedStockists);
+        // EOF Get checked stockist       
+        j++;
       }
     }
 
