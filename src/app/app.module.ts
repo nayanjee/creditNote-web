@@ -71,6 +71,7 @@ import { ListUserComponent } from './Users/list-user/list-user.component';
 import { TestComponent } from './Test/test.component';
 
 import { NgSelectModule } from '@ng-select/ng-select';
+import { MaterialModule } from './material.module';
 import { AddDivisionComponent } from './Division/add-division/add-division.component';
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
 import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
@@ -150,6 +151,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     NgSelectModule,
     NgxDatatableModule,
     DataTablesModule,
+    MaterialModule,
     NgxMaskModule.forRoot(),
   ],
   exports: [
