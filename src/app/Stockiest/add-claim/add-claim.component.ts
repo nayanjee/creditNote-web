@@ -74,6 +74,7 @@ export class AddClaimComponent implements OnInit {
     totalDifference: '0.00',
     amount: '0.00'
   };
+  totalAmount: any = 0;
 
   constructor(
     private router: Router,
@@ -197,7 +198,7 @@ export class AddClaimComponent implements OnInit {
     this.claims().push(this.newClaim());
 
     const lastRow = $(".count").last().val();
-    const currentRowId = parseInt(lastRow) + 1
+    const currentRowId = parseInt(lastRow) + 1;
     setTimeout(function () {
       if (lastRow === undefined) {
         $('#invoice_0').focus();
@@ -856,6 +857,17 @@ export class AddClaimComponent implements OnInit {
         $('#amount_' + rowId).val(amount.toFixed(2));
       }
     }
+
+    let totalRows = $(".count").last().val();
+    if (totalRows == undefined) totalRows = -1;
+    let totalAmount = 0;
+    for (let row = -1; row <= totalRows; row++) {
+      const rId = (row === -1) ? 'def' : row;
+      const amount = $('#amount_' + rId).val();
+      totalAmount = totalAmount + parseFloat(amount);
+      //console.log('totalAmount--', totalAmount.toFixed(2));
+    }
+    this.totalAmount = totalAmount.toFixed(2);
   }
 
   validateMonth() {
@@ -888,6 +900,16 @@ export class AddClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
+
+          // If user has access to approve claim of the distributor (self)
+          if (stockist.includes(distributor.toString())) {
+            const self = {
+              customerId: 1,
+              organization: '-- SELF --'
+            }
+            this.stockiests.push(self);
+          }
+          // EOF If user has access to approve claim of the distributor (self)
 
           this.delay(5).then(any => {
             $("#stockiest").val($("#stockiest option:eq(1)").val());
@@ -1039,11 +1061,11 @@ export class AddClaimComponent implements OnInit {
       const rowId = (row === -1) ? 'def' : row;
 
       let header = '';
-      if (this.sessionData.type === 'distributor') {
-        header = distributor + '.::.' + distributor + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
-      } else {
+      // if (this.sessionData.type === 'distributor') {
+      //   header = distributor + '.::.' + distributor + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
+      // } else {
         header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
-      }
+      //}
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
       const division = $('#division_' + rowId).val();

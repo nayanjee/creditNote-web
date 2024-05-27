@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 // import { Meta } from '@angular/platform-browser';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@angular/forms';
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import * as moment from 'moment';
 
 import { environment } from './../../../environments/environment';
@@ -13,6 +15,10 @@ import { AppServicesService } from '../../shared/service/app-services.service';
 
 declare var $: any;
 
+/* export class Country {
+  constructor(public name: string, public code: string) {}
+} */
+
 @Component({
   selector: 'app-stockiest-claim',
   templateUrl: './stockiest-claim.component.html',
@@ -20,6 +26,13 @@ declare var $: any;
 })
 export class StockiestClaimComponent implements OnInit {
   private apiURL: any = environment.apiURL;
+  //@ViewChild('selectpicker') selectPicker: ElementRef;
+  /* ngAfterViewInit() {
+    console.log(this.selectPicker);
+    this.selectPicker.nativeElement.selectpicker();
+  } */
+  /* countryCtrl: FormControl;
+  filteredCountry: Observable<any[]>; */
 
   faStar = faStar;
   faPlus = faPlus;
@@ -79,6 +92,7 @@ export class StockiestClaimComponent implements OnInit {
   allotedInvoiceQty: any = [];
   allotedHoInvoiceQty: any = [];
   allotedQty: number = 0;
+  hoAllotedQty: number = 0;
   requestedQty: number = 0;
   displayStyle: string = "none";
   approvalClickedClaim: any = [];
@@ -87,6 +101,28 @@ export class StockiestClaimComponent implements OnInit {
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
   clickedRecord: any = [];
+
+  /* length: number;
+  name: string;
+  code: string;
+  country_lis: Country[] = [
+    { name: 'Afghanistan', code: 'AF' },
+    { name: 'Åland Islands', code: 'AX' },
+    { name: 'Albania', code: 'AL' },
+    { name: 'Algeria', code: 'DZ' },
+    { name: 'American Samoa', code: 'AS' },
+    { name: 'AndorrA', code: 'AD' },
+    { name: 'Angola', code: 'AO' },
+    { name: 'Anguilla', code: 'AI' },
+    { name: 'Antarctica', code: 'AQ' },
+    { name: 'Antigua and Barbuda', code: 'AG' },
+    { name: 'Argentina', code: 'AR' },
+    { name: 'Armenia', code: 'AM' },
+    { name: 'Aruba', code: 'AW' },
+  ]; */
+
+
+
 
   constructor(
     // private meta: Meta,
@@ -100,6 +136,14 @@ export class StockiestClaimComponent implements OnInit {
       { name: 'description', content: 'This is an article about Angular Meta service' }, 
       { name: 'keywords', content: 'angular, javascript, typescript, meta, seo' } 
     ]); */
+
+    /* this.countryCtrl = new FormControl();
+    this.filteredCountry = this.countryCtrl.valueChanges.pipe(
+      startWith(''),
+      map((country) =>
+        country ? this.filtercountry(country) : this.country_lis.slice()
+      )
+    ); */
   }
 
   ngOnInit() {
@@ -137,6 +181,8 @@ export class StockiestClaimComponent implements OnInit {
 
       this.selectedFields['month'] = this.selectedMonth;
       this.selectedFields['year'] = this.selectedYear;
+      this.selectedFields['division'] = 0;
+      this.selectedFields['type'] = 0;
     });
 
     this.getDistributors();
@@ -163,20 +209,28 @@ export class StockiestClaimComponent implements OnInit {
     })
   }
 
+  /* filtercountry(name: string) {
+    let arr = this.country_lis.filter(
+      (country) => country.name.toLowerCase().indexOf(name.toLowerCase()) === 0
+    );
+
+    return arr.length ? arr : [{ name: 'No Item found', code: 'null' }];
+  } */
+
   async delay(ms: number) {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
   }
 
-  validateMonth(e) {
+  validateMonth(value, targetId) {
     $('#err_month').hide();
 
-    const selectedYear = $("#year option:selected").val();
-    const selectedMonth = $("#month option:selected").val();
+    const selectedYear = this.selectedFields.year;
+    const selectedMonth = this.selectedFields.month;
 
     if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
       $('#err_month').text('You can\'t claim for this month.').show();
     } else {
-      this.filterData(e);
+      this.filterData(value, targetId);
     }
   }
 
@@ -234,12 +288,14 @@ export class StockiestClaimComponent implements OnInit {
           });
 
           this.delay(500).then(any => {
-            $("#distributor").val($("#distributor option:eq(1)").val());
+            /* $("#distributor").val($("#distributor option:eq(1)").val());
             $('#distributor_loader').hide();
             $('#distributor').show();
-
             const distributor = $("#distributor option:selected").val();
-            this.selectedFields['distributor'] = distributor;
+            this.selectedFields['distributor'] = distributor; */
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+            $('#distributor_loader').hide();
+            $('#distributor').show();
 
             this.getStockiest();
             this.getDivisions();
@@ -251,7 +307,8 @@ export class StockiestClaimComponent implements OnInit {
 
   getStockiest() {
     let stockists = [];
-    const distributor = $("#distributor option:selected").val();
+    //const distributor = $("#distributor option:selected").val();
+    const distributor = this.selectedFields.distributor;
     const stockist = this.userPlantStockists[distributor];
     stockist.forEach(element => {
       stockists.push(Number(element));
@@ -263,16 +320,16 @@ export class StockiestClaimComponent implements OnInit {
           this.stockiests = response.data;
 
           // If user has access to approve claim of the distributor (self)
-          if (stockist.includes(distributor)) {
+          if (stockist.includes(distributor.toString())) {
             const self = {
-              customerId: 0,
+              customerId: 1,
               organization: '-- SELF --'
             }
             this.stockiests.push(self);
           }
           // EOF If user has access to approve claim of the distributor (self)
 
-          this.delay(5).then(any => {
+          /* this.delay(5).then(any => {
             $("#stockiest").val($("#stockiest option:eq(1)").val());
             $('#stockiest_loader').hide();
             $('#stockiest').show();
@@ -281,7 +338,14 @@ export class StockiestClaimComponent implements OnInit {
             this.selectedFields['stockiest'] = stockiest;
 
             this.getData();
-          });
+          }); */
+
+          this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+
+          $('#stockiest_loader').hide();
+          $('#stockiest').show();
+
+          this.getData();
         }
       }
     });
@@ -290,7 +354,7 @@ export class StockiestClaimComponent implements OnInit {
   getDivisions() {
     let divisions = [];
     this.divisions = [];
-    const distributor = $("#distributor option:selected").val();
+    const distributor = this.selectedFields['distributor'];
     const division = this.userPlantDivisions[distributor];
     division.forEach(element => {
       divisions.push(Number(element));
@@ -411,42 +475,40 @@ export class StockiestClaimComponent implements OnInit {
     }
   }
 
-  filterData(e) {
+  filterData(value, targetId) {
     this.loading = true;
     this.showData = true;
 
-    const targetId = e.target.id;
-    // console.log('targetId--', targetId);
-    this.selectedFields[targetId] = e.target.value;
+    if (targetId === 'type') {
+      this.selectedFields[targetId] = value;
+    } else {
+      this.selectedFields[targetId] = parseInt(value);
+    }
+
     $("#divisionCode").text('');
 
-    const type = this.selectedFields.type;
-    const division = this.selectedFields.division;
-
     if (targetId === 'distributor') {
+      this.selectedFields.type = 0;
+      this.selectedFields.division = 0;
+
       this.getStockiest();
       this.getDivisions();
 
       this.delay(1000).then(any => {
         this.getData();
-
-        this.selectedFields.type = '';
-        this.selectedFields.division = '';
-
-        $("#type").val(this.selectedFields.type);
-        $("#division").val(this.selectedFields.division);
       });
     }
 
     if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
+      this.selectedFields.type = 0;
+      this.selectedFields.division = 0;
+
       this.getData();
-
-      this.selectedFields.type = '';
-      this.selectedFields.division = '';
-
-      $("#type").val(this.selectedFields.type);
-      $("#division").val(this.selectedFields.division);
     }
+
+    console.log('this.selectedFields--', this.selectedFields);
+    const type = this.selectedFields.type;
+    const division = this.selectedFields.division;
 
     if (division) {
       const div = this.divisions.filter(function (el) {
@@ -699,19 +761,22 @@ export class StockiestClaimComponent implements OnInit {
   }
 
   /***** Particulars key-up functionality *****/
-  searchParticulars(e, i) {
+  async searchParticulars(e, i) {
     const inputVal = e.currentTarget.value;
 
-    let results: any = [];
+    //let results: any = [];
     const id = (i === -1) ? 'def' : i;
 
     if (e.key != "Tab") {
-      if (inputVal.length) {
+      console.log('inputVal.length--', inputVal.length);
+      if (inputVal.length > 2) {
         $('#particulars_loader_' + id).show();
 
-        results = this.matchParticulars(inputVal, i);
+        const results = await this.matchParticulars(inputVal, i);
+        console.log('results--', results);
 
         this.delay(200).then(any => {
+          console.log('results2--', results);
           this.particularsSuggestions(results, inputVal, i);
         });
       } else {
@@ -726,6 +791,14 @@ export class StockiestClaimComponent implements OnInit {
   matchParticulars(str, i) {
     let results = [];
     const val = str.toLowerCase();
+
+    this.apiService.get('/api/particulars', val).subscribe((response: any) => {
+      if (response.status === 200 && response.data.length) {
+        this.particulars = response.data;
+      } else {
+        this.particulars = [];
+      }
+    });
 
     results = this.particulars.filter(function (d) {
       return d.name.toLowerCase().indexOf(val) > -1;
@@ -1601,6 +1674,7 @@ export class StockiestClaimComponent implements OnInit {
                       allocatedQty: element['allocatedQty'],
                       claimId: this.approvalClickedClaim['_id']
                     }
+
                     const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
                   });
                 }
@@ -1630,13 +1704,12 @@ export class StockiestClaimComponent implements OnInit {
 
         } else {
           const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
-          console.log('allocatedQty--', allocatedQty);
+          console.log('allocatedQty------------', allocatedQty);
           if (allocatedQty.length) {
             if (this.sessionData.workType === 'ho1') {
               claim['ho1Status'] = 1;
               claim['ho1ActionBy'] = this.sessionData.id;
               claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-              console.log("Aaa--", claim);
 
               this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
                 if (response.status === 200) {
@@ -1660,7 +1733,7 @@ export class StockiestClaimComponent implements OnInit {
                 }
               });
             } else {
-              allocatedQty.forEach(async element => {
+              /* allocatedQty.forEach(async element => {
                 const reqData = {
                   billDocNumber: element['stkInvoiceNo'],
                   billToParty: this.approvalClickedClaim['customerId'],
@@ -1668,8 +1741,9 @@ export class StockiestClaimComponent implements OnInit {
                   allocatedQty: element['allocatedQty'],
                   claimId: this.approvalClickedClaim['_id']
                 }
+                console.log('---------------------------------------', reqData)
                 const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
-              });
+              }); */
 
               this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
                 if (response.status === 200) {
@@ -1733,8 +1807,23 @@ export class StockiestClaimComponent implements OnInit {
     });
   }
 
+  findUpdateHoRemaining(data) {
+    return new Promise(resolve => {
+      this.apiService.post('/api/remaining/findUpdateHoRemaining', data).subscribe((resp: any) => {
+        if (resp.status === 200) {
+          resolve(resp);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
   async getRemaining(demand) {
+    console.log('demand--', demand);
+    this.allotedHoInvoiceQty = [];
     const distributorCustomerIds = [];
+
     const distCustIds: any = await this.getDistributorByPlant(demand.plant);
     if (distCustIds.length) {
       distCustIds.forEach(element => {
@@ -1742,25 +1831,150 @@ export class StockiestClaimComponent implements OnInit {
       });
     }
 
-    const reqData = {
-      customerId: { $in: distributorCustomerIds },
-      batch: demand.batch
-    };
-    const hoInvoice: any = await this.hoInvoice(reqData);
-    console.log('hoInvoice--', hoInvoice);
-    if (hoInvoice.length) {
-      this.allotedHoInvoiceQty.push(hoInvoice[0]);
+    if (demand.customerId === 1) {
+      /* Approval for SELF */
+      let hoAllotedQty = 0;
+
+      const reqData = {
+        customerId: { $in: distributorCustomerIds },
+        batch: demand.batch
+      };
+      const hoInvoice: any = await this.hoInvoice(reqData);
+      console.log('hoInvoice--', hoInvoice);
+
+      hoInvoice[0].forEach(async (hoRemaining) => {
+        console.log('hoRemaining--', hoRemaining);
+        if (hoAllotedQty >= demand.saleQuantity) {
+          console.log('Break foreach');
+          return; // Break foreach loop
+        } else {
+          console.log('Break foreach else');
+          let hoAllotQty = 0;
+          const hoRequiredQty = demand.saleQuantity - hoAllotedQty;
+          const hoRemainingStock = (hoRemaining.remainingData.length) ? hoRemaining.remainingData[0].quantity : hoRemaining.saleUnit;
+          console.log(hoRequiredQty, hoRemainingStock);
+
+          if (hoRemainingStock >= demand.saleQuantity) {
+            hoAllotQty = hoRequiredQty;
+          } else {
+            hoAllotQty = (hoRequiredQty >= hoRemainingStock) ? hoRemainingStock : hoRequiredQty;
+          }
+          hoAllotedQty = hoAllotedQty + hoAllotQty;
+
+          const margin = demand.margin ? demand.margin : 10;
+
+          const claimData = {
+            claimId: demand._id,
+            customerId: demand.customerId,
+            invoice: demand.invoice,
+            batch: hoRemaining.batch,
+            division: hoRemaining.divisionName,
+            product: hoRemaining.materialDesc,
+            material: hoRemaining.material,
+            particulars: '',
+            category: '',
+            distInvoice: hoRemaining.billDocNumber,
+            distInvQty: hoRemaining.saleUnit,
+            stkInvoice: '',
+            stkInvoiceQty: '',
+            distRemnQty: hoRemainingStock - hoAllotQty,
+            stkRemnQty: '',
+            hdnStkRemnQty: hoRemainingStock,
+            mrp: hoRemaining.mrp,
+            pts: hoRemaining.pts,
+            billingRate: demand.billingRate,
+            margin: margin,
+            freeQuantity: demand.freeQuantity,
+            saleQuantity: hoAllotQty,
+            difference: (hoRemaining.pts - demand.billingRate).toFixed(2),
+            totalDifference: ((hoRemaining.pts - demand.billingRate) + (demand.billingRate * margin / 100)).toFixed(2),
+            amount: (((hoRemaining.pts - demand.billingRate) + (demand.billingRate * margin / 100)) * hoAllotQty).toFixed(2),
+            totalSaleQuantity: hoAllotQty,
+            ptd: hoRemaining.ptd,
+            totalPtdAmt: (hoRemaining.ptd * hoAllotQty).toFixed(2),
+            image: ''
+          };
+          console.log('claimData--', claimData);
+          this.allotedHoInvoiceQty.push(claimData);
+        }
+      });
+
+      if (this.allotedHoInvoiceQty) {
+        this.hoAllotedQty = hoAllotedQty;
+        this.requestedQty = demand.saleQuantity;
+        this.openSelfPopup();
+      }
+    } else {
+      /* Approval for STOCKIST */
+      let hoAllotedQty = 0;
+
+      const reqData = {
+        customerId: { $in: distributorCustomerIds },
+        batch: demand.batch
+      };
+      const hoInvoice: any = await this.hoInvoice(reqData);
+      hoInvoice[0].forEach(async (hoRemaining) => {
+        if (hoAllotedQty >= demand.saleQuantity) {
+          console.log('Break foreach');
+          return; // Break foreach loop
+        } else {
+          console.log('Break foreach else');
+          let hoAllotQty = 0;
+          const hoRequiredQty = demand.saleQuantity - hoAllotedQty;
+          const hoRemainingStock = (hoRemaining.remainingData.length) ? hoRemaining.remainingData[0].quantity : hoRemaining.saleUnit;
+          if (hoRemainingStock) {
+            if (hoRemainingStock >= demand.saleQuantity) {
+              hoAllotQty = hoRequiredQty;
+            } else {
+              hoAllotQty = (hoRequiredQty >= hoRemainingStock) ? hoRemainingStock : hoRequiredQty;
+            }
+          }
+          hoAllotedQty = hoAllotedQty + hoAllotQty;
+          const margin = demand.margin ? demand.margin : 10;
+          const claimData = {
+            claimId: demand._id,
+            customerId: demand.customerId,
+            invoice: demand.invoice,
+            batch: hoRemaining.batch,
+            division: hoRemaining.divisionName,
+            product: hoRemaining.materialDesc,
+            material: hoRemaining.material,
+            particulars: '',
+            category: '',
+            distInvoice: hoRemaining.billDocNumber,
+            distInvQty: hoRemaining.saleUnit,
+            stkInvoice: '',
+            stkInvoiceQty: '',
+            distRemnQty: hoRemainingStock - hoAllotQty,
+            stkRemnQty: '',
+            hdnStkRemnQty: hoRemainingStock,
+            mrp: hoRemaining.mrp,
+            pts: hoRemaining.pts,
+            billingRate: demand.billingRate,
+            margin: margin,
+            freeQuantity: demand.freeQuantity,
+            saleQuantity: hoAllotQty,
+            difference: (hoRemaining.pts - demand.billingRate).toFixed(2),
+            totalDifference: ((hoRemaining.pts - demand.billingRate) + (demand.billingRate * margin / 100)).toFixed(2),
+            amount: (((hoRemaining.pts - demand.billingRate) + (demand.billingRate * margin / 100)) * hoAllotQty).toFixed(2),
+            totalSaleQuantity: hoAllotQty,
+            ptd: hoRemaining.ptd,
+            totalPtdAmt: (hoRemaining.ptd * hoAllotQty).toFixed(2),
+            image: ''
+          };
+          this.allotedHoInvoiceQty.push(claimData);
+        }
+      });
 
       const reqDataSales = {
         customerId: demand.customerId,
         batch: demand.batch
       }
-      console.log('reqDataSales--', reqDataSales);
       const salesAndRemainingQuantity: any = await this.salesAndRemainingQuantity(reqDataSales);
+      console.log('salesAndRemainingQuantity--', salesAndRemainingQuantity);
       if (salesAndRemainingQuantity.length) {
         let allotedQty = 0;
         this.salesAndRemainings.push(salesAndRemainingQuantity);
-
         salesAndRemainingQuantity.forEach(async (remaining) => {
           if (allotedQty >= demand.saleQuantity) {
             console.log('Break foreach');
@@ -1769,6 +1983,7 @@ export class StockiestClaimComponent implements OnInit {
             let allotQty = 0;
             const requiredQty = demand.saleQuantity - allotedQty;
             const remainingStock = (remaining.remainingData.length) ? remaining.remainingData[0].quantity : remaining.saleUnit;
+            console.log('requiredQty--', requiredQty, remainingStock);
 
             if (remainingStock >= demand.saleQuantity) {
               allotQty = requiredQty;
@@ -1810,29 +2025,24 @@ export class StockiestClaimComponent implements OnInit {
               totalPtdAmt: (remaining.ptd * allotQty).toFixed(2),
               image: ''
             };
-            console.log('claimData--', claimData);
+            
             this.allotedInvoiceQty.push(claimData);
           }
         });
+
+        if (hoAllotedQty <= 0) {
+          this.allotedHoInvoiceQty = [];
+          $('#stockistMod').css('width', '515px');
+          console.log('this.allotedHoInvoiceQty--', this.allotedHoInvoiceQty);
+        }
 
         if (this.allotedInvoiceQty) {
           this.allotedQty = allotedQty;
           this.requestedQty = demand.saleQuantity;
           this.openPopup();
         }
-      } else {
-        Swal.fire(
-          'Oops... can\'t proceed',
-          'The stockist has no stock of this batch/material.',
-          'error'
-        );
       }
-    } else {
-      Swal.fire(
-        'Oops... can\'t proceed',
-        'There has been no billing to the distributor for this batch/material within 2 year.',
-        'error'
-      );
+      console.log('allotedInvoiceQty---', this.allotedInvoiceQty);
     }
   }
 
@@ -1891,6 +2101,153 @@ export class StockiestClaimComponent implements OnInit {
     this.displayStyle = "none";
   }
 
+  openSelfPopup() {
+    var modal = document.getElementById("modalSelf");
+    modal.style.display = "block";
+  }
+  closeSelfPopup() {
+    var modal = document.getElementById("modalSelf");
+    modal.style.display = "none";
+  }
+
+  async approveSelf() {
+    if (this.requestedQty > this.hoAllotedQty) {
+      Swal.fire({
+        title: 'Are you sure want to approve?',
+        text: 'Only ' + this.hoAllotedQty + ' quantities out of ' + this.requestedQty + ' are being allotted.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, approve it!',
+        cancelButtonText: 'No, keep it'
+      }).then(async (result) => {
+        if (result.value) {
+          const allocatQty = await this.allocateHoQuantity(this.allotedHoInvoiceQty);
+
+          /* let amount = 0;
+          const pts = this.approvalClickedClaim['pts'];
+          const freeQuantity = this.approvalClickedClaim['freeQuantity'];
+          const saleQuantity = this.approvalClickedClaim['saleQuantity'];
+          if (freeQuantity) {
+            amount = pts * this.hoAllotedQty;
+          } else if (saleQuantity) {
+            const margin = this.approvalClickedClaim['margin'];
+            const billingRate = this.approvalClickedClaim['billingRate'];
+            const difference = pts - billingRate;
+            const totalDifference = difference + (billingRate * margin / 100);
+            amount = totalDifference * this.hoAllotedQty;
+          }
+
+          this.approvalClickedClaim['approvedQty'] = this.hoAllotedQty;
+          this.approvalClickedClaim['approvedAmount'] = amount;
+
+          if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
+            this.approvalClickedClaim['ho1Status'] = 1;
+            this.approvalClickedClaim['ho1ActionBy'] = this.sessionData.id;
+            this.approvalClickedClaim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          } else {
+            this.approvalClickedClaim['hoStatus'] = 1;
+            this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
+            this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+          }
+
+
+          this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
+            if (response.status === 200) {
+              $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
+              $('#def_unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+              $('#approvedIcon_' + this.approvalClickedClaim['_id']).show();
+              $('#unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+
+              Swal.fire(
+                'Approved!',
+                'You approved the claim successfully.',
+                'success'
+              );
+            } else {
+              Swal.fire(
+                'Sorry',
+                'Something went wrong please try again later.',
+                'error'
+              );
+            }
+          }); */
+
+          this.closeSelfPopup();
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          Swal.fire(
+            'Cancelled',
+            'Your record is safe :)',
+            'error'
+          );
+          this.closeSelfPopup();
+        }
+      });
+    } else {
+      const allocatQty = await this.allocateHoQuantity(this.allotedHoInvoiceQty);
+
+      /* let amount = 0;
+      const pts = this.approvalClickedClaim['pts'];
+      const freeQuantity = this.approvalClickedClaim['freeQuantity'];
+      const saleQuantity = this.approvalClickedClaim['saleQuantity'];
+      if (freeQuantity) {
+        amount = pts * this.hoAllotedQty;
+      } else if (saleQuantity) {
+        const margin = this.approvalClickedClaim['margin'];
+        const billingRate = this.approvalClickedClaim['billingRate'];
+        const difference = pts - billingRate;
+        const totalDifference = difference + (billingRate * margin / 100);
+        amount = totalDifference * this.hoAllotedQty;
+      }
+      this.approvalClickedClaim['approvedQty'] = this.hoAllotedQty;
+      this.approvalClickedClaim['approvedAmount'] = amount;
+
+      if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
+        this.approvalClickedClaim['ho1Status'] = 1;
+        this.approvalClickedClaim['ho1ActionBy'] = this.sessionData.id;
+        this.approvalClickedClaim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+      } else {
+        this.approvalClickedClaim['hoStatus'] = 1;
+        this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
+        this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+      }
+
+      this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
+        if (response.status === 200) {
+          $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
+          $('#def_unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+          $('#approvedIcon_' + this.approvalClickedClaim['_id']).show();
+          $('#unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+
+          Swal.fire(
+            'Approved!',
+            'You approved the claim successfully.',
+            'success'
+          );
+        } else {
+          Swal.fire(
+            'Sorry',
+            'Something went wrong please try again later.',
+            'error'
+          );
+        }
+      }); */
+
+      this.closeSelfPopup();
+    }
+  }
+
+  allocateHoQuantity(invoices) {
+    return new Promise(resolve => {
+      this.apiService.post('/api/sales/allocateHoQuantity', invoices).subscribe((resp: any) => {
+        if (resp.status === 200) {
+          resolve(resp);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
   async approve() {
     if (this.requestedQty > this.allotedQty) {
       Swal.fire({
@@ -1902,6 +2259,7 @@ export class StockiestClaimComponent implements OnInit {
         cancelButtonText: 'No, keep it'
       }).then(async (result) => {
         if (result.value) {
+          const allocatHoQty = await this.allocateHoQuantity(this.allotedHoInvoiceQty);
           const allocatQty = await this.allocateQuantity(this.allotedInvoiceQty);
 
           let amount = 0;
@@ -1930,7 +2288,7 @@ export class StockiestClaimComponent implements OnInit {
             this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
             this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
           }
-
+          console.log('this.approvalClickedClaim--', this.approvalClickedClaim);
 
           this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
             if (response.status === 200) {
@@ -1964,6 +2322,7 @@ export class StockiestClaimComponent implements OnInit {
         }
       });
     } else {
+      const allocatHoQty = await this.allocateHoQuantity(this.allotedHoInvoiceQty);
       const allocatQty = await this.allocateQuantity(this.allotedInvoiceQty);
 
       let amount = 0;
@@ -1991,6 +2350,7 @@ export class StockiestClaimComponent implements OnInit {
         this.approvalClickedClaim['hoActionBy'] = this.sessionData.id;
         this.approvalClickedClaim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
       }
+      console.log('this.approvalClickedClaim--', this.approvalClickedClaim);
 
       this.apiService.post('/api/claim/updateClaim', this.approvalClickedClaim).subscribe((response: any) => {
         if (response.status === 200) {
@@ -2035,6 +2395,21 @@ export class StockiestClaimComponent implements OnInit {
         _id: claimId
       }
       this.apiService.post('/api/sales/allocatedQuantity', reqData).subscribe((resp: any) => {
+        if (resp.status === 200 && resp.data.length) {
+          resolve(resp.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  allocatedHoQuantity(claimId) {
+    return new Promise(resolve => {
+      const reqData = {
+        _id: claimId
+      }
+      this.apiService.post('/api/sales/allocatedHoQuantity', reqData).subscribe((resp: any) => {
         if (resp.status === 200 && resp.data.length) {
           resolve(resp.data);
         } else {
@@ -2144,18 +2519,34 @@ export class StockiestClaimComponent implements OnInit {
         this.approvalClickedClaim['approvedQty'] = 0;
 
         // Update/reduce/manage Allocated quantity
-        const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
-        if (allocatedQty.length) {
-          allocatedQty.forEach(async element => {
-            const reqData = {
-              billDocNumber: element['stkInvoiceNo'],
-              billToParty: this.approvalClickedClaim['customerId'],
-              batch: this.approvalClickedClaim['batch'],
-              allocatedQty: element['allocatedQty'],
-              claimId: this.approvalClickedClaim['_id']
-            }
-            const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
-          });
+        if (this.approvalClickedClaim.customerId === 1) { // Self claim
+          const allocatedHoQty: any = await this.allocatedHoQuantity(this.approvalClickedClaim['_id']);
+          if (allocatedHoQty.length) {
+            allocatedHoQty.forEach(async element => {
+              const reqData = {
+                billDocNumber: element['distInvoiceNo'],
+                billToParty: this.approvalClickedClaim['customerId'],
+                batch: this.approvalClickedClaim['batch'],
+                allocatedQty: element['allocatedQty'],
+                claimId: this.approvalClickedClaim['_id']
+              }
+              const findUpdateHoRemaining: any = await this.findUpdateHoRemaining(reqData);
+            });
+          }
+        } else {
+          const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
+          if (allocatedQty.length) {
+            allocatedQty.forEach(async element => {
+              const reqData = {
+                billDocNumber: element['stkInvoiceNo'],
+                billToParty: this.approvalClickedClaim['customerId'],
+                batch: this.approvalClickedClaim['batch'],
+                allocatedQty: element['allocatedQty'],
+                claimId: this.approvalClickedClaim['_id']
+              }
+              const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
+            });
+          }
         }
         // EOF Update/reduce/manage Allocated quantity
       }
@@ -2268,7 +2659,7 @@ export class StockiestClaimComponent implements OnInit {
         if (response.status === 200) {
           this.toast('success', 'Successfully updated.');
           this.getData();
-          
+
           setTimeout(() => {
             this.closeUpdateCommentModal();
             this.closeEditModal();

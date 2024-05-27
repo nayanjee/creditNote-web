@@ -40,7 +40,7 @@
             <option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
               {{stockiest.organization | titlecase}}
             </option>
-            <option *ngIf="sessionData.type === 'distributor'" value="self"> -- Self -- </option>
+            <option *ngIf="sessionData.type === 'distributor'" value="1"> -- Self -- </option>
           </select>
           <span id="err_stockiest" class="text-danger" style="display: none;"></span>
           <div id="stockiest_loader">
@@ -387,7 +387,10 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-md-12 tar">
+          <div class="col-md-6" style="font-weight: 600;">
+            Total Amount: {{totalAmount}}
+          </div>
+          <div class="col-md-6 tar">
             <button type="button" class="mt-1 btn btn-info m_lr" (click)="addNewInvoice()" [tabIndex]="100000">
               Add New Invoice
             </button>

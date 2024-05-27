@@ -41,7 +41,7 @@
             <option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
               {{stockiest.organization | titlecase}}
             </option>
-            <option *ngIf="sessionData.type === 'distributor'" value="self"> -- Self -- </option>
+            <option *ngIf="sessionData.type === 'distributor'" value="1"> -- Self -- </option>
           </select>
           <span id="err_stockiest" class="text-danger" style="display: none;"></span>
           <div id="stockiest_loader">
