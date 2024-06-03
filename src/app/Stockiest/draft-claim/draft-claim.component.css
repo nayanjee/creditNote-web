@@ -104,4 +104,15 @@
   }
 /* EOF Table style for the page */
 
+/* ng-select css changes */
+.ng-select.custom ::ng-deep .ng-dropdown-panel-items  {            
+  max-height: 158px;
+}
+.ng-select.custom ::ng-deep .ng-option  {            
+  padding: 5px 8px;
+}
+/* EOF ng-select css changes */
 
+.cpdlr {
+  padding: 0 4px;
+}

@@ -14,13 +14,11 @@
         <div class="page-title-actions">
             <ng-template #content let-c="close" let-d="dismiss">
                 <div class="modal-header">
-                    <h4 class="modal-title">Upload Stockiest Data</h4>
+                    <h4 class="modal-title">Upload Stockist Data</h4>
                     <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')">
-
                     </button>
                 </div>
                 <div class="modal-body">
-
                     <p>
                         <input type="file" (change)="onFileSelected($event)" class="file-input">
                     </p>
@@ -41,11 +39,11 @@
                 Upload Stockiest
             </button>
 
-            <button type="button" (click)="addNewStockiest()"
+            <!-- <button type="button" (click)="addNewStockiest()"
                 class="btn-shadow d-inline-flex align-items-center btn btn-success">
                 <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
                 Create New Stockiest
-            </button>
+            </button> -->
         </div>
     </div>
 </div>
@@ -67,7 +65,6 @@
   
         </div> -->
         <div class="mytable">
-
             <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="row-border hover">
                 <thead>
                     <tr>
@@ -76,37 +73,27 @@
                         <th class="border-right">Plant</th>
                         <th class="border-right">Customer ID</th>
                         <th class="border-right">Status</th>
-                        <th class="border-right">Options</th>
+                        <th class="border-right" *ngIf="sessionData.workType === 'it'">Options</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="border-bottom" style="height: 35px;" *ngFor="let record of stockiest; let i=index">
                         <td class="border-right">{{i+1}}</td>
-                        <td class="border-right">{{record.organization}}</td>
+                        <td class="border-right tal">{{record.organization}}</td>
                         <td class="border-right">{{record.plant}}</td>
-
                         <td class="border-right">{{record.customerId}}</td>
                         <td class="border-right">{{record.isActive ? 'Active' : 'In-Active'}}</td>
-                        <td class="border-right">
-
+                        <td class="border-right" *ngIf="sessionData.workType === 'it'">
                             <span title="Edit" class="option-span">
-
-                                <a href="stockiest/edit/{{record._id}}"><i
-                                        class="vsm-icon pe-7s-note option-tr"></i></a>
+                                <a href="stockiest/edit/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
                             </span>
-
                         </td>
                     </tr>
                 </tbody>
             </table>
-
         </div>
         <div *ngIf="loading" class="col-md-12 tc" style="color: red; text-align: center;">
             <img src="./../../assets/images/btn_loader.gif"> <br /> Loading... Please wait
         </div>
-
-
-
-
     </div>
 </div>

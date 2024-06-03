@@ -12,13 +12,13 @@
             </div>
         </div>
         <div class="page-title-actions">
-            <button type="button" class="btn-shadow me-3 btn btn-dark">
+            <!-- <button type="button" class="btn-shadow me-3 btn btn-dark">
                 <fa-icon [icon]="faStar"></fa-icon>
-            </button>
-            <button type="button" (click)="addnewdivision()"
+            </button> -->
+            <button type="button" *ngIf="sessionData.workType === 'it'" (click)="addnewdivision()"
                 class="btn-shadow d-inline-flex align-items-center btn btn-success">
                 <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
-                Create New Division
+                Create Division
             </button>
         </div>
     </div>
@@ -54,29 +54,24 @@
                         <th class="border-right">Plant</th>
                         <th class="border-right">Division</th>
                         <th class="border-right">Status</th>
-                        <th class="border-right">Options</th>
+                        <th class="border-right" *ngIf="sessionData.workType === 'it'">Options</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="border-bottom" style="height: 35px;" *ngFor="let record of divisions; let i=index">
                         <td class="border-right">{{i+1}}</td>
-                        <td class="border-right">{{record.name}}</td>
+                        <td class="border-right tal">{{record.name}}</td>
                         <td class="border-right">{{record.plant}}</td>
-
                         <td class="border-right">{{record.division}}</td>
                         <td class="border-right">{{record.isActive ? 'Active' : 'In-Active'}}</td>
-                        <td class="border-right">
-
+                        <td class="border-right" *ngIf="sessionData.workType === 'it'">
                             <span title="Edit" class="option-span">
-
                                 <a href="division/edit/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
                             </span>
-
                         </td>
                     </tr>
                 </tbody>
             </table>
-
         </div>
 
 

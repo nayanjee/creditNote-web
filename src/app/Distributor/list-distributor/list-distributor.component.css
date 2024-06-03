@@ -59,3 +59,7 @@ tbody tr> :nth-child(2) {
 }
 
 /* EOF Table style for the page */
+
+.tal {
+    text-align: left;
+}

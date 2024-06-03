@@ -45,24 +45,19 @@ export class ClaimStatusComponent implements OnInit {
     { id: 'sample', name: 'Sample Sales' },
     { id: 'special', name: 'Special Discount' }
   ];
-  status: any = [
-    { id: 'inprogress', name: 'Inprogress' },
-    { id: 'approved', name: 'Accepted' },
-    { id: 'rejected', name: 'Rejected' }
-  ];
   months: any = [
-    { id: 1, name: '01 - Jan' },
-    { id: 2, name: '02 - Feb' },
-    { id: 3, name: '03 - Mar' },
-    { id: 4, name: '04 - Apr' },
+    { id: 1, name: '01 - January' },
+    { id: 2, name: '02 - February' },
+    { id: 3, name: '03 - March' },
+    { id: 4, name: '04 - April' },
     { id: 5, name: '05 - May' },
-    { id: 6, name: '06 - Jun' },
-    { id: 7, name: '07 - Jul' },
-    { id: 8, name: '08 - Aug' },
-    { id: 9, name: '09 - Sep' },
-    { id: 10, name: '10 - Oct' },
-    { id: 11, name: '11 - Nov' },
-    { id: 12, name: '12 - Dec' },
+    { id: 6, name: '06 - June' },
+    { id: 7, name: '07 - July' },
+    { id: 8, name: '08 - August' },
+    { id: 9, name: '09 - September' },
+    { id: 10, name: '10 - October' },
+    { id: 11, name: '11 - November' },
+    { id: 12, name: '12 - December' },
   ];
   years: any = [];
   sessionData: any;
@@ -96,31 +91,34 @@ export class ClaimStatusComponent implements OnInit {
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
 
-    // Current Month and Year
-    const currentMonth = moment().format("MM");
-    this.currentMonth = parseInt(currentMonth);
+    // Logged-in user id
+    this.loggedUserId = JSON.parse(sessionData).id;
 
-    // To show previous 2 years in dropdown
-    const currentYear = moment().format("YYYY");
-    this.currentYear = parseInt(currentYear);
-    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
-      const year = { id: i, name: i };
-      this.years.push(year);
-    }
+    this.delay(1000).then(any => {
+      // Current Month and Year
+      const currentMonth = moment().format("MM");
+      this.currentMonth = parseInt(currentMonth);
 
-    // To show this data as predefined in the form
-    if (parseInt(currentMonth) - 1 <= 0) {
-      this.selectedYear = parseInt(currentYear) - 1;
-      this.selectedMonth = 12;
-    } else {
-      this.selectedYear = currentYear;
-      this.selectedMonth = parseInt(currentMonth);
-    }
-    this.selectedFields['month'] = this.selectedMonth;
-    this.selectedFields['year'] = this.selectedYear;
-    this.selectedFields['division'] = 0;
-    this.selectedFields['type'] = 0;
-    this.selectedFields['status'] = 0;
+      // To show previous 2 years in dropdown
+      const currentYear = moment().format("YYYY");
+      this.currentYear = parseInt(currentYear);
+      for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+        const year = { id: i, name: i };
+        this.years.push(year);
+      }
+
+      // To show this data as predefined in the form
+      if (parseInt(currentMonth) - 1 <= 0) {
+        this.selectedYear = parseInt(currentYear) - 1;
+        this.selectedMonth = 12;
+      } else {
+        this.selectedYear = currentYear;
+        this.selectedMonth = parseInt(currentMonth) - 1;
+      }
+
+      $('#month').val(this.selectedMonth);
+      $('#year').val(this.selectedYear);
+    });
 
     this.getDistributors();
 
@@ -205,13 +203,13 @@ export class ClaimStatusComponent implements OnInit {
             this.getDistributorStockists(result[0]);
 
             this.delay(500).then(any => {
-              this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+              $("#distributor").val($("#distributor option:eq(1)").val());
               $('#distributor_loader').hide();
               $('#distributor').show();
 
-              // $("#stockiest").val($("#stockiest option:eq(1)").val());
-              // $('#stockiest_loader').hide();
-              // $('#stockiest').show();
+              $("#stockiest").val($("#stockiest option:eq(1)").val());
+              $('#stockiest_loader').hide();
+              $('#stockiest').show();
 
               this.getStockiest();
               this.getDivisions();
@@ -278,7 +276,7 @@ export class ClaimStatusComponent implements OnInit {
 
   getStockiest() {
     let stockists = [];
-    const distributor = this.selectedFields.distributor;
+    const distributor = $("#distributor option:selected").val();
     const stockist = this.userPlantStockists[distributor];
 
     if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
@@ -308,9 +306,11 @@ export class ClaimStatusComponent implements OnInit {
             // EOF If user has access to approve claim of the distributor (self)
           }
 
-          this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
-          $('#stockiest_loader').hide();
-          $('#stockiest').show();
+          this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+          });
         }
       }
     });
@@ -319,7 +319,7 @@ export class ClaimStatusComponent implements OnInit {
   getDivisions() {
     let divisions = [];
     this.divisions = [];
-    const distributor = this.selectedFields.distributor;
+    const distributor = $("#distributor option:selected").val();
     const division = this.userPlantDivisions[distributor];
     division.forEach(element => {
       divisions.push(Number(element));
@@ -337,7 +337,7 @@ export class ClaimStatusComponent implements OnInit {
   getUserDistStockistDivision() {
     this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
-        console.log('response.data---', response.data);
+        console.log('response.data--', response.data);
         if (response.data) {
           response.data.forEach(element => {
             // get user's distributor
@@ -354,16 +354,14 @@ export class ClaimStatusComponent implements OnInit {
             this.userPlantDivisions[element.plant] = element.divisions;
           });
 
-          //this.delay(500).then(any => {
-          this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
 
-          //$("#distributor").val($("#distributor option:eq(1)").val());
-          $('#distributor_loader').hide();
-          $('#distributor').show();
-
-          this.getStockiest();
-          this.getDivisions();
-          //});
+            this.getStockiest();
+            this.getDivisions();
+          });
         }
       }
     });
@@ -389,14 +387,14 @@ export class ClaimStatusComponent implements OnInit {
             this.userPlantDivisions[element.plant] = element.divisions;
           });
 
-          //this.delay(500).then(any => {
-            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          this.delay(500).then(any => {
+            $("#distributor").val($("#distributor option:eq(1)").val());
             $('#distributor_loader').hide();
             $('#distributor').show();
 
             this.getStockiest();
             this.getDivisions();
-          //});
+          });
         }
       }
     });
@@ -420,13 +418,13 @@ export class ClaimStatusComponent implements OnInit {
     $('#err_status').hide();
     $('#err_month').hide();
 
-    const distributor = this.selectedFields['distributor'];
-    const stockiest = this.selectedFields['stockiest'];
-    const type = this.selectedFields['type'];
-    const division = this.selectedFields['division'];
-    const month = this.selectedFields['month'];
-    const year = this.selectedFields['year'];
-    const status = this.selectedFields['status'];
+    const distributor = $("#distributor option:selected").val();
+    const stockiest = $("#stockiest option:selected").val();
+    const type = $("#type option:selected").val();
+    const division = $("#division option:selected").val();
+    const month = $("#month option:selected").val();
+    const year = $("#year option:selected").val();
+    const status = $("#status option:selected").val();
 
     if (!stockiest || !status) {
       if (!distributor) $('#err_distributor').text('it\'s a required field.').show();
@@ -450,6 +448,7 @@ export class ClaimStatusComponent implements OnInit {
 
     if (type) requestData['claimType'] = type;
     if (division) requestData['division'] = division;
+    console.log('requestData-----', requestData);
 
     this.apiService.post('/api/getApprovedClaim', requestData).subscribe((response: any) => {
       if (response.status === 200) {

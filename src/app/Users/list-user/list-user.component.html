@@ -12,12 +12,12 @@
       </div>
     </div>
     <div class="page-title-actions">
-      <button type="button" class="btn-shadow me-3 btn btn-dark">
+      <!-- <button type="button" class="btn-shadow me-3 btn btn-dark">
         <fa-icon [icon]="faStar"></fa-icon>
-      </button>
+      </button> -->
       <button type="button" (click)="addNewUser()" class="btn-shadow d-inline-flex align-items-center btn btn-success">
         <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
-        Create New User
+        Create User
       </button>
     </div>
   </div>
@@ -50,6 +50,7 @@
           <tr>
             <th class="border-right">S.No.</th>
             <th class="border-right">Name</th>
+            <th class="border-right">Code</th>
             <th class="border-right">Email</th>
             <th class="border-right">User Type</th>
             <th class="border-right">Status</th>
@@ -59,27 +60,19 @@
         <tbody>
           <tr class="border-bottom" style="height: 35px;" *ngFor="let record of users; let i=index">
             <td class="border-right">{{i+1}}</td>
-            <td class="border-right">{{record.name}}</td>
-            <td class="border-right">{{record.email}}</td>
-
+            <td class="border-right tal">{{record.name}}</td>
+            <td class="border-right">{{record.code}}</td>
+            <td class="border-right tal">{{record.email}}</td>
             <td class="border-right">{{record.userType | titlecase}}</td>
             <td class="border-right">{{record.isActive ? 'Active' : 'In-Active'}}</td>
             <td class="border-right">
-
               <span title="Edit" class="option-span">
-
                 <a href="users/edit/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
               </span>
-
             </td>
           </tr>
         </tbody>
       </table>
-
     </div>
-
-
-
-
   </div>
 </div>
