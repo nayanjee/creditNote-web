@@ -16,12 +16,13 @@ declare var $: any;
 export class ListDistributorComponent implements OnInit {
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Add / Create Distributor';
-  subheading = 'Create a Distributor';
+  heading = 'Distributor';
+  subheading = 'Distributor List';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
   loading = false;
 
   loggedUserId: any = '';
+  sessionData: any;
   distributors: any = [];
   dtOptions: DataTables.Settings = {};
   constructor(private router: Router,
@@ -32,6 +33,7 @@ export class ListDistributorComponent implements OnInit {
   ngOnInit(): void {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
+    this.sessionData = JSON.parse(sessionData);
 
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;

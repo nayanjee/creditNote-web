@@ -12,8 +12,7 @@
       </div>
     </div>
     <div class="page-title-actions" *ngIf="sessionData.permissions.includes('3')">
-      <button type="button" (click)="exportToExcel()"
-        class="btn-shadow d-inline-flex align-items-center btn btn-success">
+      <button type="button" (click)="exportToExcel()" class="btn-shadow d-inline-flex align-items-center btn btn-success">
         <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
         Export to Excel
       </button>
@@ -23,97 +22,8 @@
 
 <div class="main-card mb-3 card">
   <div class="card-body">
+    <!-- <form class="form" [formGroup]="myForm" (ngSubmit)="onHeaderSubmit()" autocomplete="off"> -->
     <div class="row">
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="distributor" class="form-label fb">Distributor</label>
-        <ng-select class="custom" id="distributor" [(ngModel)]="selectedFields.distributor"
-          (change)="distributorChange()" [clearable]="false" style="display: none;">
-          <ng-option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
-            {{distributor.plant}} - {{distributor.organization | titlecase}}
-          </ng-option>
-        </ng-select>
-        <span id="err_distributor" class="text-danger" style="display: none;"></span>
-        <div id="distributor_loader">
-          <img class="m8" src="./../../../assets/images/btn_loader.gif">
-        </div>
-      </div>
-
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="stockiest" class="form-label fb">
-          Stockiest
-          <span *ngIf="selectedFields.stockiest" style="color: orange; font-size: 12px;">
-            <span *ngIf="selectedFields.stockiest == 1">(Self)</span>
-            <span *ngIf="selectedFields.stockiest != 1">({{selectedFields.stockiest}})</span>
-          </span>
-        </label>
-        <ng-select class="custom" id="stockiest" [(ngModel)]="selectedFields.stockiest" [clearable]="false"
-          style="display: none;">
-          <ng-option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
-            {{stockiest.organization | titlecase}}
-          </ng-option>
-        </ng-select>
-        <span id="err_stockiest" class="text-danger" style="display: none;"></span>
-        <div id="stockiest_loader">
-          <img class="m8" src="./../../../assets/images/btn_loader.gif">
-        </div>
-      </div>
-
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="type" class="form-label fb">Claim Type</label>
-        <ng-select class="custom" id="type" [(ngModel)]="selectedFields.type" [clearable]="false">
-          <ng-option [value]="0"> -- All -- </ng-option>
-          <ng-option *ngFor="let type of types" [value]="type.id">{{type.name}}</ng-option>
-        </ng-select>
-        <span id="err_type" class="text-danger" style="display: none;"></span>
-      </div>
-
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="division" class="form-label fb">Division
-          <span id="divisionCode" style="color: orange; font-size: 12px;"></span>
-        </label>
-        <ng-select class="custom" id="division" [(ngModel)]="selectedFields.division" [clearable]="false">
-          <ng-option [value]="0"> -- All -- </ng-option>
-          <ng-option *ngFor="let division of divisions" [value]="division.division">{{division.name}}</ng-option>
-        </ng-select>
-      </div>
-
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="month" class="form-label fb">Month</label>
-        <ng-select class="custom" id="month" [(ngModel)]="selectedFields.month" (change)="validateMonth()"
-          [clearable]="false">
-          <ng-option *ngFor="let month of months" [value]="month.id">{{month.name}}</ng-option>
-        </ng-select>
-        <span id="err_month" class="text-danger" style="display: none;"></span>
-      </div>
-
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="year" class="form-label fb">Year</label>
-        <ng-select class="custom" id="year" [(ngModel)]="selectedFields.year" (change)="validateMonth()"
-          [clearable]="false">
-          <ng-option *ngFor="let year of years" [value]="year.id">{{year.name}}</ng-option>
-        </ng-select>
-        <span id="err_year" class="text-danger" style="display: none;"></span>
-      </div>
-
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="status" class="form-label fb">Status</label>
-        <ng-select class="custom" id="type" [(ngModel)]="selectedFields.status" [clearable]="false">
-          <ng-option [value]="0"> -- Status -- </ng-option>
-          <ng-option *ngFor="let stats of status" [value]="stats.id">{{stats.name}}</ng-option>
-        </ng-select>
-        <span id="err_status" class="text-danger" style="display: none;"></span>
-      </div>
-
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <div class="position-relative" style="text-align: center;">
-          <button type="button" class="btn btn-info" style="margin: 28px 3px 0 3px;" (click)="getData()">Search</button>
-          <button type="button" class="btn btn-warning" style="margin: 28px 3px 0 3px;" (click)="clear()">Clear</button>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- <div class="row">
       <div class="col" style="padding: 0px 5px 0px 5px;">
         <div class="position-relative mb-3 required">
           <label for="distributor" class="form-label fb">Distributor</label>
@@ -200,13 +110,13 @@
           <select id="status" class="form-select">
             <option value="" disabled selected> -- Status -- </option>
             <option value="inprogress">Inprogress</option>
-            <option value="acceptedFt">Accepted by FT</option>
+            <!-- <option value="acceptedFt">Accepted by FT</option>
             <option value="acceptedSuh">Accepted by SUH</option>
-            <option value="acceptedHo">Accepted by HO</option>
+            <option value="acceptedHo">Accepted by HO</option> -->
             <option value="approved">Accepted</option>
-            <option value="rejectedFt">Rejected by FT</option>
+            <!-- <option value="rejectedFt">Rejected by FT</option>
             <option value="rejectedSuh">Rejected by SUH</option>
-            <option value="rejectedHo">Rejected by HO</option>
+            <option value="rejectedHo">Rejected by HO</option> -->
             <option value="rejected">Rejected</option>
           </select>
           <span id="err_status" class="text-danger" style="display: none;"></span>
@@ -218,7 +128,8 @@
           <button type="button" class="btn btn-warning" style="margin: 28px 3px 0 3px;" (click)="clear()">Clear</button>
         </div>
       </div>
-    </div> -->
+    </div>
+    <!-- </form> -->
 
     <div class="row">
       <div class="col-md-12">
@@ -295,9 +206,9 @@
             </td> -->
             <td class="border-right" *ngIf="optionField">
               <img style="padding: 0 0px 8px 0px; margin: 0 0px 0px 2px; cursor: pointer;"
-                *ngIf="record.ftUpdateComment || record.hoUpdateComment || record.ftStatus === 2 || record.suhStatus === 2 || record.hoStatus === 2 || record.ho1Status === 2"
-                src="./../../../assets/images/message.png" placement="bottom" ngbTooltip="Comments"
-                (click)="comments(record)">
+                  *ngIf="record.ftUpdateComment || record.hoUpdateComment || record.ftStatus === 2 || record.suhStatus === 2 || record.hoStatus === 2 || record.ho1Status === 2"
+                  src="./../../../assets/images/message.png" placement="bottom" ngbTooltip="Comments"
+                  (click)="comments(record)">
             </td>
           </tr>
         </tbody>

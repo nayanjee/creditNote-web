@@ -22,9 +22,6 @@
 .m_lr {
     margin: 0 5px;
 }
-.cpdlr {
-  padding: 0 4px;
-}
 .grf-invalid {
     border-color: #c71c22;
 }
@@ -190,11 +187,3 @@
   }
 /* EOF Auto-suggestion CSS */
 
-/* ng-select css changes */
-.ng-select.custom ::ng-deep .ng-dropdown-panel-items  {            
-  max-height: 158px;
-}
-.ng-select.custom ::ng-deep .ng-option  {            
-  padding: 5px 8px;
-}
-/* EOF ng-select css changes */

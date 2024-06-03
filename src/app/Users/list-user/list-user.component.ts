@@ -17,8 +17,8 @@ export class ListUserComponent implements OnInit {
 
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Add / Create User';
-  subheading = 'Create a user / stockist';
+  heading = 'Users';
+  subheading = 'User List';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
 
 

@@ -22,7 +22,7 @@ export class DraftClaimComponent implements OnInit {
   faStar = faStar;
   faPlus = faPlus;
   heading = 'Drafts';
-  subheading = 'Temporarily saved claim. The claim can be corrected (if necessary) and finally submitted for approval.';
+  subheading = 'Temporarily saved claim. The claim can be corrected (if necessary) and finally submitted for acceptance.';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
 
   claimForm: FormGroup;
@@ -39,18 +39,18 @@ export class DraftClaimComponent implements OnInit {
     { id: 'special', name: 'Special Discount' }
   ];
   months: any = [
-    { id: 1, name: '01 - January' },
-    { id: 2, name: '02 - February' },
-    { id: 3, name: '03 - March' },
-    { id: 4, name: '04 - April' },
+    { id: 1, name: '01 - Jan' },
+    { id: 2, name: '02 - Feb' },
+    { id: 3, name: '03 - Mar' },
+    { id: 4, name: '04 - Apr' },
     { id: 5, name: '05 - May' },
-    { id: 6, name: '06 - June' },
-    { id: 7, name: '07 - July' },
-    { id: 8, name: '08 - August' },
-    { id: 9, name: '09 - September' },
-    { id: 10, name: '10 - October' },
-    { id: 11, name: '11 - November' },
-    { id: 12, name: '12 - December' },
+    { id: 6, name: '06 - Jun' },
+    { id: 7, name: '07 - Jul' },
+    { id: 8, name: '08 - Aug' },
+    { id: 9, name: '09 - Sep' },
+    { id: 10, name: '10 - Oct' },
+    { id: 11, name: '11 - Nov' },
+    { id: 12, name: '12 - Dec' },
   ];
 
   years: any = [];
@@ -91,33 +91,32 @@ export class DraftClaimComponent implements OnInit {
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
 
-    this.delay(1000).then(any => {
-      // Current Month and Year
-      const currentMonth = moment().format("MM");
-      this.currentMonth = parseInt(currentMonth);
+    // Current Month and Year
+    const currentMonth = moment().format("MM");
+    this.currentMonth = parseInt(currentMonth);
+    console.log('this.currentMonth--', this.currentMonth)
 
-      // To show previous 2 years in dropdown
-      const currentYear = moment().format("YYYY");
-      this.currentYear = parseInt(currentYear);
-      for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
-        const year = { id: i, name: i };
-        this.years.push(year);
-      }
+    // To show previous 2 years in dropdown
+    const currentYear = moment().format("YYYY");
+    this.currentYear = parseInt(currentYear);
+    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+      const year = { id: i, name: i };
+      this.years.push(year);
+    }
 
-      // To show this data as predefined in the form
-      if (parseInt(currentMonth) - 1 <= 0) {
-        this.selectedYear = parseInt(currentYear) - 1;
-        this.selectedMonth = 12;
-      } else {
-        this.selectedYear = currentYear;
-        this.selectedMonth = parseInt(currentMonth) - 1;
-      }
-      $('#month').val(this.selectedMonth);
-      $('#year').val(this.selectedYear);
+    // To show this data as predefined in the form
+    if (parseInt(currentMonth) - 1 <= 0) {
+      this.selectedYear = parseInt(currentYear) - 1;
+      this.selectedMonth = 12;
+    } else {
+      this.selectedYear = currentYear;
+      this.selectedMonth = parseInt(currentMonth);
+    }
 
-      this.selectedFields['month'] = this.selectedMonth;
-      this.selectedFields['year'] = this.selectedYear;
-    });
+    this.selectedFields['month'] = this.selectedMonth;
+    this.selectedFields['year'] = this.selectedYear;
+    this.selectedFields['division'] = 0;
+    this.selectedFields['type'] = 0;
 
     this.getDistributors();
 
@@ -143,16 +142,16 @@ export class DraftClaimComponent implements OnInit {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
   }
 
-  validateMonth(e) {
+  validateMonth(value, targetId) {
     $('#err_month').hide();
 
-    const selectedYear = $("#year option:selected").val();
-    const selectedMonth = $("#month option:selected").val();
+    const selectedYear = this.selectedFields.year;
+    const selectedMonth = this.selectedFields.month;
 
     if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
       $('#err_month').text('You can\'t claim for this month.').show();
     } else {
-      this.filterData(e);
+      this.filterData(value, targetId);
     }
   }
 
@@ -187,12 +186,18 @@ export class DraftClaimComponent implements OnInit {
             // get user's division plant wise
             this.userPlantDivisions[response.data[0].code] = response.data[0].divisions[0].divisions;
 
-            this.delay(500).then(any => {
-              $("#distributor").val($("#distributor option:eq(1)").val());
+            //this.delay(500).then(any => {
+              this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
               $('#distributor_loader').hide();
               $('#distributor').show();
 
-              $("#stockiest").val($("#stockiest option:eq(1)").val());
+              const self = {
+                customerId: 1,
+                organization: '-- SELF --'
+              }
+              this.stockiests.push(self);
+
+              this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
               $('#stockiest_loader').hide();
               $('#stockiest').show();
 
@@ -201,7 +206,7 @@ export class DraftClaimComponent implements OnInit {
               this.delay(1000).then(any => {
                 this.getData();
               });
-            });
+            //});
           }
         }
       }
@@ -227,14 +232,15 @@ export class DraftClaimComponent implements OnInit {
             this.userPlantDivisions[element.plant] = element.divisions;
           });
 
-          this.delay(500).then(any => {
-            $("#distributor").val($("#distributor option:eq(1)").val());
+          //this.delay(500).then(any => {
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+
             $('#distributor_loader').hide();
             $('#distributor').show();
 
             this.getStockiest();
             this.getDivisions();
-          });
+          //});
         }
       }
     });
@@ -260,14 +266,14 @@ export class DraftClaimComponent implements OnInit {
             this.userPlantDivisions[element.plant] = element.divisions;
           });
 
-          this.delay(500).then(any => {
-            $("#distributor").val($("#distributor option:eq(1)").val());
+          //this.delay(500).then(any => {
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
             $('#distributor_loader').hide();
             $('#distributor').show();
 
             this.getStockiest();
             this.getDivisions();
-          });
+          //});
         }
       }
     });
@@ -296,9 +302,9 @@ export class DraftClaimComponent implements OnInit {
 
   getStockiest() {
     let stockists = [];
-    const distributor = $("#distributor option:selected").val();
+    const distributor = this.selectedFields['distributor'];
     const stockist = this.userPlantStockists[distributor];
-    
+
     if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
       stockist.forEach(element => {
         stockists.push(Number(element));
@@ -311,27 +317,27 @@ export class DraftClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
-          
-          // If user has access to approve claim of the distributor (self)
-          if (stockist.includes(distributor.toString())) {
-            const self = {
-              customerId: 1,
-              organization: '-- SELF --'
-            }
-            this.stockiests.push(self);
-          }
-          // EOF If user has access to approve claim of the distributor (self)
 
-          this.delay(5).then(any => {
-            $("#stockiest").val($("#stockiest option:eq(1)").val());
+          if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
+            // If user has access to approve claim of the distributor (self)
+            if (stockist.includes(distributor.toString())) {
+              const self = {
+                customerId: 1,
+                organization: '-- SELF --'
+              }
+              this.stockiests.push(self);
+            }
+            // EOF If user has access to approve claim of the distributor (self)
+          }
+
+          //this.delay(5).then(any => {
+            this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+
             $('#stockiest_loader').hide();
             $('#stockiest').show();
 
-            const stockiest = $("#stockiest option:selected").val();
-            this.selectedFields['stockiest'] = stockiest;
-
             this.getData();
-          });
+          //});
         }
       }
     });
@@ -340,8 +346,9 @@ export class DraftClaimComponent implements OnInit {
   getDivisions() {
     let divisions = [];
     this.divisions = [];
-    const distributor = $("#distributor option:selected").val();
+    const distributor = this.selectedFields['distributor'];
     const division = this.userPlantDivisions[distributor];
+    console.log('distributor--', distributor, division);
     division.forEach(element => {
       divisions.push(Number(element));
     });
@@ -359,12 +366,12 @@ export class DraftClaimComponent implements OnInit {
     this.loading = this.showData = true;
     this.records = this.tempRecords = [];
 
-    const distributor = $("#distributor option:selected").val();
-    const stockiest = $("#stockiest option:selected").val();
-    const month = $("#month option:selected").val();
-    const year = $("#year option:selected").val();
-    const type = $("#type option:selected").val();
-    const division = $("#division option:selected").val();
+    const distributor = this.selectedFields['distributor'];
+    const stockiest = this.selectedFields['stockiest'];
+    const month = this.selectedFields['month'];
+    const year = this.selectedFields['year'];
+    const type = this.selectedFields['type'];
+    const division = this.selectedFields['division'];
 
     const requestData = {
       plant: distributor,
@@ -424,39 +431,45 @@ export class DraftClaimComponent implements OnInit {
     }
   }
 
-  filterData(e) {
+  filterData(value, targetId) {
     this.loading = true;
     this.showData = true;
 
-    const targetId = e.target.id;
-    this.selectedFields[targetId] = e.target.value;
-
-    const type = this.selectedFields.type;
-    const division = this.selectedFields.division;
+    if (targetId === 'type') {
+      this.selectedFields[targetId] = value;
+    } else {
+      this.selectedFields[targetId] = parseInt(value);
+    }
 
     if (targetId === 'distributor') {
+      this.selectedFields.type = 0;
+      this.selectedFields.division = 0;
+
       this.getStockiest();
       this.getDivisions();
 
       this.delay(1000).then(any => {
         this.getData();
-
-        this.selectedFields.type = '';
-        this.selectedFields.division = '';
-
-        $("#type").val(this.selectedFields.type);
-        $("#division").val(this.selectedFields.division);
       });
     }
 
     if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
+      this.selectedFields.type = 0;
+      this.selectedFields.division = 0;
+
       this.getData();
+    }
 
-      this.selectedFields.type = '';
-      this.selectedFields.division = '';
+    const type = this.selectedFields.type;
+    const division = this.selectedFields.division;
+    console.log(type, division);
 
-      $("#type").val(this.selectedFields.type);
-      $("#division").val(this.selectedFields.division);
+    if (division) {
+      const div = this.divisions.filter(function (el) {
+        return el.division == Number(division);
+      });
+      const divisionCode = div[0].division;
+      $("#divisionCode").text('(' + divisionCode + ')');
     }
 
     if (type && division) {

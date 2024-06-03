@@ -25,92 +25,176 @@
   style="position: absolute; width: 100%; height: 100%; background-color: #F1F4F6; z-index: 1; opacity: 0.5; display: none;">
 </div>
 
-<div class="main-card mb-3 card">
+<!-- <div class="main-card mb-3 card">
   <div class="card-body">
     <div class="row">
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="distributor" class="form-label fb">Distributor</label>
-        <ng-select class="custom" id="distributor" [(ngModel)]="selectedFields.distributor"
-          (change)="filterData($event, 'distributor')" [clearable]="false" style="display: none;">
-          <ng-option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
-            {{distributor.plant}} - {{distributor.organization | titlecase}}
-          </ng-option>
-        </ng-select>
-        <span id="err_distributor" class="text-danger" style="display: none;"></span>
-        <div id="distributor_loader">
-          <img class="m8" src="./../../../assets/images/btn_loader.gif">
+      <div class="col">
+        <mat-form-field class="width">
+          <input matInput placeholder="Country" aria-label="Country" [matAutocomplete]="auto"
+            [formControl]="countryCtrl" required />
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let country of filteredCountry | async" [value]="country.name">
+              <span>{{ country.name }} | {{ country.code }}</span>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<!-- <div class="main-card mb-3 card">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <select class="selectpicker" data-live-search="true">
+          <option data-tokens="ketchup mustard">Hot Dog, Fries and a Soda</option>
+          <option data-tokens="mustard">Burger, Shake and a Smile</option>
+          <option data-tokens="frosting">Sugar, Spice and all things nice</option>
+        </select>
+      </div>
+    </div>
+  </div> -->
+
+
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    <!-- <div class="row row-cols-5"> -->
+    <div class="row">
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="distributor" class="form-label fb">Distributor</label>
+          <!-- <select id="distributor" class="form-select" (change)="filterData($event, 'distributor')" style="display: none;">
+              <option value="" disabled hidden selected> -- Distributor -- </option>
+              <option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+                {{distributor.plant}} - {{distributor.organization | titlecase}}
+              </option>
+            </select> -->
+          <ng-select class="custom" id="distributor" [(ngModel)]="selectedFields.distributor"
+            (change)="filterData($event, 'distributor')" [clearable]="false" style="display: none;">
+            <ng-option *ngFor="let distributor of userDistributors"
+              [value]="distributor.plant">{{distributor.organization | titlecase}}</ng-option>
+          </ng-select>
+          <span id="err_distributor" class="text-danger" style="display: none;"></span>
+          <div id="distributor_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
         </div>
       </div>
-      <div class="col-lg-3 col-sm-12 cpdlr">
-        <label for="stockiest" class="form-label fb">
-          Stockiest
-          <span *ngIf="selectedFields.stockiest" style="color: orange; font-size: 12px;">
-            <span *ngIf="selectedFields.stockiest == 1">(Self)</span>
-            <span *ngIf="selectedFields.stockiest != 1">({{selectedFields.stockiest}})</span>
-          </span>
-        </label>
-        <ng-select class="custom" id="stockiest" [(ngModel)]="selectedFields.stockiest"
-          (change)="filterData($event, 'stockiest')" [clearable]="false" style="display: none;">
-          <ng-option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">{{stockiest.organization |
-            titlecase}}</ng-option>
-        </ng-select>
-        <span id="err_stockiest" class="text-danger" style="display: none;"></span>
-        <div id="stockiest_loader">
-          <img class="m8" src="./../../../assets/images/btn_loader.gif">
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="stockiest" class="form-label fb">
+            Stockiest
+            <span *ngIf="selectedFields.stockiest" style="color: orange; font-size: 12px;">
+              <span *ngIf="selectedFields.stockiest == 1">(Self)</span>
+              <span *ngIf="selectedFields.stockiest != 1">({{selectedFields.stockiest}})</span>
+            </span>
+          </label>
+          <!-- <select id="stockiest" class="form-select" style="display: none;" (change)="filterData($event)">
+              <option value="" disabled hidden selected> -- Stockiest -- </option>
+              <option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
+                {{stockiest.organization | titlecase}}
+              </option>
+            </select> -->
+          <ng-select class="custom" id="stockiest" [(ngModel)]="selectedFields.stockiest"
+            (change)="filterData($event, 'stockiest')" [clearable]="false" style="width: 265px; display: none;">
+            <ng-option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">{{stockiest.organization |
+              titlecase}}</ng-option>
+          </ng-select>
+          <span id="err_stockiest" class="text-danger" style="display: none;"></span>
+          <div id="stockiest_loader">
+            <img class="m8" src="./../../../assets/images/btn_loader.gif">
+          </div>
         </div>
       </div>
-      <div class="col-lg-2 col-sm-12 cpdlr">
-        <label for="type" class="form-label fb">Claim Type</label>
-        <ng-select class="custom" id="type" [(ngModel)]="selectedFields.type" (change)="filterData($event, 'type')"
-          [clearable]="false">
-          <ng-option [value]="0"> -- All -- </ng-option>
-          <ng-option *ngFor="let type of types" [value]="type.id">{{type.name | titlecase}}</ng-option>
-        </ng-select>
-        <span id="err_type" class="text-danger" style="display: none;"></span>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="type" class="form-label fb">Claim Type</label>
+          <!-- <select id="type" class="form-select" (change)="filterData($event, 'type')">
+              <option value="" selected> -- All -- </option>
+              <option *ngFor="let type of types" [value]="type.id">
+                {{type.name | titlecase}}
+              </option>
+            </select> -->
+          <ng-select class="custom" id="type" [(ngModel)]="selectedFields.type" (change)="filterData($event, 'type')"
+            [clearable]="false">
+            <ng-option [value]="0"> -- All -- </ng-option>
+            <ng-option *ngFor="let type of types" [value]="type.id">{{type.name | titlecase}}</ng-option>
+          </ng-select>
+          <span id="err_type" class="text-danger" style="display: none;"></span>
+        </div>
       </div>
-      <div class="col-lg-2 col-sm-12 cpdlr">
-        <label for="division" class="form-label fb">Division
-          <span id="divisionCode" style="color: orange; font-size: 12px;"></span>
-        </label>
-        <ng-select class="custom" id="division" [(ngModel)]="selectedFields.division"
-          (change)="filterData($event, 'division')" [clearable]="false">
-          <ng-option [value]="0"> -- All -- </ng-option>
-          <ng-option *ngFor="let division of divisions" [value]="division.division">{{division.name |
-            titlecase}}</ng-option>
-        </ng-select>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="division" class="form-label fb">Division
+            <span id="divisionCode" style="color: orange; font-size: 12px;"></span>
+          </label>
+          <!-- <select id="division" class="form-select" (change)="filterData($event, 'division')">
+              <option value="" selected> -- All -- </option>
+              <option *ngFor="let division of divisions" [value]="division.division">
+                {{division.name | titlecase}}
+              </option>
+            </select> -->
+          <ng-select class="custom" id="division" [(ngModel)]="selectedFields.division"
+            (change)="filterData($event, 'division')" [clearable]="false">
+            <ng-option [value]="0"> -- All -- </ng-option>
+            <ng-option *ngFor="let division of divisions" [value]="division.division">{{division.name |
+              titlecase}}</ng-option>
+          </ng-select>
+        </div>
       </div>
-      <div class="col-lg-1 col-sm-12 cpdlr">
-        <label for="month" class="form-label fb">Month</label>
-        <ng-select class="custom" id="month" [(ngModel)]="selectedFields.month"
-          (change)="validateMonth($event, 'month')" [clearable]="false">
-          <ng-option *ngFor="let month of months" [value]="month.id">{{month.name}}</ng-option>
-        </ng-select>
-        <span id="err_month" class="text-danger" style="display: none;"></span>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="month" class="form-label fb">Month</label>
+          <!-- <select id="month" class="form-select" (change)="validateMonth($event, 'month')">
+              <option value="" disabled selected> -- Month -- </option>
+              <option *ngFor="let month of months" [value]="month.id">
+                {{month.name}}
+              </option>
+            </select> -->
+          <ng-select class="custom" id="month" [(ngModel)]="selectedFields.month"
+            (change)="validateMonth($event, 'month')" [clearable]="false">
+            <ng-option *ngFor="let month of months" [value]="month.id">{{month.name}}</ng-option>
+          </ng-select>
+          <span id="err_month" class="text-danger" style="display: none;"></span>
+        </div>
       </div>
-      <div class="col-lg-1 col-sm-12 cpdlr">
-        <label for="year" class="form-label fb">Year</label>
-        <ng-select class="custom" id="year" [(ngModel)]="selectedFields.year" (change)="validateMonth($event, 'year')"
-          [clearable]="false">
-          <ng-option *ngFor="let year of years" [value]="year.id">{{year.name}}</ng-option>
-        </ng-select>
-        <span id="err_year" class="text-danger" style="display: none;"></span>
+      <div class="col">
+        <div class="position-relative mb-3 required">
+          <label for="year" class="form-label fb">Year</label>
+          <!-- <select id="year" class="form-select" (change)="validateMonth($event, 'year')">
+              <option value="" disabled selected> -- Year -- </option>
+              <option *ngFor="let year of years" [value]="year.id">
+                {{year.name}}
+              </option>
+            </select> -->
+          <ng-select class="custom" id="year" [(ngModel)]="selectedFields.year" (change)="validateMonth($event, 'year')"
+            [clearable]="false">
+            <ng-option *ngFor="let year of years" [value]="year.id">{{year.name}}</ng-option>
+          </ng-select>
+          <span id="err_year" class="text-danger" style="display: none;"></span>
+        </div>
       </div>
     </div>
 
     <div class="row">
-      <div class="col-md-12 cpdlr">
+      <div class="col-md-12">
         <hr />
       </div>
-      <div *ngIf="loading" class="col-md-12 cpdlr tc" style="color: red;">
+      <div *ngIf="loading" class="col-md-12 tc" style="color: red;">
         <img src="./../../assets/images/btn_loader.gif"> <br /> Loading...Please wait
       </div>
-      <div *ngIf="!showData" class="col-md-12 cpdlr tc" style="color: red;">
+      <div *ngIf="!showData" class="col-md-12 tc" style="color: red;">
         No record found!
       </div>
     </div>
 
     <div class="row" *ngIf="!loading && showData">
-      <div class="col-sm-12 col-md-12 cpdlr">
+
+      <div class="col-sm-12 col-md-12">
+        <!-- <ng-select [(ngModel)]="selectedCar">
+            <ng-option *ngFor="let car of cars" [value]="car.id">{{car.name}}</ng-option>
+          </ng-select> -->
         <div class="table-responsive">
           <table class="table" id="table1">
             <tr>
@@ -135,17 +219,17 @@
               <!-- <th class="td-head"
                   *ngIf="sessionData['workType'] === 'field' || (sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === ''))"> -->
               <th class="td-head"
-                *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
-                Particulars</th>
-              <th class="td-head"
-                *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
-                Category</th>
-              <th class="td-head"
-                *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
-                Supply Proof</th>
-              <th class="td-head"
-                *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
-                Pur. Order</th>
+                  *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
+                  Particulars</th>
+                <th class="td-head"
+                  *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
+                  Category</th>
+                <th class="td-head"
+                  *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
+                  Supply Proof</th>
+                <th class="td-head"
+                  *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
+                  Pur. Order</th>
               <th class="td-head">Actions</th>
             </tr>
             <tr class="border-bottom tc" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
@@ -255,6 +339,9 @@
                 </div>
                 <div *ngIf="(sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')) 
                   && (record.batchDetail[0].mrp2 || record.batchDetail[0].mrp3 || record.batchDetail[0].mrp4)">
+                  <!-- <span *ngIf="record.hoStatus != 0" id="batchMrp_{{record._id}}">
+                    {{record.mrp | number : '1.2-2'}}
+                  </span> -->
                   <span id="err_batchMrp_{{record._id}}" style="color: #FF0013;">
                     {{record.mrp | number : '1.2-2'}}
                   </span>
@@ -274,6 +361,8 @@
               <td class="border-right tc">{{record.difference | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.totalDifference | number : '1.2-2'}}</td>
               <td class="border-right tc">{{record.amount | number : '1.2-2'}}</td>
+              <!-- <td class="border-right"
+                  *ngIf="sessionData['workType'] === 'field' || (sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === ''))"> -->
               <td class="border-right"
                 *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
                 <div class="inputcontainer">
@@ -386,8 +475,8 @@
     </div>
 
     <!-- TO show total records on the bottom of the page -->
-    <div *ngIf="!loading && showData" class="row" style="margin-top: -15px;">
-      <div class="col-md-12" style="padding-top: 10px; font-weight: 600;">
+    <div *ngIf="!loading && showData" class="row" style="margin-top: 15px;">
+      <div class="col-md-6" style="padding-top: 10px; font-weight: 600;">
         Records: {{tempRecords.length}}
       </div>
     </div>

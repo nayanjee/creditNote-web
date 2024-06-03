@@ -18,10 +18,11 @@ export class ListDivisionComponent implements OnInit {
 
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Add / Create Division';
-  subheading = 'Create a division';
+  heading = 'Division';
+  subheading = 'Division List';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
   loggedUserId: any = '';
+  sessionData: any;
   divisions: any = [];
   /* Code With ngx Data Table 
    temp = [];
@@ -52,6 +53,7 @@ export class ListDivisionComponent implements OnInit {
 
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
+    this.sessionData = JSON.parse(sessionData);
 
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;

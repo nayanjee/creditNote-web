@@ -885,6 +885,7 @@ export class AddClaimComponent implements OnInit {
     let stockists = [];
     const distributor = $("#distributor option:selected").val();
     const stockist = this.userPlantStockists[distributor];
+    console.log('stockist---', stockist);
 
     if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
       stockist.forEach(element => {
@@ -900,16 +901,20 @@ export class AddClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
+          console.log('stockiests---', this.stockiests);
+          console.log('distributor---', distributor);
 
-          // If user has access to approve claim of the distributor (self)
-          if (stockist.includes(distributor.toString())) {
-            const self = {
-              customerId: 1,
-              organization: '-- SELF --'
+          if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
+            // If user has access to approve claim of the distributor (self)
+            if (stockist.includes(distributor.toString())) {
+              const self = {
+                customerId: 1,
+                organization: '-- SELF --'
+              }
+              this.stockiests.push(self);
             }
-            this.stockiests.push(self);
+            // EOF If user has access to approve claim of the distributor (self)
           }
-          // EOF If user has access to approve claim of the distributor (self)
 
           this.delay(5).then(any => {
             $("#stockiest").val($("#stockiest option:eq(1)").val());

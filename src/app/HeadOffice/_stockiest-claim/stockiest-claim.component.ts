@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+// import { Meta } from '@angular/platform-browser';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@angular/forms';
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -10,8 +11,13 @@ import * as moment from 'moment';
 
 import { environment } from './../../../environments/environment';
 import { AppServicesService } from '../../shared/service/app-services.service';
+//import { AllotmentModalComponent } from './allotment-modal.component';
 
 declare var $: any;
+
+/* export class Country {
+  constructor(public name: string, public code: string) {}
+} */
 
 @Component({
   selector: 'app-stockiest-claim',
@@ -20,6 +26,13 @@ declare var $: any;
 })
 export class StockiestClaimComponent implements OnInit {
   private apiURL: any = environment.apiURL;
+  //@ViewChild('selectpicker') selectPicker: ElementRef;
+  /* ngAfterViewInit() {
+    console.log(this.selectPicker);
+    this.selectPicker.nativeElement.selectpicker();
+  } */
+  /* countryCtrl: FormControl;
+  filteredCountry: Observable<any[]>; */
 
   faStar = faStar;
   faPlus = faPlus;
@@ -39,18 +52,18 @@ export class StockiestClaimComponent implements OnInit {
     { id: 'special', name: 'Special Discount' }
   ];
   months: any = [
-    { id: 1, name: '01 - Jan' },
-    { id: 2, name: '02 - Feb' },
-    { id: 3, name: '03 - Mar' },
-    { id: 4, name: '04 - Apr' },
+    { id: 1, name: '01 - January' },
+    { id: 2, name: '02 - February' },
+    { id: 3, name: '03 - March' },
+    { id: 4, name: '04 - April' },
     { id: 5, name: '05 - May' },
-    { id: 6, name: '06 - Jun' },
-    { id: 7, name: '07 - Jul' },
-    { id: 8, name: '08 - Aug' },
-    { id: 9, name: '09 - Sep' },
-    { id: 10, name: '10 - Oct' },
-    { id: 11, name: '11 - Nov' },
-    { id: 12, name: '12 - Dec' },
+    { id: 6, name: '06 - June' },
+    { id: 7, name: '07 - July' },
+    { id: 8, name: '08 - August' },
+    { id: 9, name: '09 - September' },
+    { id: 10, name: '10 - October' },
+    { id: 11, name: '11 - November' },
+    { id: 12, name: '12 - December' },
   ];
   years: any = [];
   currentYear: any;
@@ -89,14 +102,48 @@ export class StockiestClaimComponent implements OnInit {
   userPlantDivisions: any = [];
   clickedRecord: any = [];
 
+  /* length: number;
+  name: string;
+  code: string;
+  country_lis: Country[] = [
+    { name: 'Afghanistan', code: 'AF' },
+    { name: 'Åland Islands', code: 'AX' },
+    { name: 'Albania', code: 'AL' },
+    { name: 'Algeria', code: 'DZ' },
+    { name: 'American Samoa', code: 'AS' },
+    { name: 'AndorrA', code: 'AD' },
+    { name: 'Angola', code: 'AO' },
+    { name: 'Anguilla', code: 'AI' },
+    { name: 'Antarctica', code: 'AQ' },
+    { name: 'Antigua and Barbuda', code: 'AG' },
+    { name: 'Argentina', code: 'AR' },
+    { name: 'Armenia', code: 'AM' },
+    { name: 'Aruba', code: 'AW' },
+  ]; */
+
+
+
+
   constructor(
+    // private meta: Meta,
     private router: Router,
     private fb: FormBuilder,
     private modalService: NgbModal,
     private activatedRoute: ActivatedRoute,
     private apiService: AppServicesService
   ) {
+    /* this.meta.addTags([ 
+      { name: 'description', content: 'This is an article about Angular Meta service' }, 
+      { name: 'keywords', content: 'angular, javascript, typescript, meta, seo' } 
+    ]); */
 
+    /* this.countryCtrl = new FormControl();
+    this.filteredCountry = this.countryCtrl.valueChanges.pipe(
+      startWith(''),
+      map((country) =>
+        country ? this.filtercountry(country) : this.country_lis.slice()
+      )
+    ); */
   }
 
   ngOnInit() {
@@ -106,31 +153,37 @@ export class StockiestClaimComponent implements OnInit {
 
     this.heading = this.sessionData.type === 'ho' ? 'HO Approval' : 'Field Approval';
 
-    // Current Month and Year
-    const currentMonth = moment().format("MM");
-    this.currentMonth = parseInt(currentMonth);
+    this.delay(1000).then(any => {
+      // Current Month and Year
+      const currentMonth = moment().format("MM");
+      this.currentMonth = parseInt(currentMonth);
 
-    // To show previous 2 years in dropdown
-    const currentYear = moment().format("YYYY");
-    this.currentYear = parseInt(currentYear);
-    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
-      const year = { id: i, name: i };
-      this.years.push(year);
-    }
+      // To show previous 2 years in dropdown
+      const currentYear = moment().format("YYYY");
+      this.currentYear = parseInt(currentYear);
+      for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+        const year = { id: i, name: i };
+        this.years.push(year);
+      }
 
-    // To show this data as predefined in the form
-    if (parseInt(currentMonth) - 1 <= 0) {
-      this.selectedYear = parseInt(currentYear) - 1;
-      this.selectedMonth = 12;
-    } else {
-      this.selectedYear = currentYear;
-      this.selectedMonth = parseInt(currentMonth) - 1;
-    }
+      // To show this data as predefined in the form
+      if (parseInt(currentMonth) - 1 <= 0) {
+        this.selectedYear = parseInt(currentYear) - 1;
+        this.selectedMonth = 12;
+      } else {
+        this.selectedYear = currentYear;
+        this.selectedMonth = parseInt(currentMonth) - 1;
+      }
 
-    this.selectedFields['month'] = this.selectedMonth;
-    this.selectedFields['year'] = this.selectedYear;
-    this.selectedFields['division'] = 0;
-    this.selectedFields['type'] = 0;
+      $('#type').val('scheme');
+      $('#month').val(this.selectedMonth);
+      $('#year').val(this.selectedYear);
+
+      this.selectedFields['month'] = this.selectedMonth;
+      this.selectedFields['year'] = this.selectedYear;
+      this.selectedFields['division'] = 0;
+      this.selectedFields['type'] = 0;
+    });
 
     this.getDistributors();
     this.getParticulars();
@@ -156,8 +209,29 @@ export class StockiestClaimComponent implements OnInit {
     })
   }
 
+  /* filtercountry(name: string) {
+    let arr = this.country_lis.filter(
+      (country) => country.name.toLowerCase().indexOf(name.toLowerCase()) === 0
+    );
+
+    return arr.length ? arr : [{ name: 'No Item found', code: 'null' }];
+  } */
+
   async delay(ms: number) {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
+  }
+
+  validateMonth(value, targetId) {
+    $('#err_month').hide();
+
+    const selectedYear = this.selectedFields.year;
+    const selectedMonth = this.selectedFields.month;
+
+    if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
+      $('#err_month').text('You can\'t claim for this month.').show();
+    } else {
+      this.filterData(value, targetId);
+    }
   }
 
   isDistributors() {
@@ -205,6 +279,7 @@ export class StockiestClaimComponent implements OnInit {
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
 
+
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.stockists;
 
@@ -212,25 +287,29 @@ export class StockiestClaimComponent implements OnInit {
             this.userPlantDivisions[element.plant] = element.divisions;
           });
 
-          //this.delay(100).then(any => {
-          this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          this.delay(500).then(any => {
+            /* $("#distributor").val($("#distributor option:eq(1)").val());
+            $('#distributor_loader').hide();
+            $('#distributor').show();
+            const distributor = $("#distributor option:selected").val();
+            this.selectedFields['distributor'] = distributor; */
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+            $('#distributor_loader').hide();
+            $('#distributor').show();
 
-          $('#distributor_loader').hide();
-          $('#distributor').show();
-
-          this.getStockiest();
-          this.getDivisions();
-          //});
+            this.getStockiest();
+            this.getDivisions();
+          });
         }
       }
     });
   }
 
   getStockiest() {
+    let stockists = [];
+    //const distributor = $("#distributor option:selected").val();
     const distributor = this.selectedFields.distributor;
     const stockist = this.userPlantStockists[distributor];
-
-    let stockists = [];
     stockist.forEach(element => {
       stockists.push(Number(element));
     });
@@ -250,6 +329,17 @@ export class StockiestClaimComponent implements OnInit {
           }
           // EOF If user has access to approve claim of the distributor (self)
 
+          /* this.delay(5).then(any => {
+            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
+
+            const stockiest = $("#stockiest option:selected").val();
+            this.selectedFields['stockiest'] = stockiest;
+
+            this.getData();
+          }); */
+
           this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
 
           $('#stockiest_loader').hide();
@@ -262,11 +352,10 @@ export class StockiestClaimComponent implements OnInit {
   }
 
   getDivisions() {
+    let divisions = [];
     this.divisions = [];
-
     const distributor = this.selectedFields['distributor'];
     const division = this.userPlantDivisions[distributor];
-    let divisions = [];
     division.forEach(element => {
       divisions.push(Number(element));
     });
@@ -275,6 +364,47 @@ export class StockiestClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
+          this.divisions_edit = response.data;
+        }
+      }
+    });
+  }
+
+  getStockiest_edit() {
+    let stockists = [];
+    const distributor = $("#edit_distributor option:selected").val();
+    const stockist = this.userPlantStockists[distributor];
+    stockist.forEach(element => {
+      stockists.push(Number(element));
+    });
+
+    this.getDivisions_edit();
+
+    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.stockiests = response.data;
+
+          this.delay(5).then(any => {
+            $("#edit_stockiest").val($("#edit_stockiest option:eq(1)").val());
+          });
+        }
+      }
+    });
+  }
+
+  getDivisions_edit() {
+    let divisions = [];
+    this.divisions = [];
+    const distributor = $("#edit_distributor option:selected").val();
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
+    });
+
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
           this.divisions_edit = response.data;
         }
       }
@@ -321,6 +451,305 @@ export class StockiestClaimComponent implements OnInit {
     });
   }
 
+  filterDataTwice(type = '', division = '') {
+    this.selectedFields.type = type;
+    this.selectedFields.division = division;
+
+    $("#type").val(this.selectedFields.type);
+    $("#division").val(this.selectedFields.division);
+
+    if (type && division) {
+      this.tempRecords = this.records.filter(function (el) {
+        return el.claimType == type && el.divisionName == division;
+      });
+    } else if (type && !division) {
+      this.tempRecords = this.records.filter(function (el) {
+        return el.claimType == type;
+      });
+    } else if (!type && division) {
+      this.tempRecords = this.records.filter(function (el) {
+        return el.divisionName == division;
+      });
+    } else if (!type && !division) {
+      this.tempRecords = this.records;
+    }
+  }
+
+  filterData(value, targetId) {
+    this.loading = true;
+    this.showData = true;
+
+    if (targetId === 'type') {
+      this.selectedFields[targetId] = value;
+    } else {
+      this.selectedFields[targetId] = parseInt(value);
+    }
+
+    $("#divisionCode").text('');
+
+    if (targetId === 'distributor') {
+      this.selectedFields.type = 0;
+      this.selectedFields.division = 0;
+
+      this.getStockiest();
+      this.getDivisions();
+
+      this.delay(1000).then(any => {
+        this.getData();
+      });
+    }
+
+    if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
+      this.selectedFields.type = 0;
+      this.selectedFields.division = 0;
+
+      this.getData();
+    }
+
+    console.log('this.selectedFields--', this.selectedFields);
+    const type = this.selectedFields.type;
+    const division = this.selectedFields.division;
+
+    if (division) {
+      const div = this.divisions.filter(function (el) {
+        return el.division == Number(division);
+      });
+      const divisionCode = div[0].division;
+      $("#divisionCode").text('(' + divisionCode + ')');
+    }
+
+    if (type && division) {
+      this.tempRecords = this.records.filter(function (el) {
+        return el.claimType == type && el.divisionId === Number(division);
+      });
+    } else if (type && !division) {
+      this.tempRecords = this.records.filter(function (el) {
+        return el.claimType == type;
+      });
+    } else if (!type && division) {
+      this.tempRecords = this.records.filter(function (el) {
+        return el.divisionId === Number(division);
+      });
+    } else if (!type && !division) {
+      this.tempRecords = this.records;
+    }
+
+    if (this.tempRecords.length) {
+      this.loading = false;
+      this.showData = true;
+    } else {
+      this.loading = false;
+      this.showData = false;
+    }
+  }
+
+  viewPopup(content, data, invoice, id) {
+    this.pdfSource = '';
+    this.clickedFile = data;
+    this.clickedFile.invoice = invoice;
+    const fileExtension = this.clickedFile.filename.substring(this.clickedFile.filename.length - 4);
+    if (fileExtension === '.pdf' || fileExtension === '.PDF') {
+      this.pdfSource = this.apiURL + '/uploads/files/' + this.clickedFile.filename;
+    }
+
+    /* this.modalService.open(content, {
+      size: 'lg'
+    }); */
+    this.modalReference = this.modalService.open(content);
+    this.modalReference.result.then(
+      (result) => {
+        this.closeResult = `Closed with: ${result}`;
+      },
+      (reason) => {
+        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      }
+    );
+  }
+
+  confirmBoxDelete(id) {
+    Swal.fire({
+      title: 'Are you sure want to remove?',
+      text: 'You will not be able to recover this record!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'No, keep it'
+    }).then((result) => {
+      if (result.value) {
+        const type = this.selectedFields.type;
+        const division = this.selectedFields.division;
+
+        let reqData = { _id: id };
+        this.apiService.update('/api/claim/delete', reqData).subscribe((response: any) => {
+          if (response.status === 200) {
+            this.getData();
+            Swal.fire(
+              'Deleted!',
+              'Your imaginary record has been deleted.',
+              'success'
+            )
+          }
+        });
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire(
+          'Cancelled',
+          'Your imaginary record is safe :)',
+          'error'
+        )
+      }
+    })
+  }
+
+  confirmBoxDeleteFile(file) {
+    Swal.fire({
+      title: 'Are you sure want to remove?',
+      text: 'You will not be able to recover this image/file!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'No, keep it'
+    }).then((result) => {
+      if (result.value) {
+        let reqData = { _id: file._id };
+        this.apiService.update('/api/claim/deleteFile', reqData).subscribe((response: any) => {
+          if (response.status === 200) {
+            this.getData();
+            Swal.fire(
+              'Deleted!',
+              'Your imaginary record has been deleted.',
+              'success'
+            )
+          }
+        });
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire(
+          'Cancelled',
+          'Your imaginary record is safe :)',
+          'error'
+        )
+      }
+      this.modalReference.close();
+    })
+  }
+
+  uploadwPopup(content, id) {
+    this.uploadFile = id;
+    this.modalReference = this.modalService.open(content);
+    this.modalReference.result.then(
+      (result) => {
+        this.closeResult = `Closed with: ${result}`;
+      },
+      (reason) => {
+        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      }
+    );
+  }
+
+  onFileSelected(event, id) {
+    const frmData = new FormData();
+    // formData.append("file", event.target.files[0]);
+    for (var i = 0; i < event.target.files.length; i++) {
+      frmData.append("file", event.target.files[i]);
+    }
+
+    this.apiService.upload('/api/UploadClaimInvoices', frmData).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          let images = [];
+          response.data.forEach(element => {
+            const img = {
+              claimId: id,
+              filename: element.filename,
+              originalFilename: element.originalname,
+              createdBy: this.sessionData.id
+            }
+            images.push(img);
+          });
+          this.apiService.post('/api/claim/fileUpload', images).subscribe((response: any) => {
+            if (response.status === 200) {
+              this.modalReference.close();
+              this.getData();
+              Swal.fire(
+                'Uploaded!',
+                'Your image/file has been uploaded.',
+                'success'
+              );
+            } else {
+              this.modalReference.close();
+              Swal.fire(
+                'Cancelled',
+                'Something went wrong. Try refreshing the page or try again later.',
+                'error'
+              )
+            }
+          });
+        }
+      } else {
+        this.modalReference.close();
+        Swal.fire(
+          'Cancelled',
+          'Something went wrong. Try refreshing the page or try again later.',
+          'error'
+        )
+      }
+    })
+  }
+
+  postClaim() {
+    let error = 0;
+    let invoiceFiles = [];
+    this.records.forEach(element => {
+      if (element.files.length) {
+        const invFile = {
+          invoice: element.invoice,
+          file: element.files[0].filename
+        }
+        invoiceFiles.push(invFile);
+      }
+    });
+
+    const uniqueAuthors = [...new Map(invoiceFiles.map(v => [v.invoice, v])).values()]; // Remove duplicate invoices
+    const remainInvoices = this.records.filter(({ invoice: id1 }) => !uniqueAuthors.some(({ invoice: id2 }) => id2 === id1));
+    const uniqueremainInvoices = [...new Map(remainInvoices.map(v => [v.invoice, v])).values()]; // Remove duplicate invoices
+    if (uniqueremainInvoices) {
+      uniqueremainInvoices.forEach(element => {
+        error = 1;
+        $('.' + element['invoice']).show();
+        // $(".att_3:first").text('Hello')
+        this.toast('error', 'All invoices must have at least one file uploaded.');
+      });
+    }
+
+    if (this.tempRecords.length <= 0) {
+      error = 1;
+      this.toast('error', 'Currently there are no claims on the list.');
+    }
+
+    if (error === 0) {
+      let reqData = [];
+      this.tempRecords.forEach((element, index) => {
+        const temp = {
+          _id: element._id,
+          isDraft: false,
+          isSubmit: true,
+          submittedBy: this.sessionData.id,
+          submittedOn: moment().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+        };
+        reqData.push(temp);
+        // reqData[index]['submittedBy'] = this.loggedUserId;
+      });
+
+      this.apiService.post('/api/claim/submit', reqData).subscribe((response: any) => {
+        if (response.status === 200) {
+          this.toast('success', 'Successfully submitted.');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      });
+    }
+  }
+
   getParticulars() {
     this.apiService.fetch('/api/particulars/all').subscribe((response: any) => {
       if (response.status === 200) {
@@ -329,49 +758,6 @@ export class StockiestClaimComponent implements OnInit {
         }
       }
     });
-  }
-
-  getProduct() {
-    this.apiService.fetch('/api/product/all').subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.products = response.data;
-        }
-      }
-    });
-  }
-
-  getCategories() {
-    this.apiService.fetch('/api/category/all').subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.categories = response.data;
-        }
-      }
-    });
-  }
-
-  getBatch() {
-    this.apiService.fetch('/api/batch/all').subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.batches = response.data;
-        }
-      }
-    });
-  }
-
-  validateMonth(value, targetId) {
-    $('#err_month').hide();
-
-    const selectedYear = this.selectedFields.year;
-    const selectedMonth = this.selectedFields.month;
-
-    if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
-      $('#err_month').text('You can\'t claim for this month.').show();
-    } else {
-      this.filterData(value, targetId);
-    }
   }
 
   /***** Particulars key-up functionality *****/
@@ -478,6 +864,16 @@ export class StockiestClaimComponent implements OnInit {
     // this.saveParticulars(id, e.target.innerText);
   }
   /***** EOF Particulars key-up functionality *****/
+
+  getCategories() {
+    this.apiService.fetch('/api/category/all').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.categories = response.data;
+        }
+      }
+    });
+  }
 
   /***** Category key-up functionality *****/
   searchCategory(e, i) {
@@ -689,7 +1085,7 @@ export class StockiestClaimComponent implements OnInit {
     results = this.products.filter(element => {
       return element.materialName.toLowerCase().indexOf(val) > -1 &&
         element.division === Number(divisionId); /*  && 
-            element.plant === Number(plantId); */
+              element.plant === Number(plantId); */
     });
 
     return results;
@@ -855,690 +1251,14 @@ export class StockiestClaimComponent implements OnInit {
   }
   /***** EOF Batch key-up functionality *****/
 
-  filterData(value, targetId) {
-    this.loading = true;
-    this.showData = true;
-
-    if (targetId === 'type') {
-      this.selectedFields[targetId] = value;
-    } else {
-      this.selectedFields[targetId] = parseInt(value);
-    }
-
-    $("#divisionCode").text('');
-
-    if (targetId === 'distributor') {
-      this.selectedFields.type = 0;
-      this.selectedFields.division = 0;
-
-      this.getStockiest();
-      this.getDivisions();
-
-      this.delay(1000).then(any => {
-        this.getData();
-      });
-    }
-
-    if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
-      this.selectedFields.type = 0;
-      this.selectedFields.division = 0;
-
-      this.getData();
-    }
-
-    const type = this.selectedFields.type;
-    const division = this.selectedFields.division;
-
-    if (division) {
-      const div = this.divisions.filter(function (el) {
-        return el.division == Number(division);
-      });
-      const divisionCode = div[0].division;
-      $("#divisionCode").text('(' + divisionCode + ')');
-    }
-
-    if (type && division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type && el.divisionId === Number(division);
-      });
-    } else if (type && !division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type;
-      });
-    } else if (!type && division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.divisionId === Number(division);
-      });
-    } else if (!type && !division) {
-      this.tempRecords = this.records;
-    }
-
-    if (this.tempRecords.length) {
-      this.loading = false;
-      this.showData = true;
-    } else {
-      this.loading = false;
-      this.showData = false;
-    }
-  }
-
-  async validateApproval(record, event) {
-    let errors = '';
-    this.allotedQty = 0;
-    this.allotedInvoiceQty = [];
-    this.salesAndRemainings = [];
-    this.allotedHoInvoiceQty = [];
-    this.approvalClickedClaim = [];
-
-    const claim = await this.getClaimById(record._id);
-    console.log('claim-----', claim);
-    if (claim) {
-      if (this.sessionData.type === 'ho' && this.sessionData.workType != 'ho1' && claim['ho1Status'] != 0) {
-        Swal.fire(
-          'Sorry',
-          'Further process has been done on this claim so you cannot take any action now.',
-          'error'
-        );
-        return;
-      }
-
-      if (event === 'Approve') {
-        if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
-          if (claim['ho1Status'] === 1) {
-            Swal.fire(
-              'Oops... can\'t proceed',
-              'This claim has already been approved.',
-              'error'
-            );
-            return;
-          }
-        } else {
-          if (claim['hoStatus'] === 1) {
-            Swal.fire(
-              'Oops... can\'t proceed',
-              'This claim has already been approved.',
-              'error'
-            );
-            return;
-          }
-
-          const batchMrp_select = $('#batchMrp_selected_' + record._id).val();
-          if (batchMrp_select == 0) {
-            Swal.fire(
-              'Oops... can\'t proceed',
-              'There is more than one price in this batch.<br>Please confirm price first.',
-              'error'
-            );
-            return;
-          }
-
-          let categoryMatched = false;
-          let particularsMatched = false;
-
-          if (!claim['claimType']) { errors = errors + "Enter claim type.<br>"; }
-          if (!claim['invoice']) { errors = errors + "Enter reference number.<br>"; }
-          if (!claim['divisionName']) { errors = errors + "Enter division.<br>"; }
-          if (!claim['materialName']) { errors = errors + "Enter product.<br>"; }
-          if (!claim['batch']) { errors = errors + "Enter batch.<br>"; }
-
-          if (!claim['billingRate'] && !claim['freeQuantity']) {
-            errors = errors + "Enter billing rate or free quantity.<br>";
-          } else if (!claim['billingRate'] && !claim['saleQuantity']) {
-            errors = errors + "Enter free quantity and/or sale quantity.<br>";
-          } else if (claim['billingRate'] && !claim['saleQuantity']) {
-            errors = errors + "Enter sale quantity.<br>";
-          }
-
-          const tempParticulars = $('#particulars_' + record._id).val();
-          if (tempParticulars) {
-            this.particulars.forEach(element => {
-              if (tempParticulars === element.name) {
-                particularsMatched = true;
-                return;
-              }
-            });
-            if (!particularsMatched) {
-              errors = errors + "Particulars not matched.<br>";
-            } else {
-              claim['particulars'] = tempParticulars;
-            }
-          } else {
-            errors = errors + "Enter particulars.<br>";
-          }
-
-          const tempCategory = $('#category_' + record._id).val();
-          if (tempCategory) {
-            this.categories.forEach(element => {
-              if (tempCategory === element.name) {
-                categoryMatched = true;
-                return;
-              }
-            });
-            if (!categoryMatched) {
-              errors = errors + "Category not matched.<br>";
-            } else {
-              claim['category'] = tempCategory;
-            }
-          } else {
-            errors = errors + "Enter category.<br>";
-          }
-
-          const tempSupplyProof = $('#sproof_' + record._id).val();
-          if (!tempSupplyProof) {
-            errors = errors + "Select supply proof.<br>";
-          } else {
-            claim['supplyProof'] = tempSupplyProof;
-          }
-
-          const tempPurchaseOrder = $('#porder_' + record._id).val();
-          if (!tempPurchaseOrder) {
-            errors = errors + "Select purchase order.<br>";
-          } else {
-            claim['purchaseOrder'] = tempPurchaseOrder;
-          }
-        }
-      } else if (event === 'Unapprove') {
-        if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
-          if (claim['ho1Status'] === 2) {
-            Swal.fire(
-              'Oops... can\'t proceed',
-              'This claim has already been unapproved.',
-              'error'
-            );
-            return;
-          } else {
-            claim['ho1Status'] = 2;
-            claim['ho1ActionBy'] = this.sessionData.id;
-            claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-          }
-        } else {
-          if (claim['hoStatus'] === 2) {
-            Swal.fire(
-              'Oops... can\'t proceed',
-              'This claim has already been unapproved.',
-              'error'
-            );
-            return;
-          } else {
-            const tempParticulars = $('#particulars_' + record._id).val();
-            claim['particulars'] = tempParticulars;
-
-            const tempCategory = $('#category_' + record._id).val();
-            claim['category'] = tempCategory;
-
-            const tempSupplyProof = $('#sproof_' + record._id).val();
-            claim['supplyProof'] = tempSupplyProof;
-
-            const tempPurchaseOrder = $('#porder_' + record._id).val();
-            claim['purchaseOrder'] = tempPurchaseOrder;
-
-            claim['hoStatus'] = 2;
-            claim['hoActionBy'] = this.sessionData.id;
-            claim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-          }
-        }
-      }
-    } else {
-      Swal.fire(
-        'Sorry',
-        'Clam doesn\'t exists.',
-        'error'
-      );
-      return;
-    }
-
-    if (errors) {
-      Swal.fire({
-        title: 'Please correct the points:',
-        icon: 'info',
-        html: errors,
-        showCloseButton: true,
-        showCancelButton: false,
-        focusConfirm: false,
-        confirmButtonText: 'Okay!',
-        confirmButtonAriaLabel: 'Thumbs up, great!'
-      })
-    } else {
-      this.approvalClickedClaim = claim;
-      if (event === 'Unapprove') {
-        $('#comments').val('');
-
-        var modal = document.getElementById("myModalComment");
-        modal.style.display = "block";
-      } else {
-        const duplicacy = await this.checkDuplicacy(this.approvalClickedClaim);
-        if (duplicacy['data']) {
-          Swal.fire({
-            title: 'Pay attention',
-            text: 'Such claim has already been accepted!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, submit it!',
-            cancelButtonText: 'No, keep it'
-          }).then(async (result) => {
-            if (result.value) {
-              const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
-              if (this.sessionData.workType === 'ho1' && allocatedQty.length) {
-                const reqData = {
-                  _id: claim['_id'],
-                  ho1Status: 1,
-                  ho1ApprovalComment: null,
-                  ho1ActionBy: this.sessionData.id,
-                  ho1ActionOn: moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")
-                }
-                this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
-                  if (response.status === 200) {
-                    Swal.fire(
-                      'Approved!',
-                      'You approved the claim successfully.',
-                      'success'
-                    );
-                  } else {
-                    Swal.fire(
-                      'Oops',
-                      'Something went wrong please try again.',
-                      'error'
-                    );
-                  }
-
-                  $('#def_approvedIcon_' + claim['_id']).hide();
-                  $('#def_unapprovedIcon_' + claim['_id']).hide();
-                  $('#approvedIcon_' + claim['_id']).show();
-                  $('#unapprovedIcon_' + claim['_id']).hide();
-                });
-              } else {
-                if (allocatedQty.length) {
-                  allocatedQty.forEach(async element => {
-                    const reqData = {
-                      billDocNumber: element['stkInvoiceNo'],
-                      billToParty: this.approvalClickedClaim['customerId'],
-                      batch: this.approvalClickedClaim['batch'],
-                      allocatedQty: element['allocatedQty'],
-                      claimId: this.approvalClickedClaim['_id']
-                    }
-
-                    const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
-                  });
-                }
-
-                this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
-                  if (response.status === 200) {
-                    this.getRemaining(claim);
-                  } else {
-                    Swal.fire(
-                      'Oops',
-                      'Something went wrong please try again.',
-                      'error'
-                    );
-                  }
-                });
-              }
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-              Swal.fire(
-                'Cancelled',
-                'Your imaginary record is safe :)',
-                'error'
-              )
-            }
-          })
-          return;
-        } else {
-          if (this.sessionData.workType === 'ho1' && claim['hoStatus'] === 1 && claim['ho1Status'] === 0) {
-            claim['ho1Status'] = 1;
-            claim['ho1ActionBy'] = this.sessionData.id;
-            claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-
-            this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
-              if (response.status === 200) {
-                $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
-                $('#def_unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
-                $('#approvedIcon_' + this.approvalClickedClaim['_id']).show();
-                $('#unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
-
-                Swal.fire(
-                  'Approved!',
-                  'You approved the claim successfully.',
-                  'success'
-                );
-              } else {
-                Swal.fire(
-                  'Oops',
-                  'Something went wrong please try again.',
-                  'error'
-                );
-              }
-            });
-          } else {
-            const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
-            if (allocatedQty.length) {
-              if (this.sessionData.workType === 'ho1') {
-                claim['ho1Status'] = 1;
-                claim['ho1ActionBy'] = this.sessionData.id;
-                claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
-
-                this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
-                  if (response.status === 200) {
-                    $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
-                    $('#def_unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
-                    $('#approvedIcon_' + this.approvalClickedClaim['_id']).show();
-                    $('#unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
-
-                    Swal.fire(
-                      'Approved!',
-                      'You approved the claim successfully.',
-                      'success'
-                    );
-
-                  } else {
-                    Swal.fire(
-                      'Oops',
-                      'Something went wrong please try again.',
-                      'error'
-                    );
-                  }
-                });
-              } else {
-                this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
-                  if (response.status === 200) {
-                    this.getRemaining(claim);
-                  } else {
-                    Swal.fire(
-                      'Oops',
-                      'Something went wrong please try again.',
-                      'error'
-                    );
-                  }
-                });
-              }
-            } else {
-              this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
-                if (response.status === 200) {
-                  this.getRemaining(claim);
-                } else {
-                  Swal.fire(
-                    'Oops',
-                    'Something went wrong please try again.',
-                    'error'
-                  );
-                }
-              });
-            }
-          }
-        }
-      }
-    }
-  }
-
-  getStockiest_edit() {
-    let stockists = [];
-    const distributor = $("#edit_distributor option:selected").val();
-    const stockist = this.userPlantStockists[distributor];
-    stockist.forEach(element => {
-      stockists.push(Number(element));
-    });
-
-    this.getDivisions_edit();
-
-    this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
+  getBatch() {
+    this.apiService.fetch('/api/batch/all').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
-          this.stockiests = response.data;
-
-          this.delay(5).then(any => {
-            $("#edit_stockiest").val($("#edit_stockiest option:eq(1)").val());
-          });
+          this.batches = response.data;
         }
       }
     });
-  }
-
-  getDivisions_edit() {
-    let divisions = [];
-    this.divisions = [];
-    const distributor = $("#edit_distributor option:selected").val();
-    const division = this.userPlantDivisions[distributor];
-    division.forEach(element => {
-      divisions.push(Number(element));
-    });
-
-    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.divisions_edit = response.data;
-        }
-      }
-    });
-  }
-
-  filterDataTwice(type = '', division = '') {
-    this.selectedFields.type = type;
-    this.selectedFields.division = division;
-
-    $("#type").val(this.selectedFields.type);
-    $("#division").val(this.selectedFields.division);
-
-    if (type && division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type && el.divisionName == division;
-      });
-    } else if (type && !division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type;
-      });
-    } else if (!type && division) {
-      this.tempRecords = this.records.filter(function (el) {
-        return el.divisionName == division;
-      });
-    } else if (!type && !division) {
-      this.tempRecords = this.records;
-    }
-  }
-
-  viewPopup(content, data, invoice, id) {
-    this.pdfSource = '';
-    this.clickedFile = data;
-    this.clickedFile.invoice = invoice;
-    const fileExtension = this.clickedFile.filename.substring(this.clickedFile.filename.length - 4);
-    if (fileExtension === '.pdf' || fileExtension === '.PDF') {
-      this.pdfSource = this.apiURL + '/uploads/files/' + this.clickedFile.filename;
-    }
-
-    /* this.modalService.open(content, {
-      size: 'lg'
-    }); */
-    this.modalReference = this.modalService.open(content);
-    this.modalReference.result.then(
-      (result) => {
-        this.closeResult = `Closed with: ${result}`;
-      },
-      (reason) => {
-        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
-      }
-    );
-  }
-
-  confirmBoxDelete(id) {
-    Swal.fire({
-      title: 'Are you sure want to remove?',
-      text: 'You will not be able to recover this record!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'No, keep it'
-    }).then((result) => {
-      if (result.value) {
-        const type = this.selectedFields.type;
-        const division = this.selectedFields.division;
-
-        let reqData = { _id: id };
-        this.apiService.update('/api/claim/delete', reqData).subscribe((response: any) => {
-          if (response.status === 200) {
-            this.getData();
-            Swal.fire(
-              'Deleted!',
-              'Your imaginary record has been deleted.',
-              'success'
-            )
-          }
-        });
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire(
-          'Cancelled',
-          'Your imaginary record is safe :)',
-          'error'
-        )
-      }
-    })
-  }
-
-  confirmBoxDeleteFile(file) {
-    Swal.fire({
-      title: 'Are you sure want to remove?',
-      text: 'You will not be able to recover this image/file!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'No, keep it'
-    }).then((result) => {
-      if (result.value) {
-        let reqData = { _id: file._id };
-        this.apiService.update('/api/claim/deleteFile', reqData).subscribe((response: any) => {
-          if (response.status === 200) {
-            this.getData();
-            Swal.fire(
-              'Deleted!',
-              'Your imaginary record has been deleted.',
-              'success'
-            )
-          }
-        });
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire(
-          'Cancelled',
-          'Your imaginary record is safe :)',
-          'error'
-        )
-      }
-      this.modalReference.close();
-    })
-  }
-
-  uploadwPopup(content, id) {
-    this.uploadFile = id;
-    this.modalReference = this.modalService.open(content);
-    this.modalReference.result.then(
-      (result) => {
-        this.closeResult = `Closed with: ${result}`;
-      },
-      (reason) => {
-        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
-      }
-    );
-  }
-
-  onFileSelected(event, id) {
-    const frmData = new FormData();
-    // formData.append("file", event.target.files[0]);
-    for (var i = 0; i < event.target.files.length; i++) {
-      frmData.append("file", event.target.files[i]);
-    }
-
-    this.apiService.upload('/api/UploadClaimInvoices', frmData).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          let images = [];
-          response.data.forEach(element => {
-            const img = {
-              claimId: id,
-              filename: element.filename,
-              originalFilename: element.originalname,
-              createdBy: this.sessionData.id
-            }
-            images.push(img);
-          });
-          this.apiService.post('/api/claim/fileUpload', images).subscribe((response: any) => {
-            if (response.status === 200) {
-              this.modalReference.close();
-              this.getData();
-              Swal.fire(
-                'Uploaded!',
-                'Your image/file has been uploaded.',
-                'success'
-              );
-            } else {
-              this.modalReference.close();
-              Swal.fire(
-                'Cancelled',
-                'Something went wrong. Try refreshing the page or try again later.',
-                'error'
-              )
-            }
-          });
-        }
-      } else {
-        this.modalReference.close();
-        Swal.fire(
-          'Cancelled',
-          'Something went wrong. Try refreshing the page or try again later.',
-          'error'
-        )
-      }
-    })
-  }
-
-  postClaim() {
-    let error = 0;
-    let invoiceFiles = [];
-    this.records.forEach(element => {
-      if (element.files.length) {
-        const invFile = {
-          invoice: element.invoice,
-          file: element.files[0].filename
-        }
-        invoiceFiles.push(invFile);
-      }
-    });
-
-    const uniqueAuthors = [...new Map(invoiceFiles.map(v => [v.invoice, v])).values()]; // Remove duplicate invoices
-    const remainInvoices = this.records.filter(({ invoice: id1 }) => !uniqueAuthors.some(({ invoice: id2 }) => id2 === id1));
-    const uniqueremainInvoices = [...new Map(remainInvoices.map(v => [v.invoice, v])).values()]; // Remove duplicate invoices
-    if (uniqueremainInvoices) {
-      uniqueremainInvoices.forEach(element => {
-        error = 1;
-        $('.' + element['invoice']).show();
-        // $(".att_3:first").text('Hello')
-        this.toast('error', 'All invoices must have at least one file uploaded.');
-      });
-    }
-
-    if (this.tempRecords.length <= 0) {
-      error = 1;
-      this.toast('error', 'Currently there are no claims on the list.');
-    }
-
-    if (error === 0) {
-      let reqData = [];
-      this.tempRecords.forEach((element, index) => {
-        const temp = {
-          _id: element._id,
-          isDraft: false,
-          isSubmit: true,
-          submittedBy: this.sessionData.id,
-          submittedOn: moment().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
-        };
-        reqData.push(temp);
-        // reqData[index]['submittedBy'] = this.loggedUserId;
-      });
-
-      this.apiService.post('/api/claim/submit', reqData).subscribe((response: any) => {
-        if (response.status === 200) {
-          this.toast('success', 'Successfully submitted.');
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        }
-      });
-    }
   }
 
   async validateFoApproval(record, event) {
@@ -1720,9 +1440,373 @@ export class StockiestClaimComponent implements OnInit {
     }
   }
 
+  async validateApproval(record, event) {
+    let errors = '';
+    this.allotedQty = 0;
+    this.allotedInvoiceQty = [];
+    this.salesAndRemainings = [];
+    this.allotedHoInvoiceQty = [];
+    this.approvalClickedClaim = [];
+
+    const claim = await this.getClaimById(record._id);
+    if (claim) {
+      if (this.sessionData.type === 'ho' && this.sessionData.workType != 'ho1' && claim['ho1Status'] != 0) {
+        Swal.fire(
+          'Sorry',
+          'Further process has been done on this claim so you cannot take any action now.',
+          'error'
+        );
+        return;
+      }
+
+      if (event === 'Approve') {
+        if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
+          if (claim['ho1Status'] === 1) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been approved.',
+              'error'
+            );
+            return;
+          }
+        } else {
+          if (claim['hoStatus'] === 1) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been approved.',
+              'error'
+            );
+            return;
+          }
+
+          const batchMrp_select = $('#batchMrp_selected_' + record._id).val();
+          if (batchMrp_select == 0) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'There is more than one price in this batch.<br>Please confirm price first.',
+              'error'
+            );
+            return;
+          }
+
+          let categoryMatched = false;
+          let particularsMatched = false;
+
+          if (!claim['claimType']) { errors = errors + "Enter claim type.<br>"; }
+          if (!claim['invoice']) { errors = errors + "Enter reference number.<br>"; }
+          if (!claim['divisionName']) { errors = errors + "Enter division.<br>"; }
+          if (!claim['materialName']) { errors = errors + "Enter product.<br>"; }
+          if (!claim['batch']) { errors = errors + "Enter batch.<br>"; }
+
+          if (!claim['billingRate'] && !claim['freeQuantity']) {
+            errors = errors + "Enter billing rate or free quantity.<br>";
+          } else if (!claim['billingRate'] && !claim['saleQuantity']) {
+            errors = errors + "Enter free quantity and/or sale quantity.<br>";
+          } else if (claim['billingRate'] && !claim['saleQuantity']) {
+            errors = errors + "Enter sale quantity.<br>";
+          }
+
+          const tempParticulars = $('#particulars_' + record._id).val();
+          if (tempParticulars) {
+            this.particulars.forEach(element => {
+              if (tempParticulars === element.name) {
+                particularsMatched = true;
+                return;
+              }
+            });
+            if (!particularsMatched) {
+              errors = errors + "Particulars not matched.<br>";
+            } else {
+              claim['particulars'] = tempParticulars;
+            }
+          } else {
+            errors = errors + "Enter particulars.<br>";
+          }
+
+          const tempCategory = $('#category_' + record._id).val();
+          if (tempCategory) {
+            this.categories.forEach(element => {
+              if (tempCategory === element.name) {
+                categoryMatched = true;
+                return;
+              }
+            });
+            if (!categoryMatched) {
+              errors = errors + "Category not matched.<br>";
+            } else {
+              claim['category'] = tempCategory;
+            }
+          } else {
+            errors = errors + "Enter category.<br>";
+          }
+
+          const tempSupplyProof = $('#sproof_' + record._id).val();
+          if (!tempSupplyProof) {
+            errors = errors + "Select supply proof.<br>";
+          } else {
+            claim['supplyProof'] = tempSupplyProof;
+          }
+
+          const tempPurchaseOrder = $('#porder_' + record._id).val();
+          if (!tempPurchaseOrder) {
+            errors = errors + "Select purchase order.<br>";
+          } else {
+            claim['purchaseOrder'] = tempPurchaseOrder;
+          }
+        }
+      } else if (event === 'Unapprove') {
+        if (this.sessionData.type === 'ho' && this.sessionData.workType === 'ho1') {
+          if (claim['ho1Status'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been unapproved.',
+              'error'
+            );
+            return;
+          }
+
+          claim['ho1Status'] = 2;
+          claim['ho1ActionBy'] = this.sessionData.id;
+          claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+        } else {
+          if (claim['hoStatus'] === 2) {
+            Swal.fire(
+              'Oops... can\'t proceed',
+              'This claim has already been unapproved.',
+              'error'
+            );
+            return;
+          }
+
+          const tempParticulars = $('#particulars_' + record._id).val();
+          claim['particulars'] = tempParticulars;
+
+          const tempCategory = $('#category_' + record._id).val();
+          claim['category'] = tempCategory;
+
+          const tempSupplyProof = $('#sproof_' + record._id).val();
+          claim['supplyProof'] = tempSupplyProof;
+
+          const tempPurchaseOrder = $('#porder_' + record._id).val();
+          claim['purchaseOrder'] = tempPurchaseOrder;
+
+          claim['hoStatus'] = 2;
+          claim['hoActionBy'] = this.sessionData.id;
+          claim['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+        }
+      }
+    } else {
+      Swal.fire(
+        'Sorry',
+        'Clam doesn\'t exists.',
+        'error'
+      );
+      return;
+    }
+
+    if (errors) {
+      Swal.fire({
+        title: 'Please correct the points:',
+        icon: 'info',
+        html: errors,
+        showCloseButton: true,
+        showCancelButton: false,
+        focusConfirm: false,
+        confirmButtonText: 'Okay!',
+        confirmButtonAriaLabel: 'Thumbs up, great!'
+      })
+    } else {
+      this.approvalClickedClaim = claim;
+      if (event === 'Unapprove') {
+        $('#comments').val('');
+
+        var modal = document.getElementById("myModalComment");
+        modal.style.display = "block";
+      } else {
+        const duplicacy = await this.checkDuplicacy(this.approvalClickedClaim);
+        console.log('duplicacy--', duplicacy);
+        if (duplicacy['data'] && duplicacy['data']['ho1Status'] === 1) {
+          Swal.fire({
+            title: 'Pay attention',
+            text: 'Such claim has already been accepted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, submit it!',
+            cancelButtonText: 'No, keep it'
+          }).then(async (result) => {
+            if (result.value) {
+              const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
+              if (this.sessionData.workType === 'ho1' && allocatedQty.length) {
+                const reqData = {
+                  _id: claim['_id'],
+                  ho1Status: 1,
+                  ho1ApprovalComment: null,
+                  ho1ActionBy: this.sessionData.id,
+                  ho1ActionOn: moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")
+                }
+                this.apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+                  if (response.status === 200) {
+                    Swal.fire(
+                      'Approved!',
+                      'You approved the claim successfully.',
+                      'success'
+                    );
+                  } else {
+                    Swal.fire(
+                      'Oops',
+                      'Something went wrong please try again.',
+                      'error'
+                    );
+                  }
+
+                  $('#def_approvedIcon_' + claim['_id']).hide();
+                  $('#def_unapprovedIcon_' + claim['_id']).hide();
+                  $('#approvedIcon_' + claim['_id']).show();
+                  $('#unapprovedIcon_' + claim['_id']).hide();
+                });
+              } else {
+                if (allocatedQty.length) {
+                  allocatedQty.forEach(async element => {
+                    const reqData = {
+                      billDocNumber: element['stkInvoiceNo'],
+                      billToParty: this.approvalClickedClaim['customerId'],
+                      batch: this.approvalClickedClaim['batch'],
+                      allocatedQty: element['allocatedQty'],
+                      claimId: this.approvalClickedClaim['_id']
+                    }
+
+                    const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
+                  });
+                }
+
+                this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+                  if (response.status === 200) {
+                    this.getRemaining(claim);
+                  } else {
+                    Swal.fire(
+                      'Oops',
+                      'Something went wrong please try again.',
+                      'error'
+                    );
+                  }
+                });
+              }
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+              Swal.fire(
+                'Cancelled',
+                'Your imaginary record is safe :)',
+                'error'
+              )
+            }
+          })
+          return;
+          //} else if (duplicacy['data'] && duplicacy['data']['ho1Status'] === 1) {
+
+        } else {
+          if (this.sessionData.workType === 'ho1' && claim['hoStatus'] === 1 && claim['ho1Status'] === 0) {
+            claim['ho1Status'] = 1;
+            claim['ho1ActionBy'] = this.sessionData.id;
+            claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+            console.log('++++++++++++++++++++++++===', claim)
+            this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+              if (response.status === 200) {
+                $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
+                $('#def_unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+                $('#approvedIcon_' + this.approvalClickedClaim['_id']).show();
+                $('#unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+
+                Swal.fire(
+                  'Approved!',
+                  'You approved the claim successfully.',
+                  'success'
+                );
+              } else {
+                Swal.fire(
+                  'Oops',
+                  'Something went wrong please try again.',
+                  'error'
+                );
+              }
+            });
+          } else {
+            const allocatedQty: any = await this.getAllocatedQuantity(this.approvalClickedClaim['_id']);
+            console.log('allocatedQty------------', allocatedQty);
+            if (allocatedQty.length) {
+              console.log('==================================', claim)
+              if (this.sessionData.workType === 'ho1') {
+                claim['ho1Status'] = 1;
+                claim['ho1ActionBy'] = this.sessionData.id;
+                claim['ho1ActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
+
+                this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+                  if (response.status === 200) {
+                    $('#def_approvedIcon_' + this.approvalClickedClaim['_id']).hide();
+                    $('#def_unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+                    $('#approvedIcon_' + this.approvalClickedClaim['_id']).show();
+                    $('#unapprovedIcon_' + this.approvalClickedClaim['_id']).hide();
+
+                    Swal.fire(
+                      'Approved!',
+                      'You approved the claim successfully.',
+                      'success'
+                    );
+
+                  } else {
+                    Swal.fire(
+                      'Oops',
+                      'Something went wrong please try again.',
+                      'error'
+                    );
+                  }
+                });
+              } else {
+                /* allocatedQty.forEach(async element => {
+                  const reqData = {
+                    billDocNumber: element['stkInvoiceNo'],
+                    billToParty: this.approvalClickedClaim['customerId'],
+                    batch: this.approvalClickedClaim['batch'],
+                    allocatedQty: element['allocatedQty'],
+                    claimId: this.approvalClickedClaim['_id']
+                  }
+                  console.log('---------------------------------------', reqData)
+                  const findUpdateRemaining: any = await this.findUpdateRemaining(reqData);
+                }); */
+
+
+                this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+                  if (response.status === 200) {
+                    this.getRemaining(claim);
+                  } else {
+                    Swal.fire(
+                      'Oops',
+                      'Something went wrong please try again.',
+                      'error'
+                    );
+                  }
+                });
+              }
+            } else {
+              console.log('---------------------------------------', claim)
+              this.apiService.post('/api/claim/updateClaim', claim).subscribe((response: any) => {
+                if (response.status === 200) {
+                  this.getRemaining(claim);
+                } else {
+                  Swal.fire(
+                    'Oops',
+                    'Something went wrong please try again.',
+                    'error'
+                  );
+                }
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
   checkDuplicacy(claim) {
     const reqData = {
-      id: claim._id,
       plant: claim.plant,
       batch: claim.batch,
       invoice: claim.invoice,
@@ -2592,6 +2676,7 @@ export class StockiestClaimComponent implements OnInit {
         reqData['hoActionOn'] = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]");
       }
 
+
       if ($('#edit_hoStatus').val() == 1) {
         reqData['hoStatus'] = 0;
         reqData['approvedQty'] = 0;
@@ -2791,6 +2876,16 @@ export class StockiestClaimComponent implements OnInit {
     }
 
     $('#edit_error').val(error);
+  }
+
+  getProduct() {
+    this.apiService.fetch('/api/product/all').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.products = response.data;
+        }
+      }
+    });
   }
 
   async updateClaim() {

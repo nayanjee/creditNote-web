@@ -713,7 +713,7 @@ export class AddUserComponent implements OnInit {
 
       console.log('reqData--', reqData);
 
-      /* this.apiService.post('/api/user/createuser', reqData).subscribe((response: any) => {
+      this.apiService.post('/api/user/createuser', reqData).subscribe((response: any) => {
         console.log('-----', response.status);
         if (response.status === 200) {
           this.toast('success', 'User added successfully.');
@@ -721,7 +721,7 @@ export class AddUserComponent implements OnInit {
         } else {
           this.toast('error', response.message);
         }
-      }); */
+      });
     }
   }
 

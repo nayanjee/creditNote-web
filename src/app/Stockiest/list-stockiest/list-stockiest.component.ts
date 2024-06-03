@@ -17,12 +17,13 @@ export class ListStockiestComponent implements OnInit {
 
   faStar = faStar;
   faPlus = faPlus;
-  heading = 'Add / Create Stockiest';
-  subheading = 'Create a Stockiest';
+  heading = 'Stockist';
+  subheading = 'Stockist List';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
   loading = false;
 
   loggedUserId: any = '';
+  sessionData: any;
   stockiest: any = [];
   selectedFiles: any = [];
   @ViewChild(DataTableDirective)
@@ -41,6 +42,7 @@ export class ListStockiestComponent implements OnInit {
   ngOnInit(): void {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
+    this.sessionData = JSON.parse(sessionData);
 
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;

@@ -26,9 +26,6 @@
   font-weight: 600;
   cursor: pointer;
 }
-.cpdlr {
-  padding: 0 4px;
-}
 
 .attch {
   font-size: 9px;
@@ -495,7 +492,7 @@ ul li:hover {
 
 /* ng-select css changes */
 .ng-select.custom ::ng-deep .ng-dropdown-panel-items  {            
-  max-height: 158px;
+  max-height: 125px;
 }
 .ng-select.custom ::ng-deep .ng-option  {            
   padding: 5px 8px;
