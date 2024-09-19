@@ -47,6 +47,9 @@ import { AddDistributorComponent } from './Distributor/add-distributor/add-distr
 import { EditDistributorComponent } from './Distributor/edit-distributor/edit-distributor.component';
 import { ListDistributorComponent } from './Distributor/list-distributor/list-distributor.component';
 
+import { ListBatchComponent } from './Batch/list-batch/list-batch.component';
+import { EditBatchComponent } from './Batch/edit-batch/edit-batch.component';
+
 import { TestComponent } from './Test/test.component';
 const routes: Routes = [
   {
@@ -85,10 +88,12 @@ const routes: Routes = [
       { path: 'division/list', component: ListDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
       { path: 'division/edit/:divisionId', component: EditDivisionComponent, data: { extraParameter: 'divisionElementsMenu' } },
 
-
       { path: 'distributor/add', component: AddDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
       { path: 'distributor/list', component: ListDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
       { path: 'distributor/edit/:distId', component: EditDistributorComponent, data: { extraParameter: 'distributorElementsMenu' } },
+
+      { path: 'batch/list', component: ListBatchComponent, data: { extraParameter: 'batchElementsMenu' } },
+      { path: 'batch/edit/:batchId', component: EditBatchComponent, data: { extraParameter: 'batchElementsMenu' } },
 
       { path: 'test/test', component: TestComponent, data: { extraParameter: 'userElementMenu' } },
     ]

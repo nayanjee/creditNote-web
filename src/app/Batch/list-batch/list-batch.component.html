@@ -1,0 +1,175 @@
+<div class="app-page-title">
+	<div class="page-title-wrapper">
+		<div class="page-title-heading">
+			<div class="page-title-icon">
+				<i class="icon {{icon}}"></i>
+			</div>
+			<div>
+				{{heading}}
+				<div class="page-title-subheading">
+					{{subheading}}
+				</div>
+			</div>
+		</div>
+		<div class="page-title-actions">
+			<button type="button" *ngIf="sessionData.workType === 'it'" (click)="addnewdivision()"
+				class="btn-shadow d-inline-flex align-items-center btn btn-success">
+				<fa-icon [icon]="faPlus" class="me-2"></fa-icon>
+				Create Division
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="main-card mb-3 card">
+	<div class="card-body">
+		<div class="row">
+			<div class="col">
+				<label for="division" class="form-label fb">Division
+					<span id="divisionCode" style="color: orange; font-size: 12px;">
+						<!-- <span *ngIf="selectedFields.division == 0">(All)</span> -->
+						<span *ngIf="selectedFields.division">({{selectedFields.division}})</span>
+					</span>
+				</label>
+				<ng-select class="custom" id="division" [(ngModel)]="selectedFields.division"
+					(change)="filterData($event, 'division')" [clearable]="false">
+					<!-- <ng-option [value]="0"> -- All -- </ng-option> -->
+					<ng-option *ngFor="let division of divisions" [value]="division.division">
+						{{division.name | titlecase}}
+					</ng-option>
+				</ng-select>
+			</div>
+
+			<div class="col">
+				<label for="material" class="form-label fb">
+					Material
+					<span *ngIf="selectedFields.material" style="color: orange; font-size: 12px;">
+						<!-- <span *ngIf="selectedFields.material == 0">(All)</span> -->
+						<span *ngIf="selectedFields.material">({{selectedFields.material}})</span>
+					</span>
+				</label>
+				<ng-select id="material_preloader" class="custom"></ng-select>
+				<ng-select class="custom" id="material" [(ngModel)]="selectedFields.material"
+					(change)="filterData($event, 'material')" [clearable]="false" style="display: none;">
+					<!-- <ng-option [value]="0"> -- All -- </ng-option> -->
+					<ng-option *ngFor="let material of materials" [value]="material.material">
+						{{material.materialName | titlecase}}
+					</ng-option>
+				</ng-select>
+				<div id="material_loader">
+					<img class="m8" src="./../../../assets/images/btn_loader.gif">
+				</div>
+			</div>
+
+			<div class="col">
+				<label for="batch" class="form-label fb">Batch</label>
+				<ng-select id="batch_preloader" class="custom"></ng-select>
+				<ng-select class="custom" id="batch" [(ngModel)]="selectedFields.batch" (change)="filterData($event, 'batch')"
+					[clearable]="false" style="display: none;">
+					<ng-option [value]="0"> -- All -- </ng-option>
+					<ng-option *ngFor="let batch of batches" [value]="batch.batch">
+						{{batch.batch}}
+					</ng-option>
+				</ng-select>
+				<div id="batch_loader">
+					<img class="m8" src="./../../../assets/images/btn_loader.gif">
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12">
+				<hr />
+			</div>
+			<div *ngIf="loading" class="col-md-12 tc" style="color: red; text-align: center;">
+				<img src="./../../assets/images/btn_loader.gif"> <br /> Loading... Please wait
+			</div>
+		</div>
+
+		<table *ngIf="records.length" class="row-border hover">
+			<thead>
+				<tr>
+					<th class="border-right">S.No.</th>
+					<th class="border-right">Plant</th>
+					<th class="border-right">Batch</th>
+					<th class="border-right">Expire On</th>
+					<th class="border-right">MRP</th>
+					<th class="border-right">PTS</th>
+					<th class="border-right" style="width: 110px;">Multiple MRP?</th>
+					<!-- <th class="border-right">Options</th> -->
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="border-bottom" style="height: 35px;" *ngFor="let record of records; let i=index">
+					<td class="border-right">{{i+1}}</td>
+					<td class="border-right">{{record.plant}}</td>
+					<td class="border-right">{{record.batch}}</td>
+					<td class="border-right">{{record.expireOn | date: 'yyyy-MM-dd'}}</td>
+					<td class="border-right">{{record.mrp | number : '1.2-2'}}</td>
+					<td class="border-right">{{record.pts | number : '1.2-2'}}</td>
+					<td class="border-right">
+						<div *ngIf="record.mrp2" class="icon-wrapper rounded-circle">
+							<div class="icon-wrapper-bg opacity-9 bg-success"></div>
+							<i class="pe-7s-portfolio text-white" (click)="showMrp(record)"></i>
+						</div>
+					</td>
+					<!-- <td class="border-right">
+						<span title="Edit" class="option-span">
+							<a href="batch/edit/{{record._id}}"><i class="vsm-icon pe-7s-note option-tr"></i></a>
+						</span>
+					</td> -->
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<!-- Comments popup -->
+<div id="modalBatchPrice" class="modal" style="top: 20%;">
+	<div class="modal-content" style="width: 320px; margin:auto;">
+		<div class="modal-header" style="padding: 5px 15px;">
+			<h2 style="font-size: 20px;">Batch MRP</h2>
+			<span class="close" (click)="closeBatchPriceModal()" style="cursor: pointer;">&times;</span>
+		</div>
+		<div class="modal-body" style="padding-top: 18px;">
+			<div class="row">
+				<input type="hidden" id="batchMrp_id" value="">
+				<table style="overflow-x: hidden; margin-bottom: 15px;">
+					<tr>
+						<td style="padding: 0 0 0 5px; text-align: right; border: none; font-weight: 600;">Batch : </td>
+						<td colspan="2" style="padding: 0 0 0 5px; text-align: left; border: none;">{{batchDetails.batch}}</td>
+					</tr>
+					<tr>
+						<td style="padding: 0 0 0 5px; text-align: right; border: none; font-weight: 600;">Material : </td>
+						<td colspan="2" style="padding: 0 0 0 5px; text-align: left; border: none;">{{batchDetails.material}}</td>
+					</tr>
+					<tr>
+						<td style="padding: 0 0 0 5px; text-align: right; border: none; font-weight: 600;">Division : </td>
+						<td colspan="2" style="padding: 0 0 0 5px; text-align: left; border: none;">{{batchDetails.division}}</td>
+					</tr>
+
+					<tr><th colspan="3"><hr /></th></tr>
+
+					<tr>
+						<th style="padding: 0 0 0 5px; text-align: center; width: 25%;">Sl.No</th>
+						<th style="padding: 0 0 0 5px; text-align: center;  width: 25%">MRP</th>
+						<th style="padding: 0 0 0 5px; text-align: center;  width: 25%">PTS</th>
+					</tr>
+					<tr *ngFor="let batchPrice of batchPrices; let i=index">
+						<td style="padding: 0 0 0 5px; text-align: center;">{{i+1}}</td>
+						<td style="padding: 0 0 0 5px; text-align: center;">
+							{{batchPrice.mrp | number : '1.2-2'}}
+						</td>
+						<td style="padding: 0 0 0 5px; text-align: center;">
+							{{batchPrice.pts | number : '1.2-2'}}
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="modal-footer" style="padding: 5px 15px;">
+			<button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeBatchPriceModal()"> Close
+			</button>
+		</div>
+	</div>
+</div>

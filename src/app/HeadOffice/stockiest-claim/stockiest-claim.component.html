@@ -149,7 +149,12 @@
               <th class="td-head">Actions</th>
             </tr>
             <tr class="border-bottom tc" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
-              <td class="border-right tc">{{i + 1}}</td>
+              <td class="border-right tc">
+                <div *ngIf="sessionData['type'] === 'field' && sessionData['workType'] === 'suh'" class="custom-checkbox custom-control form-check" style="padding: 0px 0 0 30px; min-height: auto;">
+                  <input *ngIf="record.ftStatus == 1" type="checkbox" class="form-check-input selectedId" name="language" id="language{{i}}" value="{{record._id}}" [checked]="false" (change)="changeCheckbox($event)">
+                </div>  
+                {{i + 1}}
+              </td>
               <td class="border-right tc">
                 <div class="fl" *ngIf="sessionData['type'] === 'ho' && sessionData['workType'] === 'ho1'">
                   <div *ngIf="record.ftStatus === 1" placement="bottom" ngbTooltip="Accepted by FT"
@@ -385,10 +390,26 @@
       </div>
     </div>
 
+    <div *ngIf="!loading && showData && sessionData['type'] === 'field' && sessionData['workType'] === 'suh'" class="row" style="font-weight: 600;">
+      <div class="col-md-2">
+        <div class="custom-checkbox custom-control form-check">
+          <input type="checkbox" class="form-check-input" name="selectall" id="selectall" (change)="toggleCheckboxAll($event)" style="margin: 11px 5px 0 -15px;">
+          <label for="selectall" class="form-label form-check-label" style="cursor: pointer; margin: 8px 0 0 0;">Select/Deselect All</label>
+        </div>
+      </div>
+      <div class="col-md-10">
+        <button type="button" class="btn btn-success" style="margin-right: 10px;" (click)="acceptAll()">Accept Selected Claims</button>
+        <!-- <button type="button" class="btn btn-warning" (click)="rejectAll()">Reject selected claims</button> -->
+      </div>
+    </div>
+
     <!-- TO show total records on the bottom of the page -->
-    <div *ngIf="!loading && showData" class="row" style="margin-top: -15px;">
-      <div class="col-md-12" style="padding-top: 10px; font-weight: 600;">
+    <div *ngIf="!loading && showData" class="row" style="font-weight: 600; margin-top: 20px;">
+      <div class="col-md-6 col-sm-6">
         Records: {{tempRecords.length}}
+      </div>
+      <div class="col-md-6 col-sm-6 tar">
+        Total Amount: {{totalAmount | number : '1.2-2'}}
       </div>
     </div>
 

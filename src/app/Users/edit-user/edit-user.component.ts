@@ -83,12 +83,12 @@ export class EditUserComponent implements OnInit {
     this.getAllDistributor();
     this.getAllAccessPermision();
     this.getData();
-
-
   }
+
   async delay(ms: number) {
     await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
   }
+
   toast(typeIcon, message) {
     // typeIcon = error, success, warning, info, question
     Swal.fire({
@@ -839,7 +839,7 @@ export class EditUserComponent implements OnInit {
     if (this.userForm.valid) {
       const reqData = {};
       reqData['userType'] = this.userForm.value.userType;
-      reqData['email'] = this.userForm.value.email;
+      reqData['email'] = this.userForm.value.email.toLowerCase();
       reqData['portalId'] = this.portalId;
       reqData['loggedUserId'] = this.loggedUserId;
       reqData['permission'] = this.userForm.value.permission;
@@ -857,7 +857,7 @@ export class EditUserComponent implements OnInit {
 
         reqData['userType'] = this.userForm.value.userType;
         reqData['username'] = results[0].organization;
-        reqData['email'] = this.userForm.value.email;
+        reqData['email'] = this.userForm.value.email.toLowerCase();
         reqData['code'] = this.userForm.value.distributor_def;
         reqData['divisions'] = selectedAllDivisions;
         reqData['distributor_divisions_id'] = this.selectedDistributor_divisions_id;

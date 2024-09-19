@@ -26,6 +26,10 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
+            "allowedCommonJsDependencies": [
+              "@angular-redux/store",
+              "xlsx-js-style"
+            ],
             "assets": [
               "src/favicon.ico",
               "src/assets/images",

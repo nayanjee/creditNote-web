@@ -10,6 +10,9 @@
                 <span>Login to Your Account.</span>
               </h4>
               <div id="errmsg" style="color: red; font-size: 15px; margin-bottom: 15px; display: none;"></div>
+              <div id="otpmsg" style="color: green; font-size: 15px; margin-bottom: 15px; font-weight: 500; display: none;">
+                OTP sent successfully to your email.
+              </div>
             </div>
 
             <!-- <div class="position-relative form-check form-check-inline">
@@ -43,9 +46,17 @@
                 </div>
               </div>
 
-              <div class="mb-3">
+              <!-- <div class="mb-3">
                 <div>
                   <input id="password" type="password" formControlName="password" placeholder="Password" required=""
+                    class="form-control shadow-sm text-primary">
+                  <div class="invalid-feedback" id="err-pass"></div>
+                </div>
+              </div> -->
+
+              <div class="mb-3" id="txtOtp" style="display: none;">
+                <div>
+                  <input id="password" type="text" formControlName="password" placeholder="OTP" required=""
                     class="form-control shadow-sm text-primary">
                   <div class="invalid-feedback" id="err-pass"></div>
                 </div>
@@ -64,14 +75,15 @@
               </div>
 
               <div class="modal-footer clearfix" style="background: #ffffff;">
-                <div class="float-end">
-                  <button *ngIf="!submitted" type="submit" class="mb-2 me-2 btn-transition btn btn-primary">Login to
-                    Dashboard</button>
+                <button type="button" id="btnOtp" class="mb-2 me-2 btn-transition btn btn-primary" (click)="sendOtp()">Send OTP</button>
 
+
+                <div class="float-end" id="submitBtn" style="display: none;">
+                  <button *ngIf="!submitted" type="submit" class="mb-2 me-2 btn-transition btn btn-primary">Submit</button>
                   <button *ngIf="submitted" type="button" class="mb-2 me-2 btn-transition btn"
                     style="color: #033C73; border-color: #033C73; cursor:inherit;">
                     <span class="me-2 opacity-7"><img src="./../../assets/images/btn_loader.gif"></span>
-                    <span class="me-1">Login to Dashboard</span>
+                    <span class="me-1">Submit</span>
                   </button>
                 </div>
               </div>

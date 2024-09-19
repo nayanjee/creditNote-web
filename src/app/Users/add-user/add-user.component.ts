@@ -464,7 +464,7 @@ export class AddUserComponent implements OnInit {
     $('.text-danger').hide();
 
     const userType = $("#userTypes option:selected").val();
-    const email = $.trim($("#email").val());
+    const email = $.trim($("#email").val().toLowerCase());
     const distributor_def = $("#distributor_def option:selected").val();
 
     if (!userType) {
@@ -664,7 +664,7 @@ export class AddUserComponent implements OnInit {
     if (this.userForm.valid) {
       const reqData = {};
       reqData['userType'] = this.userForm.value.userType;
-      reqData['email'] = this.userForm.value.email;
+      reqData['email'] = this.userForm.value.email.toLowerCase();
       reqData['portalId'] = this.portalId;
       reqData['loggedUserId'] = this.loggedUserId;
       reqData['permission'] = this.userForm.value.permission;
@@ -679,7 +679,7 @@ export class AddUserComponent implements OnInit {
 
         reqData['userType'] = this.userForm.value.userType;
         reqData['username'] = results[0].organization;
-        reqData['email'] = this.userForm.value.email;
+        reqData['email'] = this.userForm.value.email.toLowerCase();
         reqData['code'] = this.userForm.value.distributor_def;
         reqData['divisions'] = selectedAllDivisions;
       }

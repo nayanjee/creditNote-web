@@ -57,6 +57,7 @@ export class AddClaimComponent implements OnInit {
   fileNames: any = [];
   stockiests: any = [];
   distributors: any = [];
+  selectedFields: any = [];
   userDistributors: any = [];
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
@@ -94,31 +95,30 @@ export class AddClaimComponent implements OnInit {
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
 
-    this.delay(1000).then(any => {
-      // Current Month and Year
-      const currentMonth = moment().format("MM");
-      this.currentMonth = parseInt(currentMonth);
+    // Current Month and Year
+    const currentMonth = moment().format("MM");
+    this.currentMonth = parseInt(currentMonth);
 
-      // To show previous 2 years in dropdown
-      const currentYear = moment().format("YYYY");
-      this.currentYear = parseInt(currentYear);
-      for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
-        const year = { id: i, name: i };
-        this.years.push(year);
-      }
+    // To show previous 2 years in dropdown
+    const currentYear = moment().format("YYYY");
+    this.currentYear = parseInt(currentYear);
+    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+      const year = { id: i, name: i };
+      this.years.push(year);
+    }
 
-      // To show this data as predefined in the form
-      if (parseInt(currentMonth) - 1 <= 0) {
-        this.selectedYear = parseInt(currentYear) - 1;
-        this.selectedMonth = 12;
-      } else {
-        this.selectedYear = currentYear;
-        this.selectedMonth = parseInt(currentMonth) - 1;
-      }
-      $('#type').val('scheme');
-      $('#month').val(this.selectedMonth);
-      $('#year').val(this.selectedYear);
-    });
+    // To show this data as predefined in the form
+    if (parseInt(currentMonth) - 1 <= 0) {
+      this.selectedYear = parseInt(currentYear) - 1;
+      this.selectedMonth = 12;
+    } else {
+      this.selectedYear = currentYear;
+      this.selectedMonth = parseInt(currentMonth);
+    }
+
+    this.selectedFields['month'] = this.selectedMonth;
+    this.selectedFields['year'] = this.selectedYear;
+    this.selectedFields['type'] = 'scheme';
 
     this.createForm();
     this.getDistributors();
@@ -383,17 +383,23 @@ export class AddClaimComponent implements OnInit {
             // get user's division plant wise
             this.userPlantDivisions[response.data[0].code] = response.data[0].divisions[0].divisions;
 
-            this.delay(500).then(any => {
-              $("#distributor").val($("#distributor option:eq(1)").val());
+            //this.delay(500).then(any => {
+              this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
               $('#distributor_loader').hide();
               $('#distributor').show();
 
-              $("#stockiest").val($("#stockiest option:eq(1)").val());
+              const self = {
+                customerId: 1,
+                organization: '-- SELF --'
+              }
+              this.stockiests.push(self);
+
+              this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
               $('#stockiest_loader').hide();
               $('#stockiest').show();
 
               this.getDivisions();
-            });
+            //});
           }
         }
       }
@@ -419,13 +425,14 @@ export class AddClaimComponent implements OnInit {
             this.userPlantDivisions[element.plant] = element.divisions;
           });
 
-          this.delay(500).then(any => {
-            $("#distributor").val($("#distributor option:eq(1)").val());
+          //this.delay(500).then(any => {
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+
             $('#distributor_loader').hide();
             $('#distributor').show();
 
             this.getStockiest();
-          });
+          //});
         }
       }
     });
@@ -451,13 +458,13 @@ export class AddClaimComponent implements OnInit {
             this.userPlantDivisions[element.plant] = element.divisions;
           });
 
-          this.delay(500).then(any => {
-            $("#distributor").val($("#distributor option:eq(1)").val());
+          //this.delay(500).then(any => {
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
             $('#distributor_loader').hide();
             $('#distributor').show();
 
             this.getStockiest();
-          });
+          //});
         }
       }
     });
@@ -870,11 +877,11 @@ export class AddClaimComponent implements OnInit {
     this.totalAmount = totalAmount.toFixed(2);
   }
 
-  validateMonth() {
+  validateMonth(value, targetId) {
     $('#err_month').hide();
 
-    const selectedYear = $("#year option:selected").val();
-    const selectedMonth = $("#month option:selected").val();
+    const selectedYear = this.selectedFields.year;
+    const selectedMonth = this.selectedFields.month;
 
     if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
       $('#err_month').text('You can\'t claim for this month.').show();
@@ -883,7 +890,8 @@ export class AddClaimComponent implements OnInit {
 
   getStockiest() {
     let stockists = [];
-    const distributor = $("#distributor option:selected").val();
+
+    const distributor = this.selectedFields['distributor'];
     const stockist = this.userPlantStockists[distributor];
     console.log('stockist---', stockist);
 
@@ -916,8 +924,10 @@ export class AddClaimComponent implements OnInit {
             // EOF If user has access to approve claim of the distributor (self)
           }
 
+          console.log('stockiests---', this.stockiests);
           this.delay(5).then(any => {
-            $("#stockiest").val($("#stockiest option:eq(1)").val());
+            this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+
             $('#stockiest_loader').hide();
             $('#stockiest').show();
           });
@@ -929,7 +939,8 @@ export class AddClaimComponent implements OnInit {
   getDivisions() {
     let divisions = [];
     this.divisions = [];
-    const distributor = $("#distributor option:selected").val();
+
+    const distributor = this.selectedFields['distributor'];
     const division = this.userPlantDivisions[distributor];
 
     division.forEach(element => {
@@ -1035,7 +1046,9 @@ export class AddClaimComponent implements OnInit {
     // Stockiest validation
     $('#err_stockiest').hide();
     $('#stockiest').removeClass('grf-invalid');
-    if (!$("#stockiest option:selected").val()) {
+
+    const selectedStockiest = this.selectedFields.stockiest;
+    if (!selectedStockiest) {
       error = true;
       $('#stockiest').addClass('grf-invalid');
       $('#err_stockiest').text('Stockiest is required..').show();
@@ -1046,8 +1059,8 @@ export class AddClaimComponent implements OnInit {
     // Month validation
     $('#err_month').hide();
     $('#month').removeClass('grf-invalid');
-    const selectedYear = $("#year option:selected").val();
-    const selectedMonth = $("#month option:selected").val();
+    const selectedYear = this.selectedFields.year;
+    const selectedMonth = this.selectedFields.month;
     if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
       error = true;
       $('#month').addClass('grf-invalid');
@@ -1055,12 +1068,12 @@ export class AddClaimComponent implements OnInit {
     }
     // EOF Month validation
 
-    const distributor = $("#distributor option:selected").val();
-    const stockiest = $("#stockiest option:selected").val();
-    const claimType = $("#type option:selected").val();
-    const ClaimMonth = $("#month option:selected").val();
-    const claimYear = $("#year option:selected").val();
-    
+    const distributor = this.selectedFields.distributor;
+    const stockiest = this.selectedFields.stockiest;
+    const claimType = this.selectedFields.type;
+    const ClaimMonth = this.selectedFields.month;
+    const claimYear = this.selectedFields.year;
+
     for (let row = -1; row <= totalRows; row++) {
       const reg = /^\d*\.?\d*$/;    // RegEx for number and decimal value
       const rowId = (row === -1) ? 'def' : row;
@@ -1069,7 +1082,7 @@ export class AddClaimComponent implements OnInit {
       // if (this.sessionData.type === 'distributor') {
       //   header = distributor + '.::.' + distributor + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
       // } else {
-        header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
+      header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
       //}
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
@@ -1214,6 +1227,16 @@ export class AddClaimComponent implements OnInit {
         }, 3000);
       }
     });
+  }
+
+  changeType(type) {
+    if (type === 'special') {
+      $('.claim-frm').hide();
+      $('.special-frm').show();
+    } else {
+      $('.claim-frm').show();
+      $('.special-frm').hide();
+    }
   }
 
   errorHandling(error: any) {
