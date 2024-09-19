@@ -88,6 +88,7 @@ export class StockiestClaimComponent implements OnInit {
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
   clickedRecord: any = [];
+  totalAmount: number = 0;
 
   constructor(
     private router: Router,
@@ -103,6 +104,7 @@ export class StockiestClaimComponent implements OnInit {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
+    console.log('---------', this.sessionData);
 
     this.heading = this.sessionData.type === 'ho' ? 'HO Approval' : 'Field Approval';
 
@@ -124,7 +126,7 @@ export class StockiestClaimComponent implements OnInit {
       this.selectedMonth = 12;
     } else {
       this.selectedYear = currentYear;
-      this.selectedMonth = parseInt(currentMonth) - 1;
+      this.selectedMonth = parseInt(currentMonth);
     }
 
     this.selectedFields['month'] = this.selectedMonth;
@@ -141,6 +143,12 @@ export class StockiestClaimComponent implements OnInit {
     this.delay(1000).then(any => {
       this.isDistributors();
     });
+
+    $(document).ready(() => {
+      console.log('Nayan');
+
+
+    })
   }
 
   toast(typeIcon, message) {
@@ -284,6 +292,7 @@ export class StockiestClaimComponent implements OnInit {
   getData() {
     this.loading = this.showData = true;
     this.records = this.tempRecords = [];
+    this.totalAmount = 0;
 
     let divisions = [];
     const dvsion = this.userPlantDivisions[this.selectedFields['distributor']];
@@ -309,6 +318,10 @@ export class StockiestClaimComponent implements OnInit {
           if (this.selectedFields['type'] || this.selectedFields['division']) {
             this.filterDataTwice(this.selectedFields['type'], this.selectedFields['division']);
           }
+
+          this.tempRecords.forEach(element => {
+            this.totalAmount = this.totalAmount + element.amount;
+          });
 
           this.loading = false;
           this.showData = true;
@@ -2915,6 +2928,138 @@ export class StockiestClaimComponent implements OnInit {
         );
       }
     });
+  }
+
+  toggleCheckboxAll(event) {
+    const checked = event.target.checked;
+    console.log('checked--', checked);
+    $('.selectedId').prop('checked', checked);
+  }
+
+  changeCheckbox(event) {
+    var check = ($('.selectedId').filter(":checked").length == $('.selectedId').length);
+    console.log('check--', check);
+    $('#selectall').prop("checked", check);
+  }
+
+  acceptAll() {
+    /* $(".selectedId").each(function(i) {
+
+      console.log(i);
+    }); */
+    const checkedBox = $('.selectedId:checked');
+    const checkedBoxCount = checkedBox.length;
+
+    if (checkedBoxCount > 0) {
+      const userId = this.sessionData.id;
+      const apiService = this.apiService;
+
+      let loopCount = 0;
+      let error = 0;
+
+      checkedBox.each(function (key, element) {
+        const reqData = {
+          _id: element.value,
+          suhStatus: 1,
+          suhApprovalComment: null,
+          suhActionBy: userId,
+          suhActionOn: moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")
+        }
+
+        apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+          if (response.status === 200) {
+            $('#def_approvedIcon_' + element.value).hide();
+            $('#def_unapprovedIcon_' + element.value).hide();
+            $('#approvedIcon_' + element.value).show();
+            $('#unapprovedIcon_' + element.value).hide();
+          } else {
+            error = 1;
+          }
+        });
+
+        loopCount++;
+
+        if (loopCount === checkedBoxCount) {
+          if (error) {
+            Swal.fire(
+              'Notice',
+              "Unable to accept some claims. <br> Please check it manually.",
+              'warning'
+            );
+          } else {
+            Swal.fire(
+              'Approved!',
+              'You approved the claim successfully.',
+              'success'
+            );
+          }
+        }
+      });
+    } else {
+      Swal.fire(
+        'Notice',
+        'Please check at least one checkbox to proceed.',
+        'warning'
+      );
+    }
+  }
+
+  rejectAll() {
+    const checkedBox = $('.selectedId:checked');
+    const checkedBoxCount = checkedBox.length;
+
+    if (checkedBoxCount > 0) {
+      const userId = this.sessionData.id;
+      const apiService = this.apiService;
+
+      let loopCount = 0;
+      let error = 0;
+
+      checkedBox.each(function (key, element) {
+        const reqData = {
+          _id: element.value,
+          suhStatus: 0,
+          suhApprovalComment: null,
+          suhActionBy: userId,
+          suhActionOn: moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")
+        }
+
+        apiService.post('/api/claim/updateClaim', reqData).subscribe((response: any) => {
+          if (response.status === 200) {
+            $('#def_approvedIcon_' + element.value).hide();
+            $('#def_unapprovedIcon_' + element.value).hide();
+            $('#approvedIcon_' + element.value).show();
+            $('#unapprovedIcon_' + element.value).hide();
+          } else {
+            error = 1;
+          }
+        });
+
+        loopCount++;
+
+        if (loopCount === checkedBoxCount) {
+          if (error) {
+            Swal.fire(
+              'Notice',
+              "Unable to accept some claims. <br> Please check it manually.",
+              'warning'
+            );
+          } else {
+            Swal.fire(
+              'Approved!',
+              'You approved the claim successfully.',
+              'success'
+            );
+          }
+        }
+      });
+    } else {
+      Swal.fire(
+        'Notice',
+        'Please check at least one checkbox to proceed.',
+        'warning'
+      );
+    }
   }
 
   errorHandling(error: any) {

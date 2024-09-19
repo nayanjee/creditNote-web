@@ -66,24 +66,30 @@ import { UploadDistComponent } from './Upload/sales_dist/uploads.component';
 
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { NgxMaskModule, IConfig } from 'ngx-mask';
+
 import { AddUserComponent } from './Users/add-user/add-user.component';
 import { ListUserComponent } from './Users/list-user/list-user.component';
 import { TestComponent } from './Test/test.component';
 
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MaterialModule } from './material.module';
+
+import { EditUserComponent } from './Users/edit-user/edit-user.component';
+
 import { AddDivisionComponent } from './Division/add-division/add-division.component';
 import { ListDivisionComponent } from './Division/list-division/list-division.component';
 import { EditDivisionComponent } from './Division/edit-division/edit-division.component';
-import { EditUserComponent } from './Users/edit-user/edit-user.component';
+
 import { EditStockiestComponent } from './Stockiest/edit-stockiest/edit-stockiest.component';
 import { AddStockiestComponent } from './Stockiest/add-stockiest/add-stockiest.component';
 import { ListStockiestComponent } from './Stockiest/list-stockiest/list-stockiest.component';
+
 import { AddDistributorComponent } from './Distributor/add-distributor/add-distributor.component';
 import { ListDistributorComponent } from './Distributor/list-distributor/list-distributor.component';
 import { EditDistributorComponent } from './Distributor/edit-distributor/edit-distributor.component';
 
-
+import { ListBatchComponent } from './Batch/list-batch/list-batch.component';
+import { EditBatchComponent } from './Batch/edit-batch/edit-batch.component';
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
@@ -130,9 +136,9 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ListStockiestComponent,
     AddDistributorComponent,
     ListDistributorComponent,
-    EditDistributorComponent
-
-
+    EditDistributorComponent,
+    ListBatchComponent,
+    EditBatchComponent
   ],
   imports: [
     BrowserModule,

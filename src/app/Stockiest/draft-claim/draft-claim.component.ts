@@ -75,6 +75,7 @@ export class DraftClaimComponent implements OnInit {
   userDistributors: any = [];
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
+  totalAmount: number = 0;
 
   constructor(
     private router: Router,
@@ -346,9 +347,10 @@ export class DraftClaimComponent implements OnInit {
   getDivisions() {
     let divisions = [];
     this.divisions = [];
+
     const distributor = this.selectedFields['distributor'];
     const division = this.userPlantDivisions[distributor];
-    console.log('distributor--', distributor, division);
+    
     division.forEach(element => {
       divisions.push(Number(element));
     });
@@ -365,6 +367,7 @@ export class DraftClaimComponent implements OnInit {
   getData() {
     this.loading = this.showData = true;
     this.records = this.tempRecords = [];
+    this.totalAmount = 0;
 
     const distributor = this.selectedFields['distributor'];
     const stockiest = this.selectedFields['stockiest'];
@@ -395,6 +398,10 @@ export class DraftClaimComponent implements OnInit {
           if (type || division) {
             this.filterDataTwice(type, division);
           }
+
+          this.tempRecords.forEach(element => {
+            this.totalAmount = this.totalAmount + element.amount;
+          });
 
           this.loading = false;
           this.showData = true;
@@ -462,7 +469,7 @@ export class DraftClaimComponent implements OnInit {
 
     const type = this.selectedFields.type;
     const division = this.selectedFields.division;
-    console.log(type, division);
+    console.log(type, division, this.records);
 
     if (division) {
       const div = this.divisions.filter(function (el) {
@@ -474,7 +481,7 @@ export class DraftClaimComponent implements OnInit {
 
     if (type && division) {
       this.tempRecords = this.records.filter(function (el) {
-        return el.claimType == type && el.divisionName == division;
+        return el.claimType == type && el.divisionId == division;
       });
     } else if (type && !division) {
       this.tempRecords = this.records.filter(function (el) {
@@ -482,13 +489,18 @@ export class DraftClaimComponent implements OnInit {
       });
     } else if (!type && division) {
       this.tempRecords = this.records.filter(function (el) {
-        return el.divisionName == division;
+        return el.divisionId == division;
       });
     } else if (!type && !division) {
       this.tempRecords = this.records;
     }
 
     if (this.tempRecords.length) {
+      this.totalAmount = 0;
+      this.tempRecords.forEach(element => {
+        this.totalAmount = this.totalAmount + element.amount;
+      });
+
       this.loading = false;
       this.showData = true;
     } else {

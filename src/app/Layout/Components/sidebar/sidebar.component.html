@@ -80,22 +80,27 @@
                     <div class="vsm-list">
                       <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('5')">
                         <a routerLink="users/listUser" routerLinkActive="active-item" class="vsm-link">
-                          <span class="vsm-title">Users</span>
+                          <span class="vsm-title">User</span>
                         </a>
                       </div>
+                      <!-- <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('14')">
+                        <a routerLink="batch/list" routerLinkActive="active-item" class="vsm-link">
+                          <span class="vsm-title">Batch</span>
+                        </a>
+                      </div> -->
                       <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('7')">
                         <a routerLink="division/list" routerLinkActive="active-item" class="vsm-link">
-                          <span class="vsm-title">Divisions</span>
+                          <span class="vsm-title">Division</span>
                         </a>
                       </div>
                       <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('9')">
                         <a routerLink="stockiest/list" routerLinkActive="active-item" class="vsm-link">
-                          <span class="vsm-title">Stockiest</span>
+                          <span class="vsm-title">Stockist</span>
                         </a>
                       </div>
                       <div class="vsm-item" *ngIf="loggedInUser.permissions.includes('12')">
                         <a routerLink="distributor/list" routerLinkActive="active-item" class="vsm-link">
-                          <span class="vsm-title">Distributors</span>
+                          <span class="vsm-title">Distributor</span>
                         </a>
                       </div>
                     </div>
