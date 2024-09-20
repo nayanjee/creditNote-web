@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@angular/forms';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
 import { NgSelectModule } from '@ng-select/ng-select';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import * as moment from 'moment';
@@ -16,6 +19,28 @@ declare var $: any;
   styleUrls: ['./add-claim.component.css']
 })
 export class AddClaimComponent implements OnInit {
+
+  // toggle webcam on/off
+  public showWebcam = false;
+  public allowCameraSwitch = true;
+  public multipleWebcamsAvailable = false;
+  public deviceId: string;
+  closeResult: string;
+  selectedwebcamrow: any;
+  public videoOptions: MediaTrackConstraints = {
+    // width: {ideal: 1024},
+    // height: {ideal: 576}
+  };
+  public errors: WebcamInitError[] = [];
+
+  // latest snapshot
+  public webcamImage: WebcamImage = null;
+
+  // webcam snapshot trigger
+  private trigger: Subject<void> = new Subject<void>();
+  // switch to next / previous / specific webcam; true/false: forward/backwards, string: deviceId
+  private nextWebcam: Subject<boolean | string> = new Subject<boolean | string>();
+
   faStar = faStar;
   faPlus = faPlus;
   heading = 'Add / Create Claim';
@@ -82,7 +107,8 @@ export class AddClaimComponent implements OnInit {
     private fb: FormBuilder,
     private activatedRoute: ActivatedRoute,
     private apiService: AppServicesService,
-    private config: NgSelectModule
+    private config: NgSelectModule,
+    private modalService: NgbModal
   ) {
     // this.activatedRoute.queryParams.subscribe(params => {
     //   if (params.type) this.selectedType = params.type;
@@ -128,6 +154,80 @@ export class AddClaimComponent implements OnInit {
     this.delay(1000).then(any => {
       this.isDistributors();
     });
+
+    WebcamUtil.getAvailableVideoInputs()
+      .then((mediaDevices: MediaDeviceInfo[]) => {
+        this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
+      });
+  }
+
+
+  public triggerSnapshot(): void {
+    this.trigger.next();
+    //let serow = this.selectedwebcamrow;
+    const row = (this.selectedwebcamrow === 'def') ? -1 : this.selectedwebcamrow;
+    const reqData = {};
+    // console.log("selected web cam row===", this.selectedwebcamrow);
+    //const frmData = new FormData();
+
+    //console.log(this.webcamImage.imageAsBase64);
+    //frmData.append("file", this.webcamImage.imageAsBase64);
+    reqData['camimg'] = this.webcamImage.imageAsBase64;
+
+
+    this.apiService.upload('/api/UploadClaimInvoicesWebcam', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          // To separate files according to RowId
+          if (this.fileNames[row]) {
+            // If RowId already have data
+            response.data.forEach(element => {
+              this.fileNames[row].push(element);
+            });
+          } else {
+            // To create and insert data for new RowId
+            this.fileNames[row] = response.data;
+          }
+        }
+      } else {
+        this.toast('error', response.message);
+      }
+    })
+    console.log("=========", this.fileNames);
+
+  }
+
+  public toggleWebcam(): void {
+    this.showWebcam = !this.showWebcam;
+  }
+
+  public handleInitError(error: WebcamInitError): void {
+    this.errors.push(error);
+  }
+
+  public showNextWebcam(directionOrDeviceId: boolean | string): void {
+    // true => move forward through devices
+    // false => move backwards through devices
+    // string => move to device with given deviceId
+    this.nextWebcam.next(directionOrDeviceId);
+  }
+
+  public handleImage(webcamImage: WebcamImage): void {
+    console.info('received webcam image', webcamImage);
+    this.webcamImage = webcamImage;
+  }
+
+  public cameraWasSwitched(deviceId: string): void {
+    console.log('active device: ' + deviceId);
+    this.deviceId = deviceId;
+  }
+
+  public get triggerObservable(): Observable<void> {
+    return this.trigger.asObservable();
+  }
+
+  public get nextWebcamObservable(): Observable<boolean | string> {
+    return this.nextWebcam.asObservable();
   }
 
   toast(typeIcon, message) {
@@ -384,21 +484,21 @@ export class AddClaimComponent implements OnInit {
             this.userPlantDivisions[response.data[0].code] = response.data[0].divisions[0].divisions;
 
             //this.delay(500).then(any => {
-              this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
-              $('#distributor_loader').hide();
-              $('#distributor').show();
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+            $('#distributor_loader').hide();
+            $('#distributor').show();
 
-              const self = {
-                customerId: 1,
-                organization: '-- SELF --'
-              }
-              this.stockiests.push(self);
+            const self = {
+              customerId: 1,
+              organization: '-- SELF --'
+            }
+            this.stockiests.push(self);
 
-              this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
-              $('#stockiest_loader').hide();
-              $('#stockiest').show();
+            this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
 
-              this.getDivisions();
+            this.getDivisions();
             //});
           }
         }
@@ -426,12 +526,12 @@ export class AddClaimComponent implements OnInit {
           });
 
           //this.delay(500).then(any => {
-            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
 
-            $('#distributor_loader').hide();
-            $('#distributor').show();
+          $('#distributor_loader').hide();
+          $('#distributor').show();
 
-            this.getStockiest();
+          this.getStockiest();
           //});
         }
       }
@@ -459,11 +559,11 @@ export class AddClaimComponent implements OnInit {
           });
 
           //this.delay(500).then(any => {
-            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
-            $('#distributor_loader').hide();
-            $('#distributor').show();
+          this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          $('#distributor_loader').hide();
+          $('#distributor').show();
 
-            this.getStockiest();
+          this.getStockiest();
           //});
         }
       }
@@ -1248,5 +1348,43 @@ export class AddClaimComponent implements OnInit {
       //this.toastr.error(error.message, 'Error');
     }
   }
+
+  // openWebcam(event, row, content) {
+  //   const rowId = (row === -1) ? 'def' : row;
+  //   this.showWebcam = true;
+  //   this.modalService.open(content, {
+  //     size: 'lg'
+  //   });
+  // }
+
+  openWebcam(event, row, content) {
+    const rowId = (row === -1) ? 'def' : row;
+    this.showWebcam = true;
+    this.selectedwebcamrow = rowId;
+    this.modalService.open(content, {
+      size: 'lg'
+    }).result.then((result) => {
+      this.closeResult = `Closed with: ${result}`;
+      this.showWebcam = false;
+      this.webcamImage = null;
+    }, (reason) => {
+      this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      this.showWebcam = false;
+      this.webcamImage = null;
+    });
+  }
+
+
+
+  private getDismissReason(reason: any): string {
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return `with: ${reason}`;
+    }
+  }
+
 
 }

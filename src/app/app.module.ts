@@ -11,6 +11,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { LoadingBarRouterModule } from '@ngx-loading-bar/router';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { WebcamModule } from 'ngx-webcam';
 
 import { AppComponent } from './app.component';
 
@@ -158,6 +159,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     NgxDatatableModule,
     DataTablesModule,
     MaterialModule,
+    WebcamModule,
     NgxMaskModule.forRoot(),
   ],
   exports: [

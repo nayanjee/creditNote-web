@@ -1,43 +1,56 @@
 .fb {
     font-weight: 600;
 }
+
 .tc {
     text-align: center;
 }
+
 .tar {
     text-align: right;
 }
+
 .tdpd {
     padding: 0px 2px 4px 2px !important;
+    text-align: center;
 }
+
 .tdpd1 {
     padding: 4px 2px 4px 2px !important;
 }
+
 .m8 {
     margin: 8px 8px;
 }
+
 .pl4 {
     padding-left: 4px;
 }
+
 .m_lr {
     margin: 0 5px;
 }
+
 .grf-invalid {
     border-color: #c71c22;
 }
+
 .claim-frm {
     /* display: none; */
 }
+
 #distributor_loader {
     border: 1px solid #ced4da;
     height: 35px;
     border-radius: 5px;
 }
+
 #stockiest_loader {
     border: 1px solid #ced4da;
     height: 35px;
     border-radius: 5px;
 }
+
 .txtbox {
     border: 1px solid #ced4da;
     height: 35px;
@@ -47,13 +60,14 @@
 .required label:after {
     color: #e32;
     content: ' *';
-    display:inline;
+    display: inline;
 }
 
 .btn-reset {
     padding: 6px 15px;
     margin: 0 3px;
 }
+
 .btn-header-submit {
     margin: 0 3px;
     padding: 6px 10px;
@@ -64,11 +78,13 @@
     background-color: #6610f2;
     border-color: #6610f2;
 }
+
 .vsm-icon {
     margin: 8px 2px 0 2px;
     font-weight: 600;
     cursor: pointer;
 }
+
 .td-head {
     font-weight: 600;
     text-align: center;
@@ -76,10 +92,12 @@
     /* background: #B0C4DE; */
     background: #EFEFEF;
 }
+
 .grid-label {
     margin: 0px;
     padding: 0px;
 }
+
 .pe-7s-paperclip {
     font-size: 14px;
     font-weight: 600;
@@ -94,29 +112,35 @@ table {
     overflow-x: scroll;
     display: block;
 }
+
 thead {
     background-color: #EFEFEF;
     text-align: center;
 }
-thead, tbody {
+
+thead,
+tbody {
     display: block;
 }
+
 tbody {
     overflow-y: scroll;
     overflow-x: hidden;
     height: 140px;
 }
-td, th {
+
+td,
+th {
     min-width: 100px;
     height: 25px;
     border: dashed 1px lightblue;
-    overflow:hidden;
+    overflow: hidden;
     text-overflow: ellipsis;
     /* max-width: 100px; */
 }
 
 /* Auto-suggestion CSS */
-  .suggestions {
+.suggestions {
     width: auto;
     min-width: 150px;
     background: #fff;
@@ -125,8 +149,9 @@ td, th {
     border: 1px solid #CCCCCC;
     padding: 0px 0px 0px 5px;
     z-index: 1;
-  }
-  ul {
+}
+
+ul {
     display: none;
     list-style-type: none;
     padding: 0;
@@ -134,16 +159,41 @@ td, th {
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
     max-height: 108px;
     overflow-y: auto;
-  }
-  ul.has-suggestions {
+}
+
+ul.has-suggestions {
     display: block;
-  }
-  ul li {
+}
+
+ul li {
     padding: 10px;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.2);
-  }
-  ul li:hover {
+}
+
+ul li:hover {
     background-color: #e65c00;
-  }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+#content {
+    background-color: rgba(210, 210, 210, 0.5);
+
+    padding: 0.5rem;
+    display: flex;
+}
+
+
+.snapshot {
+    text-align: center;
+
+    img {
+        max-width: 99%;
+
+    }
+}
+
 /* EOF Auto-suggestion CSS */
