@@ -264,7 +264,7 @@ export class AddUserComponent implements OnInit {
     var listdiv = document.querySelector("#stockist_data_" + row);
     listdiv.innerHTML = '';
 
-    if (userType === 'ho') {
+    if (userType === 'ho' || userType === 'field') {
       var div = document.createElement('div');
       div.classList.add("col-sm-4");
       div.innerHTML = '<input class="form-check-input" style="margin: 5px 0px 0px 0px;" type="checkbox" name="chkbox_' + row + '" id="inlineCheckbox_' + source + '_99999" value="' + source + '"><label class="form-check-label" style="margin: 2px 0px 2px 4px;" for="inlineCheckbox_' + source + '_99999">--- SELF ---</label>';
