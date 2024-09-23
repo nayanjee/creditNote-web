@@ -32,7 +32,7 @@
 					</span>
 				</label>
 				<ng-select class="custom" id="division" [(ngModel)]="selectedFields.division"
-					(change)="filterData($event, 'division')" [clearable]="false">
+					(change)="filterData($event, 'division')" [clearable]="false" placeholder="Select Division">
 					<!-- <ng-option [value]="0"> -- All -- </ng-option> -->
 					<ng-option *ngFor="let division of divisions" [value]="division.division">
 						{{division.name | titlecase}}
@@ -48,12 +48,12 @@
 						<span *ngIf="selectedFields.material">({{selectedFields.material}})</span>
 					</span>
 				</label>
-				<ng-select id="material_preloader" class="custom"></ng-select>
-				<ng-select class="custom" id="material" [(ngModel)]="selectedFields.material"
-					(change)="filterData($event, 'material')" [clearable]="false" style="display: none;">
-					<!-- <ng-option [value]="0"> -- All -- </ng-option> -->
-					<ng-option *ngFor="let material of materials" [value]="material.material">
-						{{material.materialName | titlecase}}
+				<ng-select id="material_preloader" class="custom" placeholder="Select Division First"></ng-select>
+				<ng-select class="custom" id="material" [(ngModel)]="selectedFields.materialName"
+					(change)="filterData($event, 'material')" [clearable]="false" placeholder="Select Material" style="display: none;">
+					<ng-option [value]="0"> -- Select Material -- </ng-option>
+					<ng-option *ngFor="let material of uniqueProducts" [value]="material.materialName">
+						{{material.materialName}}
 					</ng-option>
 				</ng-select>
 				<div id="material_loader">
@@ -63,9 +63,9 @@
 
 			<div class="col">
 				<label for="batch" class="form-label fb">Batch</label>
-				<ng-select id="batch_preloader" class="custom"></ng-select>
+				<ng-select id="batch_preloader" class="custom" placeholder="Select Material First"></ng-select>
 				<ng-select class="custom" id="batch" [(ngModel)]="selectedFields.batch" (change)="filterData($event, 'batch')"
-					[clearable]="false" style="display: none;">
+					[clearable]="false" placeholder="Select Batch" style="display: none;">
 					<ng-option [value]="0"> -- All -- </ng-option>
 					<ng-option *ngFor="let batch of batches" [value]="batch.batch">
 						{{batch.batch}}
@@ -91,6 +91,7 @@
 				<tr>
 					<th class="border-right">S.No.</th>
 					<th class="border-right">Plant</th>
+					<th class="border-right">Material</th>
 					<th class="border-right">Batch</th>
 					<th class="border-right">Expire On</th>
 					<th class="border-right">MRP</th>
@@ -103,6 +104,7 @@
 				<tr class="border-bottom" style="height: 35px;" *ngFor="let record of records; let i=index">
 					<td class="border-right">{{i+1}}</td>
 					<td class="border-right">{{record.plant}}</td>
+					<td class="border-right">{{record.material}}</td>
 					<td class="border-right">{{record.batch}}</td>
 					<td class="border-right">{{record.expireOn | date: 'yyyy-MM-dd'}}</td>
 					<td class="border-right">{{record.mrp | number : '1.2-2'}}</td>

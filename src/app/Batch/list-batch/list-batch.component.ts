@@ -27,6 +27,7 @@ export class ListBatchComponent implements OnInit {
   records: any = [];
   divisions: any = [];
   materials: any = [];
+  uniqueProducts: any = [];
   batches: any = [];
   batchPrices: any = [];
   batchDetails: any = [];;
@@ -61,10 +62,60 @@ export class ListBatchComponent implements OnInit {
     });
   }
 
+  getMaterials(division) {
+    this.apiService.fetch('/api/productByDivision/' + division).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.materials = response.data;
+          //console.log('this.materials--', this.materials);
+
+          // Getting a unique products by name
+          const map = new Map();
+          for (const item of response.data) {
+            if (!map.has(item.materialName)) {
+              map.set(item.materialName, true);
+              this.uniqueProducts.push({
+                plant: item.plant,
+                division: item.division,
+                material: item.material,
+                materialName: item.materialName
+              });
+            }
+          }
+          // EOF Getting a unique products by name
+
+          $('#material_preloader').hide();
+          $('#material_loader').hide();
+          $('#material').show();
+        }
+      }
+    });
+  }
+
+  getBatches(materials) {
+    const reqData = {
+      materials: materials
+    };
+
+    this.apiService.post('/api/batchByMaterials/', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.batches = response.data;
+
+          $('#batch_preloader').hide();
+          $('#batch_loader').hide();
+          $('#batch').show();
+        }
+      }
+    });
+  }
+
   filterData(value, targetId) {
+    this.records = [];
     if (targetId === 'division') {
       this.selectedFields['division'] = value;
       this.selectedFields['material'] = '';
+      this.selectedFields['materialName'] = 0;
       this.selectedFields['batch'] = '';
 
       this.materials = [];
@@ -80,50 +131,36 @@ export class ListBatchComponent implements OnInit {
 
       this.getMaterials(value);
     } else if (targetId === 'material') {
+      let results = [];
       this.batches = [];
-
-      this.selectedFields['material'] = value;
-      this.selectedFields['batch'] = '';
-
+      
       $('#batch_preloader').hide();
       $('#batch_loader').show();
       $('#batch').hide();
 
-      this.getBatches(value);
+      const result = this.materials.filter(element => {
+        return element.materialName === value;
+      });
+
+      if (result.length) {
+        result.forEach(ele => {
+          results.push(ele.material);
+        });
+        console.log('results--', results)
+
+        this.selectedFields['material'] = results;
+        this.selectedFields['materialName'] = value;
+        this.selectedFields['batch'] = 0;
+        
+        this.getBatches(results);
+        this.getData();
+
+      }
     } else if (targetId === 'batch') {
       this.selectedFields['batch'] = value;
 
       this.getData();
     }
-
-  }
-
-  getMaterials(division) {
-    this.apiService.fetch('/api/productByDivision/' + division).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.materials = response.data;
-
-          $('#material_preloader').hide();
-          $('#material_loader').hide();
-          $('#material').show();
-        }
-      }
-    });
-  }
-
-  getBatches(material) {
-    this.apiService.fetch('/api/batchByMaterial/' + material).subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.batches = response.data;
-
-          $('#batch_preloader').hide();
-          $('#batch_loader').hide();
-          $('#batch').show();
-        }
-      }
-    });
   }
 
   addnewdivision() {
@@ -144,6 +181,7 @@ export class ListBatchComponent implements OnInit {
         material: this.selectedFields.material
       }
     }
+    console.log(condition)
 
     this.apiService.post('/api/batch/condition', { condition: condition }).subscribe((response: any) => {
       if (response.status === 200) {
