@@ -229,11 +229,45 @@
                     <input type="text" class="form-control tc  grf-def" formControlName="def_amount" id="amount_def"
                       readonly />
                   </td>
+                  <!-- <td class="tc">
+                    <div style="text-align:center">
+                      <h1>
+                        Ngx-Webcam Demo
+                      </h1>
+
+                      <div>
+                        <webcam [height]="500" [width]="500" [trigger]="triggerObservable"
+                          (imageCapture)="handleImage($event)" *ngIf="showWebcam"
+                          [allowCameraSwitch]="allowCameraSwitch" [switchCamera]="nextWebcamObservable"
+                          [videoOptions]="videoOptions" [imageQuality]="1" (cameraSwitched)="cameraWasSwitched($event)"
+                          (initError)="handleInitError($event)"></webcam>
+                        <br />
+                        <button class="actionBtn" (click)="triggerSnapshot();">Take A Snapshot</button>
+                        <button class="actionBtn" (click)="toggleWebcam();">Toggle Webcam</button>
+                        <br />
+                        <button class="actionBtn" (click)="showNextWebcam(true);"
+                          [disabled]="!multipleWebcamsAvailable">Next Webcam</button>
+                        <input id="cameraSwitchCheckbox" type="checkbox" [(ngModel)]="allowCameraSwitch"><label
+                          for="cameraSwitchCheckbox">Allow Camera Switch</label>
+                        <br />
+                        DeviceId: <input id="deviceId" type="text" [(ngModel)]="deviceId" style="width: 500px">
+                        <button (click)="showNextWebcam(deviceId);">Activate</button>
+                      </div>
+                    </div>
+
+                    <div class="snapshot" *ngIf="webcamImage">
+                      <h2>Nice one!</h2>
+                      <img [src]="webcamImage.imageAsDataUrl" />
+                    </div>
+                  </td> -->
                   <td class="tc">
+
                     <input type="file" class="file-input" [accept]="requiredFileType"
                       (change)="onFileSelected($event, -1)" #fileUpload multiple style="display: none;">
-                    <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
-                      [tabIndex]="8">Attach File</button>
+                    <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="8"></i>
+                    <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, -1,webcammodal)" [tabIndex]="8"></i>
+                    <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
+                      [tabIndex]="8">Attach File</button> -->
                   </td>
                   <td class="tc">
                     <div *ngIf="fileNames[-1]">
@@ -346,8 +380,11 @@
                     <td class="tdpd">
                       <input type="file" class="file-input" [accept]="requiredFileType"
                         (change)="onFileSelected($event, i)" #fileUpload multiple style="display: none;">
-                      <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
-                        [tabIndex]="(10*i)+18">Attach File</button>
+                      <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="(10*i)+18"></i> &nbsp;
+                      <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, i,webcammodal)"
+                        [tabIndex]="(10*i)+18"></i>
+                      <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
+                        [tabIndex]="(10*i)+18">Attach File</button> -->
                     </td>
                     <td class="tc">
                       <div *ngIf="fileNames[i]">
@@ -380,6 +417,59 @@
             </div>
           </div>
         </div>
+
+
+        <!--webcam modal-->
+        <div class="col-md-4">
+          <div class="card-body">
+            <ng-template #webcammodal let-c="close" let-d="dismiss">
+              <div class="modal-header">
+                <h4 class="modal-title">Snapshot</h4>
+                <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')">
+                </button>
+              </div>
+              <div class="modal-body" id="content">
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div id="left">
+                      <!-- <div style="text-align:center"> -->
+
+
+
+                      <webcam [height]="376" [width]="376" [trigger]="triggerObservable"
+                        (imageCapture)="handleImage($event)" *ngIf="showWebcam" [allowCameraSwitch]="allowCameraSwitch"
+                        [switchCamera]="nextWebcamObservable" [videoOptions]="videoOptions" [imageQuality]="1"
+                        (cameraSwitched)="cameraWasSwitched($event)" (initError)="handleInitError($event)"></webcam>
+
+
+
+
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div id="right">
+
+                      <div class="snapshot" *ngIf="webcamImage">
+
+                        <img [src]="webcamImage.imageAsDataUrl" />
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+                <button type="button" class="btn btn-primary" (click)="triggerSnapshot();">Take A Snapshot</button>
+              </div>
+            </ng-template>
+
+
+          </div>
+
+        </div>
+        <!--webcam modal end-->
         <div class="row">
           <div class="col-md-6" style="font-weight: 600;">
             Total Amount: {{totalAmount}}
