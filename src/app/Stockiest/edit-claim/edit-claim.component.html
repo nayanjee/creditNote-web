@@ -237,8 +237,10 @@
                   <td class="tc">
                     <input type="file" class="file-input" [accept]="requiredFileType"
                       (change)="onFileSelected($event, -1)" #fileUpload multiple style="display: none;">
-                    <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
-                      [tabIndex]="9">Attach File</button>
+                    <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
+                      [tabIndex]="9">Attach File</button> -->
+                    <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="9"></i>
+                    <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, -1, webcammodal)" [tabIndex]="9"></i>
                   </td>
                   <td class="tc">
                     <div *ngIf="fileNames[-1]">
@@ -257,6 +259,57 @@
             </div>
           </div>
         </div>
+        <!--webcam modal-->
+        <div class="col-md-4">
+          <div class="card-body">
+            <ng-template #webcammodal let-c="close" let-d="dismiss">
+              <div class="modal-header">
+                <h4 class="modal-title">Snapshot</h4>
+                <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')">
+                </button>
+              </div>
+              <div class="modal-body" id="content">
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div id="left">
+                      <!-- <div style="text-align:center"> -->
+
+
+
+                      <webcam [height]="376" [width]="376" [trigger]="triggerObservable"
+                        (imageCapture)="handleImage($event)" *ngIf="showWebcam" [allowCameraSwitch]="allowCameraSwitch"
+                        [switchCamera]="nextWebcamObservable" [videoOptions]="videoOptions" [imageQuality]="1"
+                        (cameraSwitched)="cameraWasSwitched($event)" (initError)="handleInitError($event)"></webcam>
+
+
+
+
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div id="right">
+
+                      <div class="snapshot" *ngIf="webcamImage">
+
+                        <img [src]="webcamImage.imageAsDataUrl" />
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+                <button type="button" class="btn btn-primary" (click)="triggerSnapshot();">Take A Snapshot</button>
+              </div>
+            </ng-template>
+
+
+          </div>
+
+        </div>
+        <!--webcam modal end-->
         <div class="row">
           <div class="col-md-12 tar">
             <!-- <button type="button" class="mt-1 btn btn-info m_lr" (click)="addNewInvoice()" [tabIndex]="100000">Add New
