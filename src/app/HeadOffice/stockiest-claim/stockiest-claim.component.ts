@@ -104,7 +104,7 @@ export class StockiestClaimComponent implements OnInit {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
-    console.log('---------', this.sessionData);
+    // console.log('---------', this.sessionData);
 
     this.heading = this.sessionData.type === 'ho' ? 'HO Approval' : 'Field Approval';
 
@@ -144,11 +144,9 @@ export class StockiestClaimComponent implements OnInit {
       this.isDistributors();
     });
 
-    $(document).ready(() => {
+    /* $(document).ready(() => {
       console.log('Nayan');
-
-
-    })
+    }); */
   }
 
   toast(typeIcon, message) {

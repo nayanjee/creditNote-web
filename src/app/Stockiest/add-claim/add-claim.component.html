@@ -1,3 +1,5 @@
+
+
 <div class="app-page-title">
   <div class="page-title-wrapper">
     <div class="page-title-heading">
@@ -105,7 +107,7 @@
                   <td class="td-head required"><label class="form-label grid-label">Free QTY</label></td>
                   <td class="td-head required"><label class="form-label grid-label">Sale QTY</label></td>
                   <td class="td-head">Difference</td>
-                  <td class="td-head">Total Diff.</td>
+                  <td class="td-head" *ngIf="sessionData.type != 'stockist'">Total Diff.</td>
                   <td class="td-head">Amount</td>
                   <td class="td-head">Image</td>
                   <td class="td-head">Attachments</td>
@@ -120,7 +122,7 @@
                   </td>
 
                   <td class="tdpd1">
-                    <input type="text" class="form-control grf-def" formControlName="def_division" id="division_def"
+                    <input type="text" class="form-control grf-def dpdown" formControlName="def_division" id="division_def"
                       (keyup)="searchDivision($event, -1)" [tabIndex]="2" />
 
                     <img style="float:right;" id="division_loader_def" src="./../../../assets/images/btn_loader.gif"
@@ -221,10 +223,12 @@
                     <input type="text" class="form-control tc" formControlName="def_difference" id="difference_def"
                       readonly />
                   </td>
-                  <td class="tdpd1">
+                  <td class="tdpd1" *ngIf="sessionData.type != 'stockist'">
                     <input type="text" class="form-control tc" formControlName="def_totalDifference"
                       id="totalDifference_def" readonly />
                   </td>
+                  <input type="hidden" *ngIf="sessionData.type == 'stockist'" class="form-control tc"
+                    formControlName="def_totalDifference" id="totalDifference_def" readonly />
                   <td class="tdpd1">
                     <input type="text" class="form-control tc  grf-def" formControlName="def_amount" id="amount_def"
                       readonly />
@@ -261,11 +265,10 @@
                     </div>
                   </td> -->
                   <td class="tc">
-
                     <input type="file" class="file-input" [accept]="requiredFileType"
                       (change)="onFileSelected($event, -1)" #fileUpload multiple style="display: none;">
                     <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="8"></i>
-                    <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, -1,webcammodal)" [tabIndex]="8"></i>
+                    <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, -1, webcammodal)" [tabIndex]="8"></i>
                     <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
                       [tabIndex]="8">Attach File</button> -->
                   </td>
@@ -369,10 +372,12 @@
                       <input type="text" class="form-control tc" formControlName="difference" id="difference_{{i}}"
                         readonly />
                     </td>
-                    <td class="tdpd">
+                    <td class="tdpd" *ngIf="sessionData.type != 'stockist'">
                       <input type="text" class="form-control tc" formControlName="totalDifference"
                         id="totalDifference_{{i}}" readonly />
                     </td>
+                    <input type="hidden" *ngIf="sessionData.type == 'stockist'" class="form-control tc"
+                      formControlName="totalDifference" id="totalDifference_{{i}}" readonly />
                     <td class="tdpd">
                       <input type="text" class="form-control grf-am tc" formControlName="amount" id="amount_{{i}}"
                         readonly />

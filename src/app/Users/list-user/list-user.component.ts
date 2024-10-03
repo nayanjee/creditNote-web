@@ -47,18 +47,16 @@ export class ListUserComponent implements OnInit {
   addNewUser() {
     this.router.navigateByUrl('/users/addUser');
   }
-  getallusers() {
 
+  getallusers() {
     this.apiService.fetch('/api/user/all').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           //this.temp = [...response.data];
           this.users = response.data;
-
         }
       }
     });
-
   }
 
 

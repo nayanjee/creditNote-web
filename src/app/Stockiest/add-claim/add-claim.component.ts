@@ -120,6 +120,7 @@ export class AddClaimComponent implements OnInit {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
+    console.log(this.sessionData);
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -155,10 +156,10 @@ export class AddClaimComponent implements OnInit {
       this.isDistributors();
     });
 
-    WebcamUtil.getAvailableVideoInputs()
-      .then((mediaDevices: MediaDeviceInfo[]) => {
-        this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
-      });
+    WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
+      this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
+    });
+
   }
 
 
@@ -326,9 +327,9 @@ export class AddClaimComponent implements OnInit {
         const claimData = this.fb.group({
           invoice: $('#invoice_def').val(),
           batch: '',
-          division: '',
-          divisionId: '',
-          plantId: '',
+          division: $('#division_def').val(),
+          divisionId: $('#division_id_def').val(),
+          plantId: $('#plant_id_def').val(),
           product: '',
           productId: '',
           particulars: '',
@@ -595,6 +596,7 @@ export class AddClaimComponent implements OnInit {
   searchDivision(e, i) {
     const id = (i === -1) ? 'def' : i;
     const inputVal = e.currentTarget.value;
+    console.log('e.currentTarget--', e.code);
 
     $('#division_id_' + id).val('');
     $('#plant_id_' + id).val('');
@@ -841,6 +843,7 @@ export class AddClaimComponent implements OnInit {
     const plantId = $('#plant_id_' + id).val();
     const explodeProductId = productId.split(",");
 
+
     let results = [];
     explodeProductId.forEach(element => {
       let result = [];
@@ -850,7 +853,9 @@ export class AddClaimComponent implements OnInit {
           element2.batch.toLowerCase().indexOf(val) > -1;
       });
 
-      if (result.length) results.push(result);
+      if (result.length) {
+        results.push(result);
+      }
     });
 
     return results;
@@ -993,7 +998,6 @@ export class AddClaimComponent implements OnInit {
 
     const distributor = this.selectedFields['distributor'];
     const stockist = this.userPlantStockists[distributor];
-    console.log('stockist---', stockist);
 
     if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
       stockist.forEach(element => {
@@ -1009,8 +1013,6 @@ export class AddClaimComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.stockiests = response.data;
-          console.log('stockiests---', this.stockiests);
-          console.log('distributor---', distributor);
 
           if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
             // If user has access to approve claim of the distributor (self)
@@ -1024,7 +1026,6 @@ export class AddClaimComponent implements OnInit {
             // EOF If user has access to approve claim of the distributor (self)
           }
 
-          console.log('stockiests---', this.stockiests);
           this.delay(5).then(any => {
             this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
 
