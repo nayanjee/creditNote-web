@@ -56,6 +56,7 @@ import { AddClaimComponent } from './Stockiest/add-claim/add-claim.component';
 import { EditClaimComponent } from './Stockiest/edit-claim/edit-claim.component';
 import { DraftClaimComponent } from './Stockiest/draft-claim/draft-claim.component';
 import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.component';
+import { ClaimsComponent } from './Stockiest/claims/claims.component';
 
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
@@ -92,6 +93,8 @@ import { EditDistributorComponent } from './Distributor/edit-distributor/edit-di
 import { ListBatchComponent } from './Batch/list-batch/list-batch.component';
 import { EditBatchComponent } from './Batch/edit-batch/edit-batch.component';
 
+import { ListProductComponent } from './Product/list-product/list-product.component';
+
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
 };
@@ -119,6 +122,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     EditClaimComponent,
     DraftClaimComponent,
     StockiestClaimComponent,
+    ClaimsComponent,
     ClaimStatusComponent,
     StatusClaimComponent,
     ClaimApprovalComponent,
@@ -139,7 +143,8 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     ListDistributorComponent,
     EditDistributorComponent,
     ListBatchComponent,
-    EditBatchComponent
+    EditBatchComponent,
+    ListProductComponent
   ],
   imports: [
     BrowserModule,

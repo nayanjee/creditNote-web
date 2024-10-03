@@ -13,15 +13,15 @@ import { AppServicesService } from './../../shared/service/app-services.service'
 declare var $: any;
 
 @Component({
-  selector: 'app-list-batch',
-  templateUrl: './list-batch.component.html',
-  styleUrls: ['./list-batch.component.css']
+  selector: 'app-list-product',
+  templateUrl: './list-product.component.html',
+  styleUrls: ['./list-product.component.css']
 })
-export class ListBatchComponent implements OnInit {
+export class ListProductComponent implements OnInit {
   faStar = faStar;
   faPlus = faDownload;
-  heading = 'Batch';
-  subheading = 'Batch List';
+  heading = 'Product';
+  subheading = 'Product/Material List';
   icon = 'pe-7s-network icon-gradient bg-premium-dark';
   loading: any = false;
   loggedUserId: any = '';
@@ -241,9 +241,9 @@ export class ListBatchComponent implements OnInit {
   }
 
   exportToExcel() {
-    let fileName = 'Batch';
+    let fileName = 'Material';
 
-    this.apiService.fetch('/api/batch/export').subscribe((response: any) => {
+    this.apiService.fetch('/api/product/export').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           let finalData = [];
@@ -251,24 +251,8 @@ export class ListBatchComponent implements OnInit {
             const invoiceData = {
               'Plant': data.plant,
               'Division': data.division,
-              'Division Name': data.divName,
               'Material': data.material,
               'Material Description': data.materialName,
-              'Batch': data.batch,
-              'Date of Manufacture': moment(data.manufacturOn).format("DD-MM-YYYY"),
-              'SLED/BBD': moment(data.expireOn).format("DD-MM-YYYY"),
-              'MRP': parseFloat(data.mrp.toFixed(2)),
-              'PTD': parseFloat(data.ptd.toFixed(2)),
-              'PTR': parseFloat(data.ptr.toFixed(2)),
-              'PTS': parseFloat(data.pts.toFixed(2)),
-              'MRP2': data.mrp2 ? parseFloat(data.mrp2.toFixed(2)) : '',
-              'PTD2': data.ptd2 ? parseFloat(data.ptd2.toFixed(2)) : '',
-              'PTR2': data.ptr2 ? parseFloat(data.ptr2.toFixed(2)) : '',
-              'PTS2': data.pts2 ? parseFloat(data.pts2.toFixed(2)) : '',
-              'MRP3': data.mrp3 ? parseFloat(data.mrp3.toFixed(2)) : '',
-              'PTD3': data.ptd3 ? parseFloat(data.ptd3.toFixed(2)) : '',
-              'PTR3': data.ptr3 ? parseFloat(data.ptr3.toFixed(2)) : '',
-              'PTS3': data.pts3 ? parseFloat(data.pts3.toFixed(2)) : ''
             }
 
             finalData.push(invoiceData);
@@ -279,24 +263,8 @@ export class ListBatchComponent implements OnInit {
           ws['!cols'] = [
             { wch: 6 },
             { wch: 8 },
-            { wch: 15 },
             { wch: 10 },
-            { wch: 35 },
-            { wch: 15 },
-            { wch: 20 },
-            { wch: 12 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 },
-            { wch: 10 }
+            { wch: 35 }
           ];
 
           for (var i in ws) {

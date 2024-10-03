@@ -1,0 +1,264 @@
+<div class="app-page-title">
+  <div class="page-title-wrapper">
+    <div class="page-title-heading">
+      <div class="page-title-icon">
+        <i class="icon {{icon}}"></i>
+      </div>
+      <div>
+        {{heading}}
+        <div class="page-title-subheading">
+          {{subheading}}
+        </div>
+      </div>
+    </div>
+    <div class="page-title-actions" *ngIf="sessionData.permissions.includes('3')">
+      <button type="button" (click)="exportToExcel()"
+        class="btn-shadow d-inline-flex align-items-center btn btn-success">
+        <fa-icon [icon]="faPlus" class="me-2"></fa-icon>
+        Export to Excel
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <label for="distributor" class="form-label fb">Distributor</label>
+        <ng-select class="custom" id="distributor" [(ngModel)]="selectedFields.distributor"
+          (change)="distributorChange()" [clearable]="false" style="display: none;">
+          <ng-option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+            {{distributor.plant}} - {{distributor.organization | titlecase}}
+          </ng-option>
+        </ng-select>
+        <span id="err_distributor" class="text-danger" style="display: none;"></span>
+        <div id="distributor_loader">
+          <img class="m8" src="./../../../assets/images/btn_loader.gif">
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <label for="stockiest" class="form-label fb">
+          Stockiest
+          <span *ngIf="selectedFields.stockiest" style="color: orange; font-size: 12px;">
+            <span *ngIf="selectedFields.stockiest == 1">(Self)</span>
+            <span *ngIf="selectedFields.stockiest != 1">({{selectedFields.stockiest}})</span>
+          </span>
+        </label>
+        <ng-select class="custom" id="stockiest" [(ngModel)]="selectedFields.stockiest" [clearable]="false"
+          style="display: none;">
+          <ng-option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
+            {{stockiest.organization | titlecase}}
+          </ng-option>
+        </ng-select>
+        <span id="err_stockiest" class="text-danger" style="display: none;"></span>
+        <div id="stockiest_loader">
+          <img class="m8" src="./../../../assets/images/btn_loader.gif">
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <label for="type" class="form-label fb">Claim Type</label>
+        <ng-select class="custom" id="type" [(ngModel)]="selectedFields.type" [clearable]="false">
+          <ng-option [value]="0"> -- All -- </ng-option>
+          <ng-option *ngFor="let type of types" [value]="type.id">{{type.name}}</ng-option>
+        </ng-select>
+        <span id="err_type" class="text-danger" style="display: none;"></span>
+      </div>
+
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <label for="division" class="form-label fb">Division
+          <span id="divisionCode" style="color: orange; font-size: 12px;"></span>
+        </label>
+        <ng-select class="custom" id="division" [(ngModel)]="selectedFields.division" [clearable]="false">
+          <ng-option [value]="0"> -- All -- </ng-option>
+          <ng-option *ngFor="let division of divisions" [value]="division.division">{{division.name}}</ng-option>
+        </ng-select>
+      </div>
+
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <label for="month" class="form-label fb">Month</label>
+        <ng-select class="custom" id="month" [(ngModel)]="selectedFields.month" (change)="validateMonth()"
+          [clearable]="false">
+          <ng-option *ngFor="let month of months" [value]="month.id">{{month.name}}</ng-option>
+        </ng-select>
+        <span id="err_month" class="text-danger" style="display: none;"></span>
+      </div>
+
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <label for="year" class="form-label fb">Year</label>
+        <ng-select class="custom" id="year" [(ngModel)]="selectedFields.year" (change)="validateMonth()"
+          [clearable]="false">
+          <ng-option *ngFor="let year of years" [value]="year.id">{{year.name}}</ng-option>
+        </ng-select>
+        <span id="err_year" class="text-danger" style="display: none;"></span>
+      </div>
+
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <label for="status" class="form-label fb">Status</label>
+        <ng-select class="custom" id="status" [(ngModel)]="selectedFields.status" [clearable]="false">
+          <ng-option [value]="0"> -- Status -- </ng-option>
+          <ng-option *ngFor="let stats of status" [value]="stats.id">{{stats.name}}</ng-option>
+        </ng-select>
+        <span id="err_status" class="text-danger" style="display: none;"></span>
+      </div>
+
+      <div class="col-lg-3 col-sm-12 cpdlr">
+        <div class="position-relative" style="text-align: center;">
+          <button type="button" class="btn btn-info" style="margin: 28px 3px 0 3px;" (click)="getData()">Search</button>
+          <button type="button" class="btn btn-warning" style="margin: 28px 3px 0 3px;" (click)="clear()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <hr />
+      </div>
+      <div *ngIf="loading" class="col-md-12 tc" style="color: red;">
+        <img src="./../../assets/images/btn_loader.gif"> <br /> Loading... Please wait
+      </div>
+      <div *ngIf="!showData" class="col-md-12 tc" style="color: red;">
+        No record found!
+      </div>
+    </div>
+
+    <div *ngIf="!loading && showData" class="mytable">
+      <table>
+        <thead>
+          <tr>
+            <th class="border-right" style="width: 4%;">Sl.No.</th>
+            <th class="border-right" style="width: 5%;">Status</th>
+            <th class="border-right" style="width: 8%;">Invoice</th>
+            <th class="border-right" style="width: 8%;">Claim Type</th>
+            <th class="border-right" style="width: 10%;">Division</th>
+            <th class="border-right" style="">Product</th>
+            <th class="border-right" style="width: 8%;">Batch</th>
+            <th class="border-right" style="width: 6%;">MRP</th>
+            <th class="border-right" style="width: 8%;">PTS</th>
+            <th class="border-right" style="width: 8%;">Billing Rate</th>
+            <th class="border-right" style="width: 6%;">Free QTY</th>
+            <th class="border-right" style="width: 6%;">Sale QTY</th>
+            <th class="border-right" style="width: 5%;">ATTM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-bottom" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
+            <td class="border-right">{{i+1}}</td>
+            <td class="border-right">
+              <div class="fl" style="margin: 0 0 0 7px;">
+                <div *ngIf="record.ftStatus === 1" title="Accepted by FT" class="legend-bullet mlr8 fl approved"></div>
+                <div *ngIf="record.ftStatus === 2" title="Rejected by FT" class="legend-bullet mlr8 fl rejected"></div>
+
+                <div *ngIf="record.suhStatus === 1" title="Accepted by SUH" class="legend-bullet mlr8 fl approved"></div>
+                <div *ngIf="record.suhStatus === 2" title="Rejected by SUH" class="legend-bullet mlr8 fl rejected"></div>
+              </div>
+            </td>
+            <td class="border-right">{{record.invoice}}</td>
+            <td class="border-right">{{record.claimType | titlecase}}</td>
+            <td class="border-right tal">{{record.divisionName | titlecase}}</td>
+            <td class="border-right tal">{{record.materialName | titlecase}}</td>
+            <td class="border-right">{{record.batch}}</td>
+            <td class="border-right">{{record.mrp | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.pts | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.billingRate | number : '1.2-2'}}</td>
+            <td class="border-right">{{record.freeQuantity}}</td>
+            <td class="border-right">{{record.saleQuantity}}</td>
+            <td class="border-right att_{{record.invoice}}">
+              <div *ngIf="record.files">
+                <span *ngFor="let fn of record.files" style="margin:0 2px;">
+                  <i class="pe-7s-paperclip fb" placement="bottom" ngbTooltip="{{fn.originalFilename}}"
+                    (click)="viewPopup(details, fn, record.invoice, record._id)"></i>
+                </span>
+              </div>
+              <div class="attch {{record.invoice}}" style="display: none;"> Upload Invoice
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- <div *ngIf="!loading && showData" class="row" style="margin-top: 15px;">
+      <div class="col-md-6" style="padding-top: 10px; font-weight: 600;">
+        Records: {{tempRecords.length}}
+      </div>
+      <div *ngIf="!accField" class="col-md-6 tar" style="padding-top: 10px; font-weight: 600;">
+        Total Amount: {{totalAmount | number : '1.2-2'}}
+      </div>
+      <div *ngIf="accField" class="col-md-6 tar" style="padding-top: 10px; font-weight: 600;">
+        Total Accepted Amount: {{accAmount | number : '1.2-2'}}
+      </div>
+    </div> -->
+
+    <ng-template #details let-c="close" let-d="dismiss">
+      <div class="modal-header">
+        <h4 class="modal-title">Attachment of invoice `{{clickedFile.invoice}}`</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12 tc" style="min-height: 200px;">
+            <pdf-viewer *ngIf="pdfSource" [src]="pdfSource" [original-size]="false"></pdf-viewer>
+            <img *ngIf="!pdfSource" src="{{apiURL}}/uploads/files/{{clickedFile.filename}}" style="max-width: 100%;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="mt-1 btn btn-warning" (click)="newTab(clickedFile)" style="padding: 6px 30px;">Open
+          in new tab</button>
+
+        <button type="button" class="btn btn-secondary" (click)="c('Close click')"
+          style="padding: 6px 30px;">Close</button>
+      </div>
+    </ng-template>
+
+    <!-- View Comments popup -->
+    <div id="modalComments" class="modal" style="top: 70px !important;">
+      <div class="modal-content" style="width: 500px; margin:auto;">
+        <div class="modal-header" style="padding: 5px 15px;">
+          <h2 style="font-size: 20px;">Comment / Reason</h2>
+          <span class="close" (click)="closeCommentsModal()">&times;</span>
+        </div>
+        <div class="modal-body" style="padding-top: 18px;">
+          <div class="row">
+            <table style="overflow-x: hidden; overflow-y: auto; max-height: 330px;">
+              <tr>
+                <th style="padding: 0 0 0 5px; text-align: center; width: 20%;">Reason</th>
+                <th style="padding: 0 0 0 5px; width: 80%">Message</th>
+              </tr>
+              <tr *ngIf="clickedRecord.ftUpdateComment">
+                <td style="padding: 0 0 0 5px; text-align: center;">Updated<br>by FT</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ftUpdateComment}}</td>
+                <!-- <td style="padding: 0 0 0 5px; text-align: center;">FT</td> -->
+              </tr>
+              <tr *ngIf="clickedRecord.ftStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by FT</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ftApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.suhStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by SUH</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.suhApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.hoUpdateComment">
+                <td style="padding: 0 0 0 5px; text-align: center;">Updated<br>by HO</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.hoUpdateComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.hoStatus === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by HO</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.hoApprovalComment}}</td>
+              </tr>
+              <tr *ngIf="clickedRecord.ho1Status === 2">
+                <td style="padding: 0 0 0 5px; text-align: center;">Un-approved<br>by HO1</td>
+                <td style="padding: 0 0 0 5px;">{{clickedRecord.ho1ApprovalComment}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 5px 15px;">
+          <button type="button" class="btn btn-danger" [tabIndex]="13" (click)="closeCommentsModal()"> Close
+          </button>
+        </div>
+      </div>
+    </div>

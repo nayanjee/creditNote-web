@@ -54,6 +54,32 @@
         </div>
       </div>
 
+      <!-- <div *ngIf="fieldFields" class="position-relative row mb-3 required">
+        <label for="state" class="form-label col-sm-2 col-form-label">Region</label>
+        <div class="col-sm-10">
+          <select id="state" class="form-select" formControlName="state">
+            <option value="" disabled selected> Region </option>
+            <option *ngFor="let state of states" [value]="state.name">
+              {{state.name}}
+            </option>
+          </select>
+          <span id="err_state" class="text-danger" style="display: none;"></span>
+        </div>
+      </div>
+
+      <div *ngIf="fieldFields" class="position-relative row mb-3 required">
+        <label for="headQuarter" class="form-label col-sm-2 col-form-label">Head Quarter</label>
+        <div class="col-sm-10">
+          <select id="headQuarter" class="form-select" formControlName="headQuarter">
+            <option value="" disabled selected> Head Quarter </option>
+            <option *ngFor="let city of cities" [value]="city.name">
+              {{city.name}}
+            </option>
+          </select>
+          <span id="err_headQuarter" class="text-danger" style="display: none;"></span>
+        </div>
+      </div> -->
+
       <div *ngIf="fieldFields" class="position-relative row mb-3 required">
         <label for="workType" class="form-label col-sm-2 col-form-label">Work Type</label>
         <div class="col-sm-10">

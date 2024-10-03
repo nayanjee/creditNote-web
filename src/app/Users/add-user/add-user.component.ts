@@ -57,6 +57,9 @@ export class AddUserComponent implements OnInit {
     { id: 'field', name: 'Field' },
   ];
 
+  states: any = [];
+  cities: any = [];
+
   constructor(
     private router: Router,
     private fb: FormBuilder,
@@ -75,6 +78,7 @@ export class AddUserComponent implements OnInit {
     this.getAllDivision();
     this.getAllDistributor();
     this.getAllAccessPermision();
+    // this.getStateCity();
   }
 
   toast(typeIcon, message) {
@@ -102,7 +106,9 @@ export class AddUserComponent implements OnInit {
       username: [''],
       email: ['', [Validators.required]],
       code: [''],    // employee=>EmpCode, stokist=>CustomerId, Distributor=>CustomerId
-      workType: [''], // HO, HOS, SUH, Field 
+      workType: [''],
+      state: [''],
+      headQuarter: [''], // HO, HOS, SUH, Field 
       supervisor: [''],
       distributor_def: [''],
       division_def: [[]],
@@ -138,6 +144,30 @@ export class AddUserComponent implements OnInit {
 
   removeDistributor(i: number) {
     this.dist().removeAt(i);
+  }
+
+  getStateCity() {
+    this.apiService.get('/api/user/getState', 1).subscribe((response: any) => {
+      console.log('Hello--', response);
+      if (response.status === 200) {
+        if (response.data.length) {
+          console.log(response.data);
+
+          // Getting a unique distributor
+          /* const map = new Map();
+          for (const item of response.data) {
+            if (!map.has(item.plant)) {
+              map.set(item.plant, true);
+              this.distributors.push({
+                plant: item.plant,
+                organization: item.organization
+              });
+            }
+          } */
+          // EOF Getting a unique distributor
+        }
+      }
+    });
   }
 
   getAllDistributor() {

@@ -26,6 +26,7 @@ import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.comp
 import { ListStockiestComponent } from './Stockiest/list-stockiest/list-stockiest.component';
 import { AddStockiestComponent } from './Stockiest/add-stockiest/add-stockiest.component';
 import { EditStockiestComponent } from './Stockiest/edit-stockiest/edit-stockiest.component';
+import { ClaimsComponent } from './Stockiest/claims/claims.component';
 
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
@@ -50,6 +51,8 @@ import { ListDistributorComponent } from './Distributor/list-distributor/list-di
 import { ListBatchComponent } from './Batch/list-batch/list-batch.component';
 import { EditBatchComponent } from './Batch/edit-batch/edit-batch.component';
 
+import { ListProductComponent } from './Product/list-product/list-product.component';
+
 import { TestComponent } from './Test/test.component';
 const routes: Routes = [
   {
@@ -67,6 +70,7 @@ const routes: Routes = [
       { path: 'stockiest/add', component: AddStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/edit/:stockiestId', component: EditStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/list', component: ListStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/claims', component: ClaimsComponent, data: { extraParameter: 'stockiestElementsMenu' } },
 
       { path: 'headoffice/stockiestClaim', component: StockiestClaimComponent, data: { extraParameter: 'hoElementsMenu' } },
       { path: 'headoffice/claimApproval/:month/:stockiest/:year/:type/:invoice', component: ClaimApprovalComponent, data: { extraParameter: 'hoElementsMenu' } },
@@ -94,6 +98,8 @@ const routes: Routes = [
 
       { path: 'batch/list', component: ListBatchComponent, data: { extraParameter: 'batchElementsMenu' } },
       { path: 'batch/edit/:batchId', component: EditBatchComponent, data: { extraParameter: 'batchElementsMenu' } },
+
+      { path: 'product/list', component: ListProductComponent, data: { extraParameter: 'productElementsMenu' } },
 
       { path: 'test/test', component: TestComponent, data: { extraParameter: 'userElementMenu' } },
     ]

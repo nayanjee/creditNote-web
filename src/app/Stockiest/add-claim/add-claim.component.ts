@@ -120,6 +120,7 @@ export class AddClaimComponent implements OnInit {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
+    console.log(this.sessionData);
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -155,10 +156,10 @@ export class AddClaimComponent implements OnInit {
       this.isDistributors();
     });
 
-    WebcamUtil.getAvailableVideoInputs()
-      .then((mediaDevices: MediaDeviceInfo[]) => {
-        this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
-      });
+    WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
+      this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
+    });
+
   }
 
 
@@ -326,9 +327,9 @@ export class AddClaimComponent implements OnInit {
         const claimData = this.fb.group({
           invoice: $('#invoice_def').val(),
           batch: '',
-          division: '',
-          divisionId: '',
-          plantId: '',
+          division: $('#division_def').val(),
+          divisionId: $('#division_id_def').val(),
+          plantId: $('#plant_id_def').val(),
           product: '',
           productId: '',
           particulars: '',
@@ -595,7 +596,8 @@ export class AddClaimComponent implements OnInit {
   searchDivision(e, i) {
     const id = (i === -1) ? 'def' : i;
     const inputVal = e.currentTarget.value;
-    
+    console.log('e.currentTarget--', e.code);
+
     $('#division_id_' + id).val('');
     $('#plant_id_' + id).val('');
     $('#product_' + id).val('');
