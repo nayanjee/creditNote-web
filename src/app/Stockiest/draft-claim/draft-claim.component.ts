@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@angular/forms';
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import * as moment from 'moment';
 
@@ -18,6 +20,28 @@ declare var $: any;
 })
 export class DraftClaimComponent implements OnInit {
   private apiURL: any = environment.apiURL;
+
+  // toggle webcam on/off
+  public showWebcam = false;
+  public allowCameraSwitch = true;
+  public multipleWebcamsAvailable = false;
+  public deviceId: string;
+  //closeResult: string;
+  selectedwebcamrow: any;
+  public videoOptions: MediaTrackConstraints = {
+    // width: {ideal: 1024},
+    // height: {ideal: 576}
+  };
+  public errors: WebcamInitError[] = [];
+
+  // latest snapshot
+  public webcamImage: WebcamImage = null;
+
+  // webcam snapshot trigger
+  private trigger: Subject<void> = new Subject<void>();
+  // switch to next / previous / specific webcam; true/false: forward/backwards, string: deviceId
+  private nextWebcam: Subject<boolean | string> = new Subject<boolean | string>();
+
 
   faStar = faStar;
   faPlus = faPlus;
@@ -124,8 +148,104 @@ export class DraftClaimComponent implements OnInit {
     this.delay(1000).then(any => {
       this.isDistributors();
     });
+
+    WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
+      this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
+    });
   }
 
+  public triggerSnapshot(): void {
+    this.trigger.next();
+    //let serow = this.selectedwebcamrow;
+    const row = this.selectedwebcamrow;
+    const reqData = {};
+    // console.log("selected web cam row===", this.selectedwebcamrow);
+    //const frmData = new FormData();
+
+    //console.log(this.webcamImage.imageAsBase64);
+    //frmData.append("file", this.webcamImage.imageAsBase64);
+    reqData['camimg'] = this.webcamImage.imageAsBase64;
+
+
+    this.apiService.upload('/api/UploadClaimInvoicesWebcam', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          let images = [];
+          response.data.forEach(element => {
+            const img = {
+              claimId: row,
+              filename: element.filename,
+              originalFilename: element.originalname,
+              createdBy: this.sessionData.id
+            }
+            images.push(img);
+          });
+          console.log('images---', images);
+          this.apiService.post('/api/claim/fileUpload', images).subscribe((response: any) => {
+            console.log('response---', response.status);
+            if (response.status === 200) {
+              this.modalReference.close();
+              this.getData();
+              Swal.fire(
+                'Uploaded!',
+                'Your image/file has been uploaded.',
+                'success'
+              );
+            } else {
+              this.modalReference.close();
+              Swal.fire(
+                'Cancelled',
+                'Something went wrong. Try refreshing the page or try again later.',
+                'error'
+              )
+            }
+          });
+        }
+      } else {
+        this.modalReference.close();
+        Swal.fire(
+          'Cancelled',
+          'Something went wrong. Try refreshing the page or try again later.',
+          'error'
+        )
+      }
+    })
+    //console.log("=========", this.fileNames);
+
+  }
+
+  public toggleWebcam(): void {
+    this.showWebcam = !this.showWebcam;
+  }
+
+  public handleInitError(error: WebcamInitError): void {
+    this.errors.push(error);
+  }
+
+  public showNextWebcam(directionOrDeviceId: boolean | string): void {
+    // true => move forward through devices
+    // false => move backwards through devices
+    // string => move to device with given deviceId
+    this.nextWebcam.next(directionOrDeviceId);
+  }
+
+  public handleImage(webcamImage: WebcamImage): void {
+    console.info('received webcam image', webcamImage);
+    this.webcamImage = webcamImage;
+  }
+
+  public cameraWasSwitched(deviceId: string): void {
+    console.log('active device: ' + deviceId);
+    this.deviceId = deviceId;
+  }
+
+  public get triggerObservable(): Observable<void> {
+    return this.trigger.asObservable();
+  }
+
+  public get nextWebcamObservable(): Observable<boolean | string> {
+    return this.nextWebcam.asObservable();
+  }
   toast(typeIcon, message) {
     // typeIcon = error, success, warning, info, question
     Swal.fire({
@@ -188,25 +308,25 @@ export class DraftClaimComponent implements OnInit {
             this.userPlantDivisions[response.data[0].code] = response.data[0].divisions[0].divisions;
 
             //this.delay(500).then(any => {
-              this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
-              $('#distributor_loader').hide();
-              $('#distributor').show();
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+            $('#distributor_loader').hide();
+            $('#distributor').show();
 
-              const self = {
-                customerId: 1,
-                organization: '-- SELF --'
-              }
-              this.stockiests.push(self);
+            const self = {
+              customerId: 1,
+              organization: '-- SELF --'
+            }
+            this.stockiests.push(self);
 
-              this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
-              $('#stockiest_loader').hide();
-              $('#stockiest').show();
+            this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+            $('#stockiest_loader').hide();
+            $('#stockiest').show();
 
-              this.getDivisions();
+            this.getDivisions();
 
-              this.delay(1000).then(any => {
-                this.getData();
-              });
+            this.delay(1000).then(any => {
+              this.getData();
+            });
             //});
           }
         }
@@ -234,13 +354,13 @@ export class DraftClaimComponent implements OnInit {
           });
 
           //this.delay(500).then(any => {
-            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
 
-            $('#distributor_loader').hide();
-            $('#distributor').show();
+          $('#distributor_loader').hide();
+          $('#distributor').show();
 
-            this.getStockiest();
-            this.getDivisions();
+          this.getStockiest();
+          this.getDivisions();
           //});
         }
       }
@@ -268,12 +388,12 @@ export class DraftClaimComponent implements OnInit {
           });
 
           //this.delay(500).then(any => {
-            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
-            $('#distributor_loader').hide();
-            $('#distributor').show();
+          this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          $('#distributor_loader').hide();
+          $('#distributor').show();
 
-            this.getStockiest();
-            this.getDivisions();
+          this.getStockiest();
+          this.getDivisions();
           //});
         }
       }
@@ -332,12 +452,12 @@ export class DraftClaimComponent implements OnInit {
           }
 
           //this.delay(5).then(any => {
-            this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+          this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
 
-            $('#stockiest_loader').hide();
-            $('#stockiest').show();
+          $('#stockiest_loader').hide();
+          $('#stockiest').show();
 
-            this.getData();
+          this.getData();
           //});
         }
       }
@@ -350,7 +470,7 @@ export class DraftClaimComponent implements OnInit {
 
     const distributor = this.selectedFields['distributor'];
     const division = this.userPlantDivisions[distributor];
-    
+
     division.forEach(element => {
       divisions.push(Number(element));
     });
@@ -762,5 +882,26 @@ export class DraftClaimComponent implements OnInit {
       //this.toastr.error(error.message, 'Error');
     }
   }
+
+  openWebcam(event, recordId, content) {
+    //const rowId = (row === -1) ? 'def' : row;
+    this.showWebcam = true;
+    this.selectedwebcamrow = recordId;
+    this.modalService.open(content, {
+      size: 'lg'
+    }).result.then((result) => {
+      this.closeResult = `Closed with: ${result}`;
+      this.showWebcam = false;
+      this.webcamImage = null;
+    }, (reason) => {
+      this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      this.showWebcam = false;
+      this.webcamImage = null;
+    });
+  }
+
+
+
+
 
 }

@@ -130,3 +130,19 @@ tbody tr> :nth-child(2) {
 .cpdlr {
   padding: 0 4px;
 }
+#content {
+  background-color: rgba(210, 210, 210, 0.5);
+
+  padding: 0.5rem;
+  display: flex;
+}
+
+
+.snapshot {
+  text-align: center;
+
+  img {
+      max-width: 99%;
+
+  }
+}
