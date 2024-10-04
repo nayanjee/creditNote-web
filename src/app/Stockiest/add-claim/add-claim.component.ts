@@ -156,10 +156,10 @@ export class AddClaimComponent implements OnInit {
       this.isDistributors();
     });
 
-    WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
-      this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
-    });
-
+    WebcamUtil.getAvailableVideoInputs()
+      .then((mediaDevices: MediaDeviceInfo[]) => {
+        this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
+      });
   }
 
 
@@ -596,8 +596,7 @@ export class AddClaimComponent implements OnInit {
   searchDivision(e, i) {
     const id = (i === -1) ? 'def' : i;
     const inputVal = e.currentTarget.value;
-    console.log('e.currentTarget--', e.code);
-
+    
     $('#division_id_' + id).val('');
     $('#plant_id_' + id).val('');
     $('#product_' + id).val('');

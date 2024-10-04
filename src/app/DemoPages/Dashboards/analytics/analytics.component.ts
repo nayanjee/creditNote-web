@@ -12,103 +12,31 @@ import { AppServicesService } from './../../../shared/service/app-services.servi
 export class AnalyticsComponent implements OnInit {
   temp: any = [];
   assets: any = [];
-  loggedUserId: any = '';
+  sessionData: any;
+  messages: any = [];
+  distributors: any = [];
   notifications: any = [];
 
   heading = 'Dashboard';
   subheading = 'This is an example dashboard created using build-in elements and components.';
   icon = 'pe-7s-plane icon-gradient bg-tempting-azure';
 
-  slideConfig6 = {
-    className: 'center',
-    infinite: true,
-    slidesToShow: 1,
-    speed: 500,
-    adaptiveHeight: true,
-    dots: true,
-  };
-
-  public datasets = [
-    {
-      label: 'My First dataset',
-      data: [65, 59, 80, 81, 46, 55, 38, 59, 80],
-      datalabels: {
-        display: false,
-      },
-
-    }
-  ];
-
-  public datasets2 = [
-    {
-      label: 'My First dataset',
-      data: [46, 55, 59, 80, 81, 38, 65, 59, 80],
-      datalabels: {
-        display: false,
-      },
-
-    }
-  ];
-
-  public datasets3 = [
-    {
-      label: 'My First dataset',
-      data: [65, 59, 80, 81, 55, 38, 59, 80, 46],
-      datalabels: {
-        display: false,
-      },
-
-    }
-  ];
-
   public labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August'];
-
-  public options = {
-    layout: {
-      padding: {
-        left: 0,
-        right: 8,
-        top: 0,
-        bottom: 0
-      }
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          display: false,
-          beginAtZero: true
-        },
-        gridLines: {
-          display: false
-        }
-      }],
-      xAxes: [{
-        ticks: {
-          display: false
-        },
-        gridLines: {
-          display: false
-        }
-      }]
-    },
-    legend: {
-      display: false
-    },
-    responsive: true,
-    maintainAspectRatio: false
-  };
 
   constructor(
     private router: Router,
     private apiService: AppServicesService
   ) {
-    
+
   }
 
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
-    console.log('sessionStorageDashboard---', sessionData);
     if (!sessionData) this.router.navigateByUrl('/login');
+    this.sessionData = JSON.parse(sessionData);
+    console.log('sessionStorageDashboard---', this.sessionData);
+
+    this.getDistributors();
   }
 
   toast(typeIcon, message) {
@@ -124,5 +52,35 @@ export class AnalyticsComponent implements OnInit {
     })
   }
 
-  
+  async delay(ms: number) {
+    await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
+  }
+
+  getMessages() {
+    if (this.distributors[0].stockists.length) {
+      const stockists = [];
+      (this.distributors[0].stockists).forEach(element => {
+        stockists.push(parseInt(element));
+      });
+
+      this.apiService.post('/api/user/getMessages', stockists).subscribe((response: any) => {
+        if (response.status === 200) {
+          if (response.data.length) {
+            this.messages = response.data;
+          }
+        }
+      });
+    }
+  }
+
+  getDistributors() {
+    this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.distributors = response.data;
+          this.getMessages();
+        }
+      }
+    });
+  }
 }
