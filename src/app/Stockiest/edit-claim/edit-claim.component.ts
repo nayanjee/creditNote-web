@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@angular/forms';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { faStar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
+import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
 import * as moment from 'moment';
 
 import { AppServicesService } from './../../shared/service/app-services.service';
@@ -15,6 +18,28 @@ declare var $: any;
   styleUrls: ['./edit-claim.component.css']
 })
 export class EditClaimComponent implements OnInit {
+
+  // toggle webcam on/off
+  public showWebcam = false;
+  public allowCameraSwitch = true;
+  public multipleWebcamsAvailable = false;
+  public deviceId: string;
+  closeResult: string;
+  selectedwebcamrow: any;
+  public videoOptions: MediaTrackConstraints = {
+    // width: {ideal: 1024},
+    // height: {ideal: 576}
+  };
+  public errors: WebcamInitError[] = [];
+
+  // latest snapshot
+  public webcamImage: WebcamImage = null;
+
+  // webcam snapshot trigger
+  private trigger: Subject<void> = new Subject<void>();
+  // switch to next / previous / specific webcam; true/false: forward/backwards, string: deviceId
+  private nextWebcam: Subject<boolean | string> = new Subject<boolean | string>();
+
   faStar = faStar;
   faPlus = faPlus;
   heading = 'Edit / Update Claim';
@@ -79,7 +104,8 @@ export class EditClaimComponent implements OnInit {
     private router: Router,
     private fb: FormBuilder,
     private activatedRoute: ActivatedRoute,
-    private apiService: AppServicesService
+    private apiService: AppServicesService,
+    private modalService: NgbModal
   ) {
     this.selectedClaim = this.activatedRoute.snapshot.paramMap.get('claimId');
   }
@@ -118,7 +144,80 @@ export class EditClaimComponent implements OnInit {
     this.delay(1000).then(any => {
       this.getData();
     });
+    WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
+      this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
+    });
   }
+
+  public triggerSnapshot(): void {
+    this.trigger.next();
+    //let serow = this.selectedwebcamrow;
+    const row = (this.selectedwebcamrow === 'def') ? -1 : this.selectedwebcamrow;
+    const reqData = {};
+    // console.log("selected web cam row===", this.selectedwebcamrow);
+    //const frmData = new FormData();
+
+    //console.log(this.webcamImage.imageAsBase64);
+    //frmData.append("file", this.webcamImage.imageAsBase64);
+    reqData['camimg'] = this.webcamImage.imageAsBase64;
+
+
+    this.apiService.upload('/api/UploadClaimInvoicesWebcam', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          // To separate files according to RowId
+          if (this.fileNames[row]) {
+            // If RowId already have data
+            response.data.forEach(element => {
+              this.fileNames[row].push(element);
+            });
+          } else {
+            // To create and insert data for new RowId
+            this.fileNames[row] = response.data;
+          }
+          this.newFiles.push(response.data);
+        }
+      } else {
+        this.toast('error', response.message);
+      }
+    })
+    console.log("=========", this.fileNames);
+
+  }
+
+  public toggleWebcam(): void {
+    this.showWebcam = !this.showWebcam;
+  }
+
+  public handleInitError(error: WebcamInitError): void {
+    this.errors.push(error);
+  }
+
+  public showNextWebcam(directionOrDeviceId: boolean | string): void {
+    // true => move forward through devices
+    // false => move backwards through devices
+    // string => move to device with given deviceId
+    this.nextWebcam.next(directionOrDeviceId);
+  }
+
+  public handleImage(webcamImage: WebcamImage): void {
+    console.info('received webcam image', webcamImage);
+    this.webcamImage = webcamImage;
+  }
+
+  public cameraWasSwitched(deviceId: string): void {
+    console.log('active device: ' + deviceId);
+    this.deviceId = deviceId;
+  }
+
+  public get triggerObservable(): Observable<void> {
+    return this.trigger.asObservable();
+  }
+
+  public get nextWebcamObservable(): Observable<boolean | string> {
+    return this.nextWebcam.asObservable();
+  }
+
 
   toast(typeIcon, message) {
     // typeIcon = error, success, warning, info, question
@@ -752,8 +851,8 @@ export class EditClaimComponent implements OnInit {
             });
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
-            
-            
+
+
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.customerId;
 
@@ -773,7 +872,7 @@ export class EditClaimComponent implements OnInit {
     division.forEach(element => {
       divisions.push(Number(element));
     });
-    
+
     this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
@@ -787,7 +886,7 @@ export class EditClaimComponent implements OnInit {
     let stockists = [];
     const distributor = $("#distributor option:selected").val();
     const stockist = this.userPlantStockists[distributor];
-    
+
     if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
       stockist.forEach(element => {
         stockists.push(Number(element));
@@ -797,7 +896,7 @@ export class EditClaimComponent implements OnInit {
     }
 
     this.getDivisions();
-    
+
     this.apiService.post('/api/getStockiest', stockists).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
@@ -816,7 +915,7 @@ export class EditClaimComponent implements OnInit {
   getStockiest2(distributor, stockiest) {
     let stockists = [];
     const stockist = this.userPlantStockists[distributor];
-    
+
     if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
       stockist.forEach(element => {
         stockists.push(Number(element));
@@ -1160,5 +1259,35 @@ export class EditClaimComponent implements OnInit {
       //this.toastr.error(error.message, 'Error');
     }
   }
+
+  openWebcam(event, row, content) {
+    const rowId = (row === -1) ? 'def' : row;
+    this.showWebcam = true;
+    this.selectedwebcamrow = rowId;
+    this.modalService.open(content, {
+      size: 'lg'
+    }).result.then((result) => {
+      this.closeResult = `Closed with: ${result}`;
+      this.showWebcam = false;
+      this.webcamImage = null;
+    }, (reason) => {
+      this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      this.showWebcam = false;
+      this.webcamImage = null;
+    });
+  }
+
+
+
+  private getDismissReason(reason: any): string {
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return `with: ${reason}`;
+    }
+  }
+
 
 }
