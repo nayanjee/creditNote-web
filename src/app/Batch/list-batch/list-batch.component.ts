@@ -65,6 +65,7 @@ export class ListBatchComponent implements OnInit {
   }
 
   getMaterials(division) {
+    this.uniqueProducts = [];
     this.apiService.fetch('/api/productByDivision/' + division).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
@@ -130,7 +131,7 @@ export class ListBatchComponent implements OnInit {
       $('#batch_preloader').show();
       $('#batch_loader').hide();
       $('#batch').hide();
-
+      
       this.getMaterials(value);
     } else if (targetId === 'material') {
       let results = [];

@@ -194,6 +194,7 @@
         </button>
       </div>
     </div>
+    
     <!--webcam modal-->
     <div class="col-md-4">
       <div class="card-body">
@@ -208,28 +209,17 @@
             <div class="row">
               <div class="col-md-6">
                 <div id="left">
-                  <!-- <div style="text-align:center"> -->
-
-
-
                   <webcam [height]="376" [width]="376" [trigger]="triggerObservable"
                     (imageCapture)="handleImage($event)" *ngIf="showWebcam" [allowCameraSwitch]="allowCameraSwitch"
                     [switchCamera]="nextWebcamObservable" [videoOptions]="videoOptions" [imageQuality]="1"
                     (cameraSwitched)="cameraWasSwitched($event)" (initError)="handleInitError($event)"></webcam>
-
-
-
-
                 </div>
               </div>
               <div class="col-md-6">
                 <div id="right">
-
                   <div class="snapshot" *ngIf="webcamImage">
-
                     <img [src]="webcamImage.imageAsDataUrl" />
                   </div>
-
                 </div>
               </div>
             </div>
@@ -239,12 +229,10 @@
             <button type="button" class="btn btn-primary" (click)="triggerSnapshot();">Take A Snapshot</button>
           </div>
         </ng-template>
-
-
       </div>
-
     </div>
     <!--webcam modal end-->
+
     <ng-template #details let-c="close" let-d="dismiss">
       <div class="modal-header">
         <h4 class="modal-title">Attachment of invoice `{{clickedFile.invoice}}`</h4>

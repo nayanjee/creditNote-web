@@ -36,7 +36,7 @@ export class AnalyticsComponent implements OnInit {
     this.sessionData = JSON.parse(sessionData);
     console.log('sessionStorageDashboard---', this.sessionData);
 
-    this.getDistributors();
+    this.getDistStockistDivision();
   }
 
   toast(typeIcon, message) {
@@ -57,13 +57,25 @@ export class AnalyticsComponent implements OnInit {
   }
 
   getMessages() {
-    if (this.distributors[0].stockists.length) {
-      const stockists = [];
-      (this.distributors[0].stockists).forEach(element => {
-        stockists.push(parseInt(element));
-      });
+    if (this.distributors.length) {
+      const stockistDivision = [];
+      (this.distributors).forEach(element => {
+        (element.stockists).forEach(element2 => {
+          const divisions = [];
+          (element.divisions).forEach(element3 => {
+            divisions.push(parseInt(element3));
+          });
 
-      this.apiService.post('/api/user/getMessages', stockists).subscribe((response: any) => {
+          const sd = {
+            stockist: parseInt(element2),
+            divisions: divisions
+          };
+          stockistDivision.push(sd);          
+        });
+      });
+      
+      const reqData = { data: stockistDivision };
+      this.apiService.post('/api/user/getMessages', reqData).subscribe((response: any) => {
         if (response.status === 200) {
           if (response.data.length) {
             this.messages = response.data;
@@ -73,13 +85,47 @@ export class AnalyticsComponent implements OnInit {
     }
   }
 
-  getDistributors() {
+  getDistStockistDivision() {
     this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.distributors = response.data;
+          console.log('distributors--', this.distributors)
           this.getMessages();
         }
+      }
+    });
+  }
+
+  completed(id) {
+    const reqData = { id: id, status: 1 };
+    this.apiService.post('/api/user/updateMessageStatus', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        // const result = (this.messages).find(({ _id }) => _id === id);
+        var foundIndex = (this.messages).findIndex(x => x._id == id);
+        this.messages[foundIndex].status = 1;
+        console.log(this.messages);
+        
+
+        this.toast('success', 'Status updated successfully.');
+      } else {
+        this.toast('error', response.message);
+      }
+    });
+  }
+
+  inprogress(id) {
+    const reqData = { id: id, status: 0 };
+    this.apiService.post('/api/user/updateMessageStatus', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        var foundIndex = (this.messages).findIndex(x => x._id == id);
+        this.messages[foundIndex].status = 0;
+        console.log(this.messages);
+        
+
+        this.toast('success', 'Status updated successfully.');
+      } else {
+        this.toast('error', response.message);
       }
     });
   }

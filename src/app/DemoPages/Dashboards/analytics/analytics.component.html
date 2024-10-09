@@ -1,48 +1,52 @@
-<!-- <app-page-title [heading]="heading" [subheading]="subheading" [icon]="icon"></app-page-title> -->
-
-<style>
-  .blink {
-    animation: blinker 1.5s linear infinite;
-    color: red;
-    font-family: sans-serif;
-  }
-
-  @keyframes blinker {
-    50% {
-      opacity: 0;
-    }
-  }
-</style>
-
-<div class="main-card mb-3 card">
+<div class="main-card mb-3 card" *ngIf="sessionData.type == 'ho'">
   <div class="card-header">
-    <div class="card-header-title font-size-lg text-capitalize fw-normal">Distributor/Stockist Claim Posted</div>
+    <div class="card-header-title font-size-lg text-capitalize fw-normal">
+      Distributor/Stockist Claim Posted
+    </div>
   </div>
-  <div class="table-responsive">
+  <div *ngIf="!messages.length" class="table-responsive" style="text-align: center; color: red; height: 40px; padding-top: 10px;">
+    No Record Found!
+  </div>
+  <div *ngIf="messages.length" class="table-responsive" style="overflow-y: auto; max-height: 440px;">
     <table class="align-middle text-truncate mb-0 table table-borderless table-hover">
       <thead>
         <tr>
           <th class="text-center">#</th>
-          <th class="text-center">Distributor</th>
-          <th class="text-center">Stockist</th>
+          <th>Distributor</th>
+          <th>Stockist</th>
           <th class="text-center">Claim Date</th>
           <th class="text-center">Submitted On</th>
+          <th class="text-center">Status</th>
           <th class="text-center">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let message of messages; let i=index">
           <td class="text-center text-muted" style="width: 80px;">{{i+1}}</td>
-          <td class="text-center">{{message.distributorName}}</td>
-          <td class="text-center">{{message.stockistName}}</td>
+          <td>
+            <span *ngIf="message.distName[0].organization">{{message.distName[0].organization}}</span>
+          </td>
+          <td>
+            <span *ngIf="message.stockName[0].organization">{{message.stockName[0].organization}}</span>
+          </td>
           <td class="text-center">
-            <a *ngIf="message.claimMonth < 10" [routerLink]="">0{{message.claimMonth}}-{{message.claimYear}}</a>
-            <a *ngIf="message.claimMonth > 9" [routerLink]="">{{message.claimMonth}}-{{message.claimYear}}</a>
+            <a *ngIf="message.claimMonth < 10" [routerLink]="['stockiest/claims', message.distributorId, message.stockistId, message.claimMonth, message.claimYear]">0{{message.claimMonth}}-{{message.claimYear}}</a>
+            <a *ngIf="message.claimMonth > 9" [routerLink]="['stockiest/claims', message.distributorId, message.stockistId, message.claimMonth, message.claimYear]">{{message.claimMonth}}-{{message.claimYear}}</a>
           </td>
           <td class="text-center" style="width: 200px;">
             {{message.createdAt | date:'dd-MM-YYYY'}}
           </td>
           <td class="text-center">
+            <div *ngIf="message.status == 0" class="badge rounded-pill bg-warning">In Progress</div>
+            <div *ngIf="message.status == 1" class="badge rounded-pill bg-success">Completed</div>
+          </td>
+          <td class="text-center">
+            <img src="./../../../../assets/images/tick-mark.png" alt="Mark as Completed" title="Mark as Completed"
+              style="width: 18px; cursor: pointer; margin: 0 3px;" (click)="completed(message._id)">
+
+            <img src="./../../../../assets/images/processing-time.png" alt="Mark as In Progress" title="Mark as In Progress"
+              style="width: 18px; cursor: pointer; margin: 0 3px;" (click)="inprogress(message._id)">
+
             <!-- <img src="./../../../../assets/images/unread-message.png" alt="Mark as Unread" title="Mark as Unread" style="width: 18px; cursor: pointer; margin: 0 2px;">
             <img src="./../../../../assets/images/delete.png" alt="Delete" title="Delete" style="width: 17px; cursor: pointer; margin: 0 2px;"> -->
           </td>

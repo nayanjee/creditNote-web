@@ -51,7 +51,15 @@ export class ListProductComponent implements OnInit {
     // Logged-in user id
     this.loggedUserId = JSON.parse(sessionData).id;
 
+    this.selectedFields = {
+      division: 0,
+      material: '0',
+      materialName: 0
+    };
+
     this.getDivisions();
+    this.getMaterials();
+    this.getData();
   }
 
   getDivisions() {
@@ -64,12 +72,11 @@ export class ListProductComponent implements OnInit {
     });
   }
 
-  getMaterials(division) {
-    this.apiService.fetch('/api/productByDivision/' + division).subscribe((response: any) => {
+  getMaterials() {
+    this.apiService.fetch('/api/product/all').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.materials = response.data;
-          //console.log('this.materials--', this.materials);
 
           // Getting a unique products by name
           const map = new Map();
@@ -114,130 +121,90 @@ export class ListProductComponent implements OnInit {
 
   filterData(value, targetId) {
     this.records = [];
+
     if (targetId === 'division') {
       this.selectedFields['division'] = value;
       this.selectedFields['material'] = '';
       this.selectedFields['materialName'] = 0;
-      this.selectedFields['batch'] = '';
-
-      this.materials = [];
-      this.batches = [];
 
       $('#material_preloader').hide();
       $('#material_loader').show();
       $('#material').hide();
 
-      $('#batch_preloader').show();
-      $('#batch_loader').hide();
-      $('#batch').hide();
-
-      this.getMaterials(value);
-    } else if (targetId === 'material') {
-      let results = [];
-      this.batches = [];
-
-      $('#batch_preloader').hide();
-      $('#batch_loader').show();
-      $('#batch').hide();
-
-      const result = this.materials.filter(element => {
-        return element.materialName === value;
+      const results = this.materials.filter(element => {
+        return element.division === value;
       });
+      this.records = results;
 
-      if (result.length) {
-        result.forEach(ele => {
-          results.push(ele.material);
-        });
-        console.log('results--', results)
-
-        this.selectedFields['material'] = results;
-        this.selectedFields['materialName'] = value;
-        this.selectedFields['batch'] = 0;
-
-        this.getBatches(results);
-        this.getData();
-
+      // Getting a unique products by name
+      this.uniqueProducts = [];
+      const map = new Map();
+      for (const item of results) {
+        if (!map.has(item.materialName)) {
+          map.set(item.materialName, true);
+          this.uniqueProducts.push({
+            plant: item.plant,
+            division: item.division,
+            material: item.material,
+            materialName: item.materialName
+          });
+        }
       }
-    } else if (targetId === 'batch') {
-      this.selectedFields['batch'] = value;
+      // EOF Getting a unique products by name
 
-      this.getData();
+      $('#material_preloader').show();
+      $('#material_loader').hide();
+      $('#material').show();
+    } else if (targetId === 'material') {
+      let result = [];
+
+      if (value == 0) {
+        this.records = this.materials;
+      } else {
+        const results = this.materials.filter(element => {
+          return element.materialName === value;
+        });
+        this.records = results;
+
+        if (results.length) {
+          results.forEach(ele => {
+            result.push(ele.material);
+          });
+
+          this.selectedFields['material'] = result;
+          this.selectedFields['materialName'] = value;
+        }
+      }
     }
-  }
-
-  addnewdivision() {
-    this.router.navigateByUrl('/division/add');
   }
 
   async getData() {
-    let condition: any = '';
-    if (this.selectedFields.batch) {
-      condition = {
-        division: this.selectedFields.division,
-        material: this.selectedFields.material,
-        batch: this.selectedFields.batch
-      }
-    } else {
-      condition = {
-        division: this.selectedFields.division,
-        material: this.selectedFields.material
-      }
-    }
-    console.log(condition)
-
-    this.apiService.post('/api/batch/condition', { condition: condition }).subscribe((response: any) => {
+    this.apiService.fetch('/api/product/all').subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.records = response.data;
         }
       }
     });
-  }
 
-  showMrp(data) {
-    this.batchDetails['batch'] = data.batch;
-    this.batchDetails['material'] = data.materialName;
-    this.batchDetails['division'] = data.divName;
-
-    if (data.mrp) {
-      const mrp = {
-        mrp: data.mrp,
-        pts: data.pts
-      };
-      this.batchPrices.push(mrp);
-    }
-
-    if (data.mrp2) {
-      const mrp2 = {
-        mrp: data.mrp2,
-        pts: data.pts2
-      };
-      this.batchPrices.push(mrp2);
-    }
-
-    if (data.mrp3) {
-      const mrp3 = {
-        mrp: data.mrp3,
-        pts: data.pts3
-      };
-      this.batchPrices.push(mrp3);
-    }
-
-    /* if (data.mrp4) {
-      const mrp4 = {
-        mrp: data.mrp4,
-        pts: data.pts4
-      };
-      this.batchPrices.push(mrp4);
+    /* let condition: any = '';
+    if (this.selectedFields.material) {
+      this.apiService.get('/api/product', this.selectedFields.material).subscribe((response: any) => {
+        if (response.status === 200) {
+          if (response.data.length) {
+            this.records = response.data;
+          }
+        }
+      });
+    } else {
+      this.apiService.get('/api/productByDivision', this.selectedFields.division).subscribe((response: any) => {
+        if (response.status === 200) {
+          if (response.data.length) {
+            this.records = response.data;
+          }
+        }
+      });
     } */
-
-    var modal = document.getElementById("modalBatchPrice");
-    modal.style.display = "block";
-  }
-
-  closeBatchPriceModal() {
-    var modal = document.getElementById("modalBatchPrice");
-    modal.style.display = "none";
   }
 
   exportToExcel() {
