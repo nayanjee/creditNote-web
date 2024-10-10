@@ -60,7 +60,7 @@ export class DraftClaimComponent implements OnInit {
   types: any = [
     { id: 'scheme', name: 'Scheme and Rate Difference' },
     { id: 'sample', name: 'Sample Sales' },
-    { id: 'special', name: 'Special Discount' }
+    //{ id: 'special', name: 'Special Discount' }
   ];
   months: any = [
     { id: 1, name: '01 - Jan' },
