@@ -143,10 +143,6 @@ export class StockiestClaimComponent implements OnInit {
     this.delay(1000).then(any => {
       this.isDistributors();
     });
-
-    /* $(document).ready(() => {
-      console.log('Nayan');
-    }); */
   }
 
   toast(typeIcon, message) {
