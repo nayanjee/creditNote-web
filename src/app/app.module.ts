@@ -156,8 +156,6 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     PerfectScrollbarModule,
     NgbModule,
     FontAwesomeModule,
-    FormsModule,
-    ReactiveFormsModule,
     HttpClientModule,
     PdfViewerModule,
     NgSelectModule,
@@ -165,6 +163,8 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     DataTablesModule,
     MaterialModule,
     WebcamModule,
+    FormsModule,
+    ReactiveFormsModule,
     NgxMaskModule.forRoot(),
   ],
   exports: [

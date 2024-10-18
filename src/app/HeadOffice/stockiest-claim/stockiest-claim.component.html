@@ -258,6 +258,7 @@
                   && (!record.batchDetail[0].mrp2 && !record.batchDetail[0].mrp3 && !record.batchDetail[0].mrp4)">
                   {{record.mrp | number : '1.2-2'}}
                 </div>
+                
                 <div *ngIf="(sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')) 
                   && (record.batchDetail[0].mrp2 || record.batchDetail[0].mrp3 || record.batchDetail[0].mrp4)">
                   <span id="err_batchMrp_{{record._id}}" style="color: #FF0013;">
@@ -267,7 +268,6 @@
                     (click)="showMrp(record.batchDetail, record.material, record._id)">
                   <input type="hidden" id="batchMrp_selected_{{record._id}}" value="0">
                 </div>
-
               </td>
               <td class="border-right tc">
                 <div id="pts_{{record._id}}">{{record.pts | number : '1.2-2'}}</div>

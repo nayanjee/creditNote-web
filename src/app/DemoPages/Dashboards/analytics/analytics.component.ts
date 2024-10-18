@@ -12,103 +12,31 @@ import { AppServicesService } from './../../../shared/service/app-services.servi
 export class AnalyticsComponent implements OnInit {
   temp: any = [];
   assets: any = [];
-  loggedUserId: any = '';
+  sessionData: any;
+  messages: any = [];
+  distributors: any = [];
   notifications: any = [];
 
   heading = 'Dashboard';
   subheading = 'This is an example dashboard created using build-in elements and components.';
   icon = 'pe-7s-plane icon-gradient bg-tempting-azure';
 
-  slideConfig6 = {
-    className: 'center',
-    infinite: true,
-    slidesToShow: 1,
-    speed: 500,
-    adaptiveHeight: true,
-    dots: true,
-  };
-
-  public datasets = [
-    {
-      label: 'My First dataset',
-      data: [65, 59, 80, 81, 46, 55, 38, 59, 80],
-      datalabels: {
-        display: false,
-      },
-
-    }
-  ];
-
-  public datasets2 = [
-    {
-      label: 'My First dataset',
-      data: [46, 55, 59, 80, 81, 38, 65, 59, 80],
-      datalabels: {
-        display: false,
-      },
-
-    }
-  ];
-
-  public datasets3 = [
-    {
-      label: 'My First dataset',
-      data: [65, 59, 80, 81, 55, 38, 59, 80, 46],
-      datalabels: {
-        display: false,
-      },
-
-    }
-  ];
-
   public labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August'];
-
-  public options = {
-    layout: {
-      padding: {
-        left: 0,
-        right: 8,
-        top: 0,
-        bottom: 0
-      }
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          display: false,
-          beginAtZero: true
-        },
-        gridLines: {
-          display: false
-        }
-      }],
-      xAxes: [{
-        ticks: {
-          display: false
-        },
-        gridLines: {
-          display: false
-        }
-      }]
-    },
-    legend: {
-      display: false
-    },
-    responsive: true,
-    maintainAspectRatio: false
-  };
 
   constructor(
     private router: Router,
     private apiService: AppServicesService
   ) {
-    
+
   }
 
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
-    console.log('sessionStorageDashboard---', sessionData);
     if (!sessionData) this.router.navigateByUrl('/login');
+    this.sessionData = JSON.parse(sessionData);
+    console.log('sessionStorageDashboard---', this.sessionData);
+
+    this.getDistStockistDivision();
   }
 
   toast(typeIcon, message) {
@@ -124,5 +52,81 @@ export class AnalyticsComponent implements OnInit {
     })
   }
 
-  
+  async delay(ms: number) {
+    await new Promise(resolve => setTimeout(() => resolve(''), ms)).then(() => console.log("Fired"));
+  }
+
+  getMessages() {
+    if (this.distributors.length) {
+      const stockistDivision = [];
+      (this.distributors).forEach(element => {
+        (element.stockists).forEach(element2 => {
+          const divisions = [];
+          (element.divisions).forEach(element3 => {
+            divisions.push(parseInt(element3));
+          });
+
+          const sd = {
+            stockist: parseInt(element2),
+            divisions: divisions
+          };
+          stockistDivision.push(sd);          
+        });
+      });
+      
+      const reqData = { data: stockistDivision };
+      this.apiService.post('/api/user/getMessages', reqData).subscribe((response: any) => {
+        if (response.status === 200) {
+          if (response.data.length) {
+            this.messages = response.data;
+          }
+        }
+      });
+    }
+  }
+
+  getDistStockistDivision() {
+    this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.distributors = response.data;
+          console.log('distributors--', this.distributors)
+          this.getMessages();
+        }
+      }
+    });
+  }
+
+  completed(id) {
+    const reqData = { id: id, status: 1 };
+    this.apiService.post('/api/user/updateMessageStatus', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        // const result = (this.messages).find(({ _id }) => _id === id);
+        var foundIndex = (this.messages).findIndex(x => x._id == id);
+        this.messages[foundIndex].status = 1;
+        console.log(this.messages);
+        
+
+        this.toast('success', 'Status updated successfully.');
+      } else {
+        this.toast('error', response.message);
+      }
+    });
+  }
+
+  inprogress(id) {
+    const reqData = { id: id, status: 0 };
+    this.apiService.post('/api/user/updateMessageStatus', reqData).subscribe((response: any) => {
+      if (response.status === 200) {
+        var foundIndex = (this.messages).findIndex(x => x._id == id);
+        this.messages[foundIndex].status = 0;
+        console.log(this.messages);
+        
+
+        this.toast('success', 'Status updated successfully.');
+      } else {
+        this.toast('error', response.message);
+      }
+    });
+  }
 }

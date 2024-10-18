@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Validators, FormGroup, FormBuilder, FormArray, FormControl } from '@angular/forms';
@@ -19,7 +19,6 @@ declare var $: any;
   styleUrls: ['./add-claim.component.css']
 })
 export class AddClaimComponent implements OnInit {
-
   // toggle webcam on/off
   public showWebcam = false;
   public allowCameraSwitch = true;
@@ -38,6 +37,7 @@ export class AddClaimComponent implements OnInit {
 
   // webcam snapshot trigger
   private trigger: Subject<void> = new Subject<void>();
+
   // switch to next / previous / specific webcam; true/false: forward/backwards, string: deviceId
   private nextWebcam: Subject<boolean | string> = new Subject<boolean | string>();
 
@@ -52,7 +52,6 @@ export class AddClaimComponent implements OnInit {
   showData = true;
   submitted = false;
   btnLoader = false;
-
   types: any = [
     { id: 'scheme', name: 'Scheme and Rate Difference' },
     { id: 'sample', name: 'Sample Sales' },
@@ -107,7 +106,6 @@ export class AddClaimComponent implements OnInit {
   };
   totalAmount: any = 0;
   tempInterval: any;
-
   predistributor: any
   prestockiest: any;
   preclaimType: any;
@@ -159,34 +157,32 @@ export class AddClaimComponent implements OnInit {
     this.selectedFields['year'] = this.selectedYear;
     this.selectedFields['type'] = 'scheme';
 
-
     this.preselectedFields['month'] = this.selectedMonth;
     this.preselectedFields['year'] = this.selectedYear;
     this.preselectedFields['type'] = 'scheme';
-
 
     this.createForm();
     this.getDistributors();
     this.getProduct();
     this.getBatch();
 
-
     this.delay(1000).then(any => {
       this.isDistributors();
     });
-    // this.delay(1000).then(any => {
-    //   this.getData();
-    // });
 
     WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
       this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
     });
 
     this.delay(10000).then(any => {
-      console.log('delay started');
       this.tempInterval = setInterval(() => this.onTempSubmit(), 5000);
     });
 
+    window.onbeforeunload = () => this.ngOnDestroy();
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.tempInterval);
   }
 
   getTempData() {
@@ -205,40 +201,25 @@ export class AddClaimComponent implements OnInit {
       plant: distributor,
       customerId: stockiest,
       month: month,
-      year: year
+      year: year,
+      uid: this.sessionData.id
     };
-
-    /* if (this.sessionData.type === 'distributor') {
-      requestData['plant'] = distributor;
-    } */
-
 
     this.apiService.post('/api/getTempClaim', requestData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
-
-
-          console.log("###########", response.data);
           response.data.sort((a, b) => a.invoice - b.invoice);
           this.records = response.data;
           this.tempRecords = response.data;
 
-
           this.claimForm.controls['def_invoice'].setValue(this.records[0].invoice, { onlySelf: true });
           this.claimForm.value.def_invoice = this.records.invoice;
-          // if (type || division) {
-          //   this.filterDataTwice(type, division);
-          // }
+
           let counter = 0;
           let i = 0;
           this.tempRecords.forEach(element => {
 
-            //let row_def = "";
-            console.log("========", element.invoice);
-
-
             if (counter === 0) {
-
               this.selectedFields['distributor'] = element.plant;
               this.selectedFields['stockiest'] = element.customerId;
               this.selectedFields['type'] = element.claimType;
@@ -247,12 +228,16 @@ export class AddClaimComponent implements OnInit {
 
               this.claimForm.controls['def_invoice'].setValue(element.invoice, { onlySelf: true });
               this.claimForm.value.def_invoice = element.invoice;
+
               this.claimForm.controls['def_batch'].setValue(element.batch, { onlySelf: true });
               this.claimForm.value.def_batch = element.batch;
+
               this.claimForm.controls['def_division'].setValue(element.divisionName, { onlySelf: true });
               this.claimForm.value.def_division = element.divisionName;
+
               this.claimForm.controls['def_divisionId'].setValue(element.divisionId, { onlySelf: true });
               this.claimForm.value.def_divisionId = element.divisdivisionIdionName;
+
               this.claimForm.controls['def_plantId'].setValue(element.plant, { onlySelf: true });
               this.claimForm.value.def_plantId = element.plant;
 
@@ -302,12 +287,7 @@ export class AddClaimComponent implements OnInit {
                 });
                 this.fileNames[-1] = oldFilename;
               }
-
-
-              //row_def = element.invoice;
             } else {
-
-
               this.claims().push(
                 this.fb.group({
                   invoice: element.invoice,
@@ -328,7 +308,8 @@ export class AddClaimComponent implements OnInit {
                   totalDifference: element.totalDifference,
                   amount: element.amount,
                   image: ''
-                }));
+                })
+              );
 
               if (element.files.length) {
                 let oldFilename = [];
@@ -341,30 +322,9 @@ export class AddClaimComponent implements OnInit {
                 });
                 this.fileNames[i] = oldFilename;
               }
-              // if (row_def == element.invoice && counter == 1) {
-              //   this.addSameInvoice(-1);
-
-              // } else if (row_def == element.invoice && counter > 1) {
-              //   this.addSameInvoice(counter);
-
-              // } else {
-              //   this.addNewInvoice();
-
-              // }
-
-
-              // this.delay(1000).then(any => {
-              //   //console.log("#invoice_" + i, element.invoice);
-              //   $("#invoice_" + i).val(element.invoice);
-              //   $("#division_" + i).val(element.divisionName);
-              //   $("#product_" + i).val(element.materialName);
-              //   i++;
-              // });
 
               i++;
             }
-
-
 
             counter++;
             this.totalAmount = this.totalAmount + element.amount;
@@ -380,18 +340,13 @@ export class AddClaimComponent implements OnInit {
       }
     });
   }
+
   public triggerSnapshot(): void {
     this.trigger.next();
-    //let serow = this.selectedwebcamrow;
+    
     const row = (this.selectedwebcamrow === 'def') ? -1 : this.selectedwebcamrow;
     const reqData = {};
-    // console.log("selected web cam row===", this.selectedwebcamrow);
-    //const frmData = new FormData();
-
-    //console.log(this.webcamImage.imageAsBase64);
-    //frmData.append("file", this.webcamImage.imageAsBase64);
     reqData['camimg'] = this.webcamImage.imageAsBase64;
-
 
     this.apiService.upload('/api/UploadClaimInvoicesWebcam', reqData).subscribe((response: any) => {
       if (response.status === 200) {
@@ -411,8 +366,6 @@ export class AddClaimComponent implements OnInit {
         this.toast('error', response.message);
       }
     })
-    //console.log("=========", this.fileNames);
-
   }
 
   public toggleWebcam(): void {
@@ -662,8 +615,6 @@ export class AddClaimComponent implements OnInit {
   }
 
   isDistributors() {
-
-    console.log("sessionData.............", this.sessionData.type);
     if (this.distributors[0]) {
       if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
         this.getUserDistStockistDivision();
@@ -682,8 +633,6 @@ export class AddClaimComponent implements OnInit {
   }
 
   getDivisionCustomerIds() {
-    //console.log("Testing.............");
-
     this.apiService.get('/api/user/getDivisionCustomerIds', this.sessionData.id).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
@@ -1229,7 +1178,6 @@ export class AddClaimComponent implements OnInit {
   }
 
   getStockiest() {
-
     let stockists = [];
 
     const distributor = this.selectedFields['distributor'];
@@ -1319,16 +1267,6 @@ export class AddClaimComponent implements OnInit {
       }
     });
   }
-
-  /* getDivision() {
-    this.apiService.fetch('/api/division/all').subscribe((response: any) => {
-      if (response.status === 200) {
-        if (response.data.length) {
-          this.divisions = response.data;
-        }
-      }
-    });
-  } */
 
   getProduct() {
     this.uniqueProducts = [];
@@ -1561,7 +1499,6 @@ export class AddClaimComponent implements OnInit {
     }
 
     this.apiService.post('/api/claim/create', this.claimForm.value).subscribe((response: any) => {
-
       clearInterval(this.tempInterval);
       if (response.status === 200) {
         // Delete API call for TEMP records
@@ -1573,42 +1510,13 @@ export class AddClaimComponent implements OnInit {
     });
   }
 
-
   onTempSubmit() {
-    //console.log('onTempSubmit started');
-    // $('.grf-def').removeClass('grf-invalid');
-    // $('.grf-am').removeClass('grf-invalid');
-
-    // this.btnLoader = true;
-    // let error = false;
     let totalRows = $(".count").last().val();
     if (totalRows == undefined) totalRows = -1;
 
-    // Stockiest validation
-    // $('#err_stockiest').hide();
-    // $('#stockiest').removeClass('grf-invalid');
-
     const selectedStockiest = this.selectedFields.stockiest;
-    // if (!selectedStockiest) {
-    //   error = true;
-    //   $('#stockiest').addClass('grf-invalid');
-    //   $('#err_stockiest').text('Stockiest is required..').show();
-    // }
-    // EOF Stockiest validation
-
-
-    // Month validation
-    // $('#err_month').hide();
-    // $('#month').removeClass('grf-invalid');
     const selectedYear = this.selectedFields.year;
     const selectedMonth = this.selectedFields.month;
-    // if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
-    //   error = true;
-    //   $('#month').addClass('grf-invalid');
-    //   $('#err_month').text('You can\'t claim for this month.').show();
-    // }
-    // EOF Month validation
-
     const distributor = this.selectedFields.distributor;
     const stockiest = this.selectedFields.stockiest;
     const claimType = this.selectedFields.type;
@@ -1619,12 +1527,8 @@ export class AddClaimComponent implements OnInit {
       const reg = /^\d*\.?\d*$/;    // RegEx for number and decimal value
       const rowId = (row === -1) ? 'def' : row;
 
-      let header = '';
-      // if (this.sessionData.type === 'distributor') {
-      //   header = distributor + '.::.' + distributor + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
-      // } else {
-      header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
-      //}
+      let header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id + '.::.' + this.sessionData.type;
+      
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
       const division = $('#division_' + rowId).val();
@@ -1643,59 +1547,58 @@ export class AddClaimComponent implements OnInit {
       const totalDifference = $('#totalDifference_' + rowId).val();
       const amount = $('#amount_' + rowId).val();
 
-
-      // Binding form field and value
-      if (row === -1) {
-        let fname = '';
-        if (this.fileNames[-1] && this.fileNames[-1].length) {
-          this.fileNames[-1].forEach((element, index) => {
-            fname = fname + element.filename + '.::.';
-          });
+        // Binding form field and value
+        if (row === -1) {
+          let fname = '';
+          if (this.fileNames[-1] && this.fileNames[-1].length) {
+            this.fileNames[-1].forEach((element, index) => {
+              fname = fname + element.filename + '.::.';
+            });
+          }
+          this.claimForm.value.def_image = fname;
+          this.claimForm.value.def_invoice = invoice;
+          this.claimForm.value.def_batch = batch;
+          this.claimForm.value.def_division = division;
+          this.claimForm.value.def_divisionId = divisionId;
+          this.claimForm.value.def_product = product;
+          this.claimForm.value.def_productId = productId;
+          this.claimForm.value.def_mrp = mrp;
+          this.claimForm.value.def_pts = pts;
+          this.claimForm.value.def_ptr = ptr;
+          this.claimForm.value.def_ptd = ptd;
+          this.claimForm.value.def_billingRate = billingRate;
+          this.claimForm.value.def_freeQuantity = freeQuantity;
+          this.claimForm.value.def_saleQuantity = saleQuantity;
+          this.claimForm.value.def_difference = difference;
+          this.claimForm.value.def_totalDifference = totalDifference;
+          this.claimForm.value.def_amount = amount;
+          this.claimForm.value.header = header;
+        } else {
+          let fname = '';
+          if (this.fileNames[row] && this.fileNames[row].length) {
+            this.fileNames[row].forEach((element, index) => {
+              fname = fname + element.filename + '.::.';
+            });
+          }
+          this.claimForm.value.claims[row].image = fname;
+          this.claimForm.value.claims[row].invoice = invoice;
+          this.claimForm.value.claims[row].batch = batch;
+          this.claimForm.value.claims[row].division = division;
+          this.claimForm.value.claims[row].divisionId = divisionId;
+          this.claimForm.value.claims[row].product = product;
+          this.claimForm.value.claims[row].productId = productId;
+          this.claimForm.value.claims[row].mrp = mrp;
+          this.claimForm.value.claims[row].pts = pts;
+          this.claimForm.value.claims[row].ptr = ptr;
+          this.claimForm.value.claims[row].ptd = ptd;
+          this.claimForm.value.claims[row].billingRate = billingRate;
+          this.claimForm.value.claims[row].freeQuantity = freeQuantity;
+          this.claimForm.value.claims[row].saleQuantity = saleQuantity;
+          this.claimForm.value.claims[row].difference = difference;
+          this.claimForm.value.claims[row].totalDifference = totalDifference;
+          this.claimForm.value.claims[row].amount = amount;
+          this.claimForm.value.claims[row].header = header;
         }
-        this.claimForm.value.def_image = fname;
-        this.claimForm.value.def_invoice = invoice;
-        this.claimForm.value.def_batch = batch;
-        this.claimForm.value.def_division = division;
-        this.claimForm.value.def_divisionId = divisionId;
-        this.claimForm.value.def_product = product;
-        this.claimForm.value.def_productId = productId;
-        this.claimForm.value.def_mrp = mrp;
-        this.claimForm.value.def_pts = pts;
-        this.claimForm.value.def_ptr = ptr;
-        this.claimForm.value.def_ptd = ptd;
-        this.claimForm.value.def_billingRate = billingRate;
-        this.claimForm.value.def_freeQuantity = freeQuantity;
-        this.claimForm.value.def_saleQuantity = saleQuantity;
-        this.claimForm.value.def_difference = difference;
-        this.claimForm.value.def_totalDifference = totalDifference;
-        this.claimForm.value.def_amount = amount;
-        this.claimForm.value.header = header;
-      } else {
-        let fname = '';
-        if (this.fileNames[row] && this.fileNames[row].length) {
-          this.fileNames[row].forEach((element, index) => {
-            fname = fname + element.filename + '.::.';
-          });
-        }
-        this.claimForm.value.claims[row].image = fname;
-        this.claimForm.value.claims[row].invoice = invoice;
-        this.claimForm.value.claims[row].batch = batch;
-        this.claimForm.value.claims[row].division = division;
-        this.claimForm.value.claims[row].divisionId = divisionId;
-        this.claimForm.value.claims[row].product = product;
-        this.claimForm.value.claims[row].productId = productId;
-        this.claimForm.value.claims[row].mrp = mrp;
-        this.claimForm.value.claims[row].pts = pts;
-        this.claimForm.value.claims[row].ptr = ptr;
-        this.claimForm.value.claims[row].ptd = ptd;
-        this.claimForm.value.claims[row].billingRate = billingRate;
-        this.claimForm.value.claims[row].freeQuantity = freeQuantity;
-        this.claimForm.value.claims[row].saleQuantity = saleQuantity;
-        this.claimForm.value.claims[row].difference = difference;
-        this.claimForm.value.claims[row].totalDifference = totalDifference;
-        this.claimForm.value.claims[row].amount = amount;
-        this.claimForm.value.claims[row].header = header;
-      }
     }
 
     this.apiService.post('/api/claim/createTempClaim', this.claimForm.value).subscribe((response: any) => {
@@ -1751,8 +1654,6 @@ export class AddClaimComponent implements OnInit {
     });
   }
 
-
-
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
       return 'by pressing ESC';
@@ -1763,17 +1664,12 @@ export class AddClaimComponent implements OnInit {
     }
   }
 
-
-
   public clearTempClaim(value, targetId) {
-
     this.predistributor = this.preselectedFields.distributor;
     this.prestockiest = this.preselectedFields.stockiest;
     this.preclaimType = this.preselectedFields.type;
     this.preclaimMonth = this.preselectedFields.month;
     this.preclaimYear = this.preselectedFields.year;
-    //console.log("===>", value, targetId, this.preselectedFields.type);
-
 
     if (targetId == "stockiest") {
       this.prestockiest = this.preselectedFields.stockiest;
@@ -1801,15 +1697,12 @@ export class AddClaimComponent implements OnInit {
       year: this.preclaimYear,
       uid: this.sessionData.id
     };
-
-    //console.log("Previous Claim Filter: ", [this.predistributor, this.prestockiest, this.preclaimType, this.preclaimMonth, this.preclaimYear]);
+    
     this.apiService.post('/api/claim/clearTempClaim', reqData).subscribe((response: any) => {
       if (response.status === 200) {
         //console.log("Temp Respinse", response);
       }
     });
-
   }
-
 
 }

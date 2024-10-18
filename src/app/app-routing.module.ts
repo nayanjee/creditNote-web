@@ -66,11 +66,13 @@ const routes: Routes = [
       { path: 'stockiest/createClaim', component: AddClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/updateClaim/:claimId', component: EditClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/draftClaim', component: DraftClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      // { path: 'stockiest/draftClaim/:distributor/:stockist/:month/:year', component: DraftClaimComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/claimStatus', component: ClaimStatusComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/add', component: AddStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/edit/:stockiestId', component: EditStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/list', component: ListStockiestComponent, data: { extraParameter: 'stockiestElementsMenu' } },
       { path: 'stockiest/claims', component: ClaimsComponent, data: { extraParameter: 'stockiestElementsMenu' } },
+      { path: 'stockiest/claims/:distributor/:stockist/:month/:year', component: ClaimsComponent, data: { extraParameter: 'stockiestElementsMenu' } },
 
       { path: 'headoffice/stockiestClaim', component: StockiestClaimComponent, data: { extraParameter: 'hoElementsMenu' } },
       { path: 'headoffice/claimApproval/:month/:stockiest/:year/:type/:invoice', component: ClaimApprovalComponent, data: { extraParameter: 'hoElementsMenu' } },

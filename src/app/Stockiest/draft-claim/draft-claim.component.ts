@@ -100,6 +100,7 @@ export class DraftClaimComponent implements OnInit {
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
   totalAmount: number = 0;
+  urlData: any = [];
 
   constructor(
     private router: Router,
@@ -116,26 +117,30 @@ export class DraftClaimComponent implements OnInit {
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
 
-    // Current Month and Year
-    const currentMonth = moment().format("MM");
-    this.currentMonth = parseInt(currentMonth);
-    console.log('this.currentMonth--', this.currentMonth)
-
-    // To show previous 2 years in dropdown
     const currentYear = moment().format("YYYY");
-    this.currentYear = parseInt(currentYear);
-    for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
+    const currentMonth = moment().format("MM");
+
+    this.urlData = {
+      urlYear: this.activatedRoute.snapshot.params['year'],
+      urlMonth: this.activatedRoute.snapshot.params['month'],
+      urlStockist: this.activatedRoute.snapshot.params['stockist'],
+      urlDistributor: this.activatedRoute.snapshot.params['distributor']
+    }
+
+    this.currentMonth = this.urlData.urlMonth ? parseInt(this.urlData.urlMonth) : parseInt(currentMonth);
+    this.currentYear = this.urlData.urlYear ? parseInt(this.urlData.urlYear) : parseInt(currentYear);
+    for (var i = this.currentYear; i > this.currentYear - 3; i--) {
       const year = { id: i, name: i };
       this.years.push(year);
     }
 
     // To show this data as predefined in the form
-    if (parseInt(currentMonth) - 1 <= 0) {
-      this.selectedYear = parseInt(currentYear) - 1;
+    if (this.currentMonth - 1 <= 0) {
+      this.selectedYear = this.currentYear - 1;
       this.selectedMonth = 12;
     } else {
-      this.selectedYear = currentYear;
-      this.selectedMonth = parseInt(currentMonth);
+      this.selectedYear = this.currentYear;
+      this.selectedMonth = this.currentMonth;
     }
 
     this.selectedFields['month'] = this.selectedMonth;
@@ -246,6 +251,7 @@ export class DraftClaimComponent implements OnInit {
   public get nextWebcamObservable(): Observable<boolean | string> {
     return this.nextWebcam.asObservable();
   }
+
   toast(typeIcon, message) {
     // typeIcon = error, success, warning, info, question
     Swal.fire({
@@ -354,7 +360,12 @@ export class DraftClaimComponent implements OnInit {
           });
 
           //this.delay(500).then(any => {
-          this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          if (this.urlData.urlDistributor) {
+            this.selectedFields['distributor'] = this.urlData.urlDistributor;
+          } else {
+            this.selectedFields['distributor'] = parseInt(this.userDistributors[0].plant);
+          }
+
 
           $('#distributor_loader').hide();
           $('#distributor').show();
@@ -452,7 +463,11 @@ export class DraftClaimComponent implements OnInit {
           }
 
           //this.delay(5).then(any => {
-          this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+          if (this.urlData.urlStockist) {
+            this.selectedFields['stockiest'] = this.urlData.urlStockist;
+          } else {
+            this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+          }
 
           $('#stockiest_loader').hide();
           $('#stockiest').show();
@@ -502,11 +517,6 @@ export class DraftClaimComponent implements OnInit {
       month: month,
       year: year
     };
-
-    /* if (this.sessionData.type === 'distributor') {
-      requestData['plant'] = distributor;
-    } */
-    console.log(requestData)
 
     this.apiService.post('/api/getClaim', requestData).subscribe((response: any) => {
       if (response.status === 200) {
@@ -829,8 +839,14 @@ export class DraftClaimComponent implements OnInit {
         if (error === 0) {
           let reqData = [];
           this.tempRecords.forEach((element, index) => {
+            console.log('element--', element);
             const temp = {
               _id: element._id,
+              plant: element.plant,
+              customerId: element.customerId,
+              divisionId: element.divisionId,
+              claimMonth: element.claimMonth,
+              claimYear: element.claimYear,
               isDraft: false,
               isSubmit: true,
               submittedBy: this.sessionData.id,
@@ -840,8 +856,32 @@ export class DraftClaimComponent implements OnInit {
             // reqData[index]['submittedBy'] = this.sessionData.id;
           });
 
+          console.log(reqData);
+
+          const uniqueStockist = [];
+          const map = new Map();
+          for (const item of reqData) {
+            if (!map.has(item.divisionId)) {
+              map.set(item.divisionId, true);
+              uniqueStockist.push({
+                msgType: "newPost",
+                division: item.divisionId,
+                distributorId: item.plant,
+                stockistId: item.customerId,
+                claimMonth: item.claimMonth,
+                claimYear: item.claimYear
+              });
+            }
+          }
+
+
+
           this.apiService.post('/api/claim/submit', reqData).subscribe((response: any) => {
             if (response.status === 200) {
+              this.apiService.post('/api/user/insertMessages', uniqueStockist).subscribe((response: any) => {
+                //this.toast('success', 'Successfully submitted.');
+              });
+
               this.toast('success', 'Successfully submitted.');
               setTimeout(() => {
                 window.location.reload();

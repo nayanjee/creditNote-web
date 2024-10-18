@@ -129,11 +129,11 @@
         <thead>
           <tr>
             <th class="border-right" style="width: 4%;">Sl.No.</th>
-            <th class="border-right" style="width: 5%;">Status</th>
+            <!-- <th class="border-right" style="width: 5%;">Status</th> -->
             <th class="border-right" style="width: 8%;">Invoice</th>
             <th class="border-right" style="width: 8%;">Claim Type</th>
             <th class="border-right" style="width: 10%;">Division</th>
-            <th class="border-right" style="">Product</th>
+            <th class="border-right">Product</th>
             <th class="border-right" style="width: 8%;">Batch</th>
             <th class="border-right" style="width: 6%;">MRP</th>
             <th class="border-right" style="width: 8%;">PTS</th>
@@ -146,7 +146,7 @@
         <tbody>
           <tr class="border-bottom" style="height: 35px;" *ngFor="let record of tempRecords; let i=index">
             <td class="border-right">{{i+1}}</td>
-            <td class="border-right">
+            <!-- <td class="border-right">
               <div class="fl" style="margin: 0 0 0 7px;">
                 <div *ngIf="record.ftStatus === 1" title="Accepted by FT" class="legend-bullet mlr8 fl approved"></div>
                 <div *ngIf="record.ftStatus === 2" title="Rejected by FT" class="legend-bullet mlr8 fl rejected"></div>
@@ -154,11 +154,11 @@
                 <div *ngIf="record.suhStatus === 1" title="Accepted by SUH" class="legend-bullet mlr8 fl approved"></div>
                 <div *ngIf="record.suhStatus === 2" title="Rejected by SUH" class="legend-bullet mlr8 fl rejected"></div>
               </div>
-            </td>
+            </td> -->
             <td class="border-right">{{record.invoice}}</td>
             <td class="border-right">{{record.claimType | titlecase}}</td>
-            <td class="border-right tal">{{record.divisionName | titlecase}}</td>
-            <td class="border-right tal">{{record.materialName | titlecase}}</td>
+            <td class="border-right tal">{{record.divisionName}}</td>
+            <td class="border-right tal">{{record.materialName}}</td>
             <td class="border-right">{{record.batch}}</td>
             <td class="border-right">{{record.mrp | number : '1.2-2'}}</td>
             <td class="border-right">{{record.pts | number : '1.2-2'}}</td>

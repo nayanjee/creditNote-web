@@ -82,10 +82,12 @@ export class ClaimsComponent implements OnInit {
   userPlantStockists: any = [];
   userPlantDivisions: any = [];
   clickedRecord: any = [];
+  urlData: any = [];
 
   constructor(
     private router: Router,
     private modalService: NgbModal,
+    private activatedRoute: ActivatedRoute,
     private apiService: AppServicesService
   ) {
 
@@ -96,12 +98,17 @@ export class ClaimsComponent implements OnInit {
     if (!sessionData) this.router.navigateByUrl('/login');
     this.sessionData = JSON.parse(sessionData);
 
-    // Current Month and Year
-    const currentMonth = moment().format("MM");
-    this.currentMonth = parseInt(currentMonth);
-
-    // To show previous 2 years in dropdown
     const currentYear = moment().format("YYYY");
+    const currentMonth = moment().format("MM");
+
+    this.urlData = {
+      urlYear: this.activatedRoute.snapshot.params['year'],
+      urlMonth: this.activatedRoute.snapshot.params['month'],
+      urlStockist: this.activatedRoute.snapshot.params['stockist'],
+      urlDistributor: this.activatedRoute.snapshot.params['distributor']
+    }
+    
+    this.currentMonth = this.urlData.urlMonth ? parseInt(this.urlData.urlMonth) : parseInt(currentMonth);
     this.currentYear = parseInt(currentYear);
     for (var i = parseInt(currentYear); i > parseInt(currentYear) - 3; i--) {
       const year = { id: i, name: i };
@@ -109,12 +116,12 @@ export class ClaimsComponent implements OnInit {
     }
 
     // To show this data as predefined in the form
-    if (parseInt(currentMonth) - 1 <= 0) {
-      this.selectedYear = parseInt(currentYear) - 1;
+    if (this.currentMonth - 1 <= 0) {
+      this.selectedYear = this.urlData.urlYear ? parseInt(this.urlData.urlYear) : parseInt(currentYear);
       this.selectedMonth = 12;
     } else {
-      this.selectedYear = currentYear;
-      this.selectedMonth = parseInt(currentMonth);
+      this.selectedYear = this.urlData.urlYear ? parseInt(this.urlData.urlYear) : parseInt(currentYear);
+      this.selectedMonth = this.currentMonth;
     }
     this.selectedFields['month'] = this.selectedMonth;
     this.selectedFields['year'] = this.selectedYear;
@@ -149,12 +156,13 @@ export class ClaimsComponent implements OnInit {
   validateMonth() {
     $('#err_month').hide();
 
-    const selectedYear = $("#year option:selected").val();
+    /* const selectedYear = $("#year option:selected").val();
     const selectedMonth = $("#month option:selected").val();
+    console.log('Month--', selectedMonth, this.currentMonth);
 
     if ((selectedMonth > this.currentMonth) && (selectedYear >= this.currentYear)) {
       $('#err_month').text('You can\'t claim for this month.').show();
-    }
+    } */
   }
 
   clear() {
@@ -312,9 +320,19 @@ export class ClaimsComponent implements OnInit {
             // EOF If user has access to approve claim of the distributor (self)
           }
 
-          this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+          if (this.urlData.urlStockist) {
+            this.selectedFields['stockiest'] = this.urlData.urlStockist;
+          } else {
+            this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+          }
+
           $('#stockiest_loader').hide();
           $('#stockiest').show();
+
+          // To show data directly without clicking 'Search' button.
+          if (this.urlData.urlDistributor && this.urlData.urlStockist && this.urlData.urlYear && this.urlData.urlMonth) {
+            this.getData();
+          }
         }
       }
     });
@@ -432,8 +450,6 @@ export class ClaimsComponent implements OnInit {
     const year = this.selectedFields['year'];
     const status = this.selectedFields['status'];
 
-    console.log('division--', this.userPlantDivisions[distributor]);
-
     if (!stockiest || !status) {
       if (!distributor) $('#err_distributor').text('it\'s a required field.').show();
       if (!stockiest) $('#err_stockiest').text('it\'s a required field.').show();
@@ -441,10 +457,10 @@ export class ClaimsComponent implements OnInit {
       return;
     }
 
-    if ((month > this.currentMonth) && (year >= this.currentYear)) {
+    /* if ((month > this.currentMonth) && (year >= this.currentYear)) {
       $('#err_month').text('You can\'t claim for this month.').show();
       return;
-    }
+    } */
 
     const requestData = {
       plant: distributor,
@@ -573,7 +589,6 @@ export class ClaimsComponent implements OnInit {
   }
 
   viewPopup(content, data) {
-    // console.log(data);
     this.pdfSource = '';
     this.clickedFile = data;
     const fileExtension = this.clickedFile.filename.substring(this.clickedFile.filename.length - 4);

@@ -9,11 +9,13 @@ import {ThemeOptions} from '../../../theme-options';
   templateUrl: './header.component.html',
 })
 export class HeaderComponent {
+  tabWasClosed: boolean = false;
 
   faEllipsisV = faEllipsisV;
 
-  constructor(public globals: ThemeOptions) {
-  }
+  constructor(
+    public globals: ThemeOptions
+  ) { }
 
   @HostBinding('class.isActive')
   get isActiveAsGetter() {
