@@ -57,6 +57,7 @@ import { EditClaimComponent } from './Stockiest/edit-claim/edit-claim.component'
 import { DraftClaimComponent } from './Stockiest/draft-claim/draft-claim.component';
 import { ClaimStatusComponent } from './Stockiest/claim-status/claim-status.component';
 import { ClaimsComponent } from './Stockiest/claims/claims.component';
+//import { NayanAddClaimComponent } from './Stockiest/nayan-add-claim/nayan-add-claim.component';
 
 import { StockiestClaimComponent } from './HeadOffice/stockiest-claim/stockiest-claim.component';
 import { ClaimApprovalComponent } from './HeadOffice/claim-approval/claim-approval.component';
@@ -144,7 +145,8 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     EditDistributorComponent,
     ListBatchComponent,
     EditBatchComponent,
-    ListProductComponent
+    ListProductComponent,
+    //NayanAddClaimComponent
   ],
   imports: [
     BrowserModule,

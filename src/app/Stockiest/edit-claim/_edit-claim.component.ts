@@ -80,6 +80,7 @@ export class EditClaimComponent implements OnInit {
   divisions: any = [];
   fileNames: any = [];
   stockiests: any = [];
+  loggedUserId: any = '';
   alignedStockiest: any = [];
   requiredFileType: string;
   selectedClaim: any;
@@ -112,7 +113,10 @@ export class EditClaimComponent implements OnInit {
   ngOnInit() {
     const sessionData = sessionStorage.getItem("laUser");
     if (!sessionData) this.router.navigateByUrl('/login');
-    this.sessionData = JSON.parse(sessionData);
+    this.sessionData = sessionData;
+
+    // Logged-in user id
+    this.loggedUserId = JSON.parse(sessionData).id;
 
     // Current Month and Year
     const currentMonth = moment().format("MM");
@@ -131,11 +135,7 @@ export class EditClaimComponent implements OnInit {
     this.getProduct();
     this.getBatch();
 
-    this.delay(1000).then(any => {
-      this.isDistributors();
-    });
-
-    /* if (JSON.parse(sessionData).type === 'ho' || JSON.parse(sessionData).type === 'field') {
+    if (JSON.parse(sessionData).type === 'ho' || JSON.parse(sessionData).type === 'field') {
       this.getUserDistStockistDivision(this.loggedUserId);
     } else if (JSON.parse(sessionData).type === 'stockist') {
       this.getStockistDistDivision(this.loggedUserId);
@@ -143,28 +143,10 @@ export class EditClaimComponent implements OnInit {
 
     this.delay(1000).then(any => {
       this.getData();
-    }); */
+    });
     WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
       this.multipleWebcamsAvailable = mediaDevices && mediaDevices.length > 1;
     });
-  }
-
-  isDistributors() {
-    if (this.distributors[0]) {
-      if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
-        this.getUserDistStockistDivision();
-      } else if (this.sessionData.type === 'stockist') {
-        this.getStockistDistDivision();
-      } else if (this.sessionData.type === 'distributor') {
-        // this.getDivisionCustomerIds();
-      }
-    } else {
-      this.getDistributors();
-
-      this.delay(1000).then(any => {
-        this.isDistributors();
-      });
-    }
   }
 
   public triggerSnapshot(): void {
@@ -199,6 +181,8 @@ export class EditClaimComponent implements OnInit {
         this.toast('error', response.message);
       }
     })
+    console.log("=========", this.fileNames);
+
   }
 
   public toggleWebcam(): void {
@@ -217,12 +201,12 @@ export class EditClaimComponent implements OnInit {
   }
 
   public handleImage(webcamImage: WebcamImage): void {
-    //console.info('received webcam image', webcamImage);
+    console.info('received webcam image', webcamImage);
     this.webcamImage = webcamImage;
   }
 
   public cameraWasSwitched(deviceId: string): void {
-    //console.log('active device: ' + deviceId);
+    console.log('active device: ' + deviceId);
     this.deviceId = deviceId;
   }
 
@@ -233,6 +217,7 @@ export class EditClaimComponent implements OnInit {
   public get nextWebcamObservable(): Observable<boolean | string> {
     return this.nextWebcam.asObservable();
   }
+
 
   toast(typeIcon, message) {
     // typeIcon = error, success, warning, info, question
@@ -416,6 +401,8 @@ export class EditClaimComponent implements OnInit {
 
     this.apiService.upload('/api/UploadClaimInvoices', frmData).subscribe((response: any) => {
       if (response.status === 200) {
+        console.log('resp--', response.data);
+
         if (response.data.length) {
           // To separate files according to RowId
           if (this.fileNames[row]) {
@@ -534,7 +521,6 @@ export class EditClaimComponent implements OnInit {
     suggestions.innerHTML = '';
     suggestions.classList.remove('has-suggestions');
     $('#division_suggestion_' + id).hide();
-    $('#product_'+ id).focus();
   }
   /***** EOF Division key-up functionality *****/
 
@@ -557,6 +543,7 @@ export class EditClaimComponent implements OnInit {
 
       let results: any = [];
       results = this.matchProduct(inputVal, i);
+      console.log('results---', results);
 
       this.delay(10).then(any => {
         this.productSuggestions(results, inputVal, i);
@@ -623,27 +610,7 @@ export class EditClaimComponent implements OnInit {
       return d.materialName.toLowerCase() === e.target.innerText.toLowerCase()
     });
 
-    let material = '';
     if (results.length > 1) {
-      results.forEach((element, index) => {
-        if (index + 1 == results.length) {
-          material += element.material;
-        } else {
-          material += element.material + ',';
-        }
-      });
-    } else {
-      material = results[0].material;
-    }
-
-    const suggestions = document.querySelector('#product_suggestion_' + id + ' ul');
-    suggestions.innerHTML = '';
-    suggestions.classList.remove('has-suggestions');
-
-    $('#product_' + id).val(e.target.innerText);
-    $('#product_id_' + id).val(material);
-
-    /* if (results.length > 1) {
       console.log('...More then one product...', results);
       $('#product_' + id).val('');
       $('#product_id_' + id).val('');
@@ -654,10 +621,9 @@ export class EditClaimComponent implements OnInit {
 
       $('#product_' + id).val(e.target.innerText);
       $('#product_id_' + id).val(results[0].material);
-    } */
+    }
 
     $('#product_suggestion_' + id).hide();
-    $('#batch_' + id).focus();
   }
   /***** EOF Product key-up functionality *****/
 
@@ -692,29 +658,14 @@ export class EditClaimComponent implements OnInit {
     const divisionId = $('#division_id_' + id).val();
     const productId = $('#product_id_' + id).val();
     const plantId = $('#plant_id_' + id).val();
-    const explodeProductId = productId.split(",");
 
     let results = [];
-    explodeProductId.forEach(element => {
-      let result = [];
-      result = this.batches.filter(element2 => {
-        return element2.material === Number(element) &&
-          element2.division === Number(divisionId) &&
-          element2.batch.toLowerCase().indexOf(val) > -1;
-      });
-
-      if (result.length) {
-        results.push(result);
-      }
-    });
-    console.log('results--', results);
-
-    /* results = this.batches.filter(element => {
+    results = this.batches.filter(element => {
       return element.material === Number(productId) &&
         element.division === Number(divisionId) &&
-        //element.plant === Number(plantId) &&
+        /* element.plant === Number(plantId) && */
         element.batch.toLowerCase().indexOf(val) > -1;
-    }); */
+    });
 
     return results;
   }
@@ -727,15 +678,13 @@ export class EditClaimComponent implements OnInit {
 
     if (results.length > 0) {
       results.forEach((element, index) => {
-        element.forEach(element2 => {
-          // Match word from start
-          const match = element2.batch.match(new RegExp('^' + inputVal, 'i'));
-          if (match) {
-            suggestions.innerHTML += `<li>${match.input}</li>`;
-          }
-        });
+        // Match word from start
+        const match = element.batch.match(new RegExp('^' + inputVal, 'i'));
+        if (match) {
+          suggestions.innerHTML += `<li>${match.input}</li>`;
+        }
       });
-      
+
       suggestions.classList.add('has-suggestions');
       $('#batch_suggestion_' + id).show();
 
@@ -746,8 +695,8 @@ export class EditClaimComponent implements OnInit {
       // If no result remove all <li>
       suggestions.innerHTML = '';
       suggestions.classList.remove('has-suggestions');
-      
       $('#batch_suggestion_' + id).hide();
+
       $('#batch_loader_' + id).hide();
     }
   }
@@ -757,6 +706,7 @@ export class EditClaimComponent implements OnInit {
     const suggestions = document.querySelector('#batch_suggestion_' + rowId + ' ul');
 
     $('#batch_' + rowId).val(e.target.innerText);
+    //$('#batch_def').focus();
 
     suggestions.innerHTML = '';
     suggestions.classList.remove('has-suggestions');
@@ -768,15 +718,17 @@ export class EditClaimComponent implements OnInit {
     const pts = (filtered.length) ? filtered[0].pts : 0;
     const ptr = (filtered.length) ? filtered[0].ptr : 0;
     const ptd = (filtered.length) ? filtered[0].ptd : 0;
-    const material = (filtered.length) ? filtered[0].material : '';
+    const divisionName = (filtered.length) ? filtered[0].divisionName : '';
+    const materialName = (filtered.length) ? filtered[0].materialName : '';
 
-    $('#product_id_' + rowId).val(material);
+    //if (division) this.getBatchDivision(division, rowId);
+    //if (material) this.getBatchProduct(material, rowId);
+    $('#division_' + rowId).val(divisionName);
+    $('#product_' + rowId).val(materialName);
     $('#mrp_' + rowId).val(mrp.toFixed(2));
     $('#pts_' + rowId).val(pts.toFixed(2));
     $('#ptr_' + rowId).val(ptr.toFixed(2));
     $('#ptd_' + rowId).val(ptd.toFixed(2));
-
-    $('#billingRate_' + rowId).focus();
   }
   /***** EOF Batch key-up functionality *****/
   changeCalculation(e, row) {
@@ -864,8 +816,8 @@ export class EditClaimComponent implements OnInit {
     });
   }
 
-  getUserDistStockistDivision() {
-    this.apiService.get('/api/user/getDistStockistDivision', this.sessionData.id).subscribe((response: any) => {
+  getUserDistStockistDivision(userId) {
+    this.apiService.get('/api/user/getDistStockistDivision', userId).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           response.data.forEach(element => {
@@ -875,22 +827,21 @@ export class EditClaimComponent implements OnInit {
             });
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
+
 
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.stockists;
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
-
-            this.getData();
           });
         }
       }
     });
   }
 
-  getStockistDistDivision() {
-    this.apiService.get('/api/user/getStockistDistDivision', this.sessionData.id).subscribe((response: any) => {
+  getStockistDistDivision(userId) {
+    this.apiService.get('/api/user/getStockistDistDivision', userId).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data) {
           response.data.forEach(element => {
@@ -901,29 +852,28 @@ export class EditClaimComponent implements OnInit {
             this.userDistributors.push(result[0]);
             // EOF get user's distributor
 
+
             // get user's stockist plant wise
             this.userPlantStockists[element.plant] = element.customerId;
 
             // get user's division plant wise
             this.userPlantDivisions[element.plant] = element.divisions;
-
-            this.getData();
           });
         }
       }
     });
   }
 
-  getDivisions() { // 872
-    let division = [];
+  getDivisions() {
+    let divisions = [];
     this.divisions = [];
     const distributor = $("#distributor option:selected").val();
-    const dvision = this.userPlantDivisions[distributor];
-    dvision.forEach(element => {
-      division.push(Number(element));
+    const division = this.userPlantDivisions[distributor];
+    division.forEach(element => {
+      divisions.push(Number(element));
     });
 
-    this.apiService.post('/api/getDivision', division).subscribe((response: any) => {
+    this.apiService.post('/api/getDivision', divisions).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.divisions = response.data;
@@ -966,11 +916,11 @@ export class EditClaimComponent implements OnInit {
     let stockists = [];
     const stockist = this.userPlantStockists[distributor];
 
-    if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
+    if (JSON.parse(this.sessionData).type === 'ho' || JSON.parse(this.sessionData).type === 'field') {
       stockist.forEach(element => {
         stockists.push(Number(element));
       });
-    } else if (this.sessionData.type === 'stockist') {
+    } else if (JSON.parse(this.sessionData).type === 'stockist') {
       stockists.push(Number(stockist));
     }
 
@@ -1071,7 +1021,7 @@ export class EditClaimComponent implements OnInit {
       const reg = /^\d*\.?\d*$/;    // RegEx for number and decimal value
       const rowId = (row === -1) ? 'def' : row;
 
-      const header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.sessionData.id;
+      const header = distributor + '.::.' + stockiest + '.::.' + claimType + '.::.' + ClaimMonth + '.::.' + claimYear + '.::.' + this.loggedUserId;
       const invoice = $('#invoice_' + rowId).val();
       const batch = $('#batch_' + rowId).val();
       const division = $('#division_' + rowId).val();
@@ -1207,11 +1157,9 @@ export class EditClaimComponent implements OnInit {
     this.apiService.post('/api/claim/update', this.claimForm.value).subscribe((response: any) => {
       if (response.status === 200) {
         this.toast('success', 'Successfully saved in draft.');
-        this.router.navigateByUrl('/stockiest/draftClaim');
-        
-        /* setTimeout(() => {
+        setTimeout(() => {
           window.location.reload();
-        }, 5000); */
+        }, 5000);
       }
     });
   }
@@ -1226,13 +1174,12 @@ export class EditClaimComponent implements OnInit {
           $('#distributor_loader').hide();
           $('#distributor').show();
 
+          this.getDivisions();
           this.getStockiest2(this.records.plant, this.records.customerId);
 
           $('#type').val(this.records.claimType);
           $('#month').val(this.records.claimMonth);
           $('#year').val(this.records.claimYear);
-
-          this.getDivisions();
 
           this.claimForm.controls['def_invoice'].setValue(this.records.invoice, { onlySelf: true });
           this.claimForm.value.def_invoice = this.records.invoice;
@@ -1329,6 +1276,8 @@ export class EditClaimComponent implements OnInit {
       this.webcamImage = null;
     });
   }
+
+
 
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {

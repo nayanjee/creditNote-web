@@ -147,7 +147,7 @@
             <td class="border-right">{{record.amount | number : '1.2-2'}}</td>
             <td class="border-right att_{{record.invoice}}">
               <div *ngIf="record.files">
-                <span *ngFor="let fn of record.files" style="margin:0 2px;">
+                <span *ngFor="let fn of record.files" style="margin:0 2px; cursor: pointer;">
                   <i class="pe-7s-paperclip fb" placement="bottom" ngbTooltip="{{fn.originalFilename}}"
                     (click)="viewPopup(details, fn, record.invoice, record._id)"></i>
                 </span>
@@ -157,7 +157,7 @@
               </div>
             </td>
             <td class="border-right">
-              <span title="Upload Invoice Webcam" class="option-span" style="color: #6610f2;">
+              <span title="Upload Invoice Webcam" class="option-span" style="color: #6610f2; cursor: pointer;">
                 <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, record._id, webcammodal)"></i>
               </span>
               <span title="Upload Invoice" class="option-span" style="color: #6610f2;">

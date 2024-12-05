@@ -89,6 +89,7 @@ export class StockiestClaimComponent implements OnInit {
   userPlantDivisions: any = [];
   clickedRecord: any = [];
   totalAmount: number = 0;
+  particularsMatches: any = [];
 
   constructor(
     private router: Router,
@@ -135,7 +136,7 @@ export class StockiestClaimComponent implements OnInit {
     this.selectedFields['type'] = 0;
 
     this.getDistributors();
-    this.getParticulars();
+    //this.getParticulars();
     this.getCategories();
     this.getProduct();
     this.getBatch();
@@ -232,6 +233,25 @@ export class StockiestClaimComponent implements OnInit {
     const distributor = this.selectedFields.distributor;
     const stockist = this.userPlantStockists[distributor];
 
+
+    /* Temporary code are made only for self approval. */ ////////////////////////
+    if (stockist.includes(distributor.toString())) {                            //
+      const self = {                                                            //
+        customerId: 1,                                                          //
+        organization: '-- SELF --'                                              //
+      }                                                                         //
+      this.stockiests.push(self);                                               //
+    }                                                                           //
+    this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId); //
+    $('#stockiest_loader').hide();                                              //
+    $('#stockiest').show();                                                     //
+    this.getParticulars();                                                      //
+    this.getData();                                                             //
+    /* EOF Temporary code are made only for self approval. */ ////////////////////
+
+
+    /* Temporary comments are made only for self approval.
+
     let stockists = [];
     stockist.forEach(element => {
       stockists.push(Number(element));
@@ -257,10 +277,11 @@ export class StockiestClaimComponent implements OnInit {
           $('#stockiest_loader').hide();
           $('#stockiest').show();
 
+          this.getParticulars();
           this.getData();
         }
       }
-    });
+    }); */
   }
 
   getDivisions() {
@@ -329,7 +350,11 @@ export class StockiestClaimComponent implements OnInit {
   }
 
   getParticulars() {
-    this.apiService.fetch('/api/particulars/all').subscribe((response: any) => {
+    const reqData = {
+      distributor: this.selectedFields.distributor,
+      stockist: this.selectedFields.stockiest
+    };
+    this.apiService.post('/api/particulars/stockist', reqData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
           this.particulars = response.data;
@@ -337,6 +362,16 @@ export class StockiestClaimComponent implements OnInit {
       }
     });
   }
+
+  /* getParticulars() {
+    this.apiService.fetch('/api/particulars/all').subscribe((response: any) => {
+      if (response.status === 200) {
+        if (response.data.length) {
+          this.particulars = response.data;
+        }
+      }
+    });
+  } */
 
   getProduct() {
     this.apiService.fetch('/api/product/all').subscribe((response: any) => {
@@ -385,19 +420,17 @@ export class StockiestClaimComponent implements OnInit {
   async searchParticulars(e, i) {
     const inputVal = e.currentTarget.value;
 
-    //let results: any = [];
+    this.particularsMatches = [];
     const id = (i === -1) ? 'def' : i;
 
     if (e.key != "Tab") {
-      console.log('inputVal.length--', inputVal.length);
-      if (inputVal.length > 2) {
+      //if (inputVal.length > 2) {
+      if (inputVal.length) {
         $('#particulars_loader_' + id).show();
 
         const results = await this.matchParticulars(inputVal, i);
-        console.log('results--', results);
 
         this.delay(200).then(any => {
-          console.log('results2--', results);
           this.particularsSuggestions(results, inputVal, i);
         });
       } else {
@@ -413,13 +446,13 @@ export class StockiestClaimComponent implements OnInit {
     let results = [];
     const val = str.toLowerCase();
 
-    this.apiService.get('/api/particulars', val).subscribe((response: any) => {
+    /* this.apiService.get('/api/particulars', val).subscribe((response: any) => {
       if (response.status === 200 && response.data.length) {
         this.particulars = response.data;
       } else {
         this.particulars = [];
       }
-    });
+    }); */
 
     results = this.particulars.filter(function (d) {
       return d.name.toLowerCase().indexOf(val) > -1;
@@ -435,23 +468,32 @@ export class StockiestClaimComponent implements OnInit {
 
     if (results.length > 0) {
       let matches = [];
+      let unique = [];
       results.forEach((element, index) => {
         // Match word from start
         const match = element.name.match(new RegExp('^' + inputVal, 'i'));
         if (match) {
           matches.push(match);
-          suggestions.innerHTML += `<li>${match.input}</li>`;
+          //suggestions.innerHTML += `<li>${match.input}</li>`;
+          this.particularsMatches.push(element);
         }
       });
 
+      if (matches.length) {
+        unique = [...new Set(matches.map(item => item.input))];
+
+        unique.forEach(element => {
+          suggestions.innerHTML += `<li>${element}</li>`;
+        });
+
+      }
+
       // Put value in textbox directly if there is only one match
-      if (matches.length == 0) {
+      if (unique.length == 0) {
         $('#particulars_' + id).val('');
-        // this.saveParticulars(id, '');
-      } else if (matches.length == 1) {
-        $('#particulars_' + id).val(matches[0].input);
+      } else if (unique.length == 1) {
+        $('#particulars_' + id).val(unique[0]);
         $('#particulars_suggestion_' + id).hide();
-        // this.saveParticulars(id, matches[0].input);
       } else {
         suggestions.classList.add('has-suggestions');
         $('#particulars_suggestion_' + id).show();
@@ -482,7 +524,17 @@ export class StockiestClaimComponent implements OnInit {
 
     $('#particulars_suggestion_' + id).hide();
     $('#particulars_loader_' + id).hide();
-    // this.saveParticulars(id, e.target.innerText);
+
+    if (this.particularsMatches.length) {
+      const results = this.particularsMatches.filter(function (d) {
+        return d.name.indexOf(e.target.innerText) > -1;
+      });
+
+      if (results.length) {
+        $('#category_' + id).val(results[0].category);
+      }
+    }
+
   }
   /***** EOF Particulars key-up functionality *****/
 
@@ -889,6 +941,10 @@ export class StockiestClaimComponent implements OnInit {
     if (targetId === 'stockiest' || targetId === 'month' || targetId === 'year') {
       this.selectedFields.type = 0;
       this.selectedFields.division = 0;
+
+      if (targetId === 'stockiest') {
+        this.getParticulars();
+      }
 
       this.getData();
     }
@@ -2064,6 +2120,7 @@ export class StockiestClaimComponent implements OnInit {
   openPopup() {
     this.displayStyle = "block";
   }
+  
   closePopup() {
     this.displayStyle = "none";
   }

@@ -284,7 +284,7 @@
                 <div class="inputcontainer">
                   <input type="text" class="form-control tc" id="particulars_{{record._id}}"
                     value="{{record.particulars}}" (keyup)="searchParticulars($event, record._id)"
-                    placeholder="Enter Particulars" style="width:160px;" />
+                    placeholder="Enter Particulars" style="width:160px;" autocomplete="off" />
                   <div class="icon-container" id="particulars_loader_{{record._id}}">
                     <i class="loader"></i>
                   </div>
@@ -299,7 +299,7 @@
                 *ngIf="sessionData['type'] === 'ho' && (sessionData['workType'] === null || sessionData['workType'] === '')">
                 <div class="inputcontainer">
                   <input type="text" class="form-control tc" id="category_{{record._id}}" value="{{record.category}}"
-                    (keyup)="searchCategory($event, record._id)" placeholder="Enter Category" style="width:120px;" />
+                    (keyup)="searchCategory($event, record._id)" placeholder="Enter Category" style="width:120px;" autocomplete="off" />
                   <div class="icon-container" id="category_loader_{{record._id}}">
                     <i class="loader"></i>
                   </div>
