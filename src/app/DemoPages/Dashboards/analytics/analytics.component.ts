@@ -90,7 +90,7 @@ export class AnalyticsComponent implements OnInit {
       if (response.status === 200) {
         if (response.data.length) {
           this.distributors = response.data;
-          console.log('distributors--', this.distributors)
+          
           this.getMessages();
         }
       }

@@ -46,9 +46,9 @@ export class ClaimsComponent implements OnInit {
     { id: 'special', name: 'Special Discount' }
   ];
   status: any = [
-    { id: 'inprogress', name: 'Inprogress' }
-    /* { id: 'approved', name: 'Accepted' },
-    { id: 'rejected', name: 'Rejected' } */
+    { id: 'inprogress', name: 'Inprogress' },
+    { id: 'approved', name: 'Accepted' },
+    { id: 'rejected', name: 'Rejected' }
   ];
   months: any = [
     { id: 1, name: '01 - Jan' },
@@ -221,12 +221,21 @@ export class ClaimsComponent implements OnInit {
               $('#distributor_loader').hide();
               $('#distributor').show();
 
-              // $("#stockiest").val($("#stockiest option:eq(1)").val());
-              // $('#stockiest_loader').hide();
-              // $('#stockiest').show();
-
-              this.getStockiest();
+              const self = {
+                customerId: 1,
+                organization: '-- SELF --'
+              }
+              this.stockiests.push(self);
+  
+              this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+              $('#stockiest_loader').hide();
+              $('#stockiest').show();
+  
               this.getDivisions();
+  
+              this.delay(1000).then(any => {
+                this.getData();
+              });
             });
           }
         }
@@ -292,6 +301,7 @@ export class ClaimsComponent implements OnInit {
     let stockists = [];
     const distributor = this.selectedFields.distributor;
     const stockist = this.userPlantStockists[distributor];
+    console.log('DS---', distributor, stockist);
 
     if (this.sessionData.type === 'ho' || this.sessionData.type === 'field') {
       stockist.forEach(element => {

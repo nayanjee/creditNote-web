@@ -155,7 +155,7 @@
                   </td>
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_batch" id="batch_def"
-                      (keyup)="searchBatch($event, -1)" [tabIndex]="2" />
+                      (keyup)="searchBatch($event, -1)" [tabIndex]="4" />
 
                     <img style="float:right;" id="batch_loader_def" src="./../../../assets/images/btn_loader.gif"
                       style="position: absolute; margin: -35px 0 0 65px; display: none;" />
@@ -213,15 +213,15 @@
                   </td> -->
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_billingRate"
-                      id="billingRate_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="6" />
+                      id="billingRate_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="5" />
                   </td>
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_freeQuantity"
-                      id="freeQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="7" />
+                      id="freeQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="6" />
                   </td>
                   <td class="tdpd1">
                     <input type="text" class="form-control grf-def" formControlName="def_saleQuantity"
-                      id="saleQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="8" />
+                      id="saleQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="7" />
                   </td>
                   <td class="tdpd1">
                     <input type="text" class="form-control tc" formControlName="def_difference" id="difference_def"
@@ -239,7 +239,7 @@
                       (change)="onFileSelected($event, -1)" #fileUpload multiple style="display: none;">
                     <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
                       [tabIndex]="9">Attach File</button> -->
-                    <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="9"></i>
+                    <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="8"></i>
                     <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, -1, webcammodal)" [tabIndex]="9"></i>
                   </td>
                   <td class="tc">

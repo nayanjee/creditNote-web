@@ -1,0 +1,510 @@
+<div class="app-page-title">
+  <div class="page-title-wrapper">
+    <div class="page-title-heading">
+      <div class="page-title-icon">
+        <i class="icon {{icon}}"></i>
+      </div>
+      <div>
+        {{heading}}
+        <div class="page-title-subheading">
+          {{subheading}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <label for="distributor" class="form-label fb">Distributor</label>
+        <ng-select class="custom" id="distributor" [(ngModel)]="selectedFields.distributor" (change)="getStockiest()"
+          [clearable]="false" style="display: none;">
+          <ng-option *ngFor="let distributor of userDistributors" [value]="distributor.plant">
+            {{distributor.plant}} - {{distributor.organization | titlecase}}
+          </ng-option>
+        </ng-select>
+        <span id="err_distributor" class="text-danger" style="display: none;"></span>
+        <div id="distributor_loader">
+          <img class="m8" src="./../../../assets/images/btn_loader.gif">
+        </div>
+      </div>
+
+      <div class="col">
+        <label for="stockiest" class="form-label fb">
+          Stockist
+          <span *ngIf="selectedFields.stockiest" style="color: orange; font-size: 12px;">
+            <span *ngIf="selectedFields.stockiest == 1">(Self)</span>
+            <span *ngIf="selectedFields.stockiest != 1">({{selectedFields.stockiest}})</span>
+          </span>
+        </label>
+        <ng-select class="custom" id="stockiest" [(ngModel)]="selectedFields.stockiest"
+          (change)="clearTempClaim($event,'stockiest')" [clearable]="false" style="display: none;">
+          <ng-option *ngFor="let stockiest of stockiests" [value]="stockiest.customerId">
+            {{stockiest.organization | titlecase}}
+          </ng-option>
+        </ng-select>
+        <span id="err_stockiest" class="text-danger" style="display: none;"></span>
+        <div id="stockiest_loader">
+          <img class="m8" src="./../../../assets/images/btn_loader.gif">
+        </div>
+      </div>
+
+      <div class="col">
+        <label for="type" class="form-label fb">Claim Type</label>
+        <ng-select class="custom" id="type" [(ngModel)]="selectedFields.type" [clearable]="false"
+          (change)="changeType($event,'type')">
+          <!-- <ng-option [value]="0"> -- All -- </ng-option> -->
+          <ng-option *ngFor="let type of types" [value]="type.id">{{type.name | titlecase}}</ng-option>
+        </ng-select>
+        <span id="err_type" class="text-danger" style="display: none;"></span>
+      </div>
+
+      <div class="col">
+        <label for="month" class="form-label fb">Month</label>
+        <ng-select class="custom" id="month" [(ngModel)]="selectedFields.month"
+          (change)="validateMonth($event, 'month')" [clearable]="false">
+          <ng-option *ngFor="let month of months" [value]="month.id">{{month.name}}</ng-option>
+        </ng-select>
+        <span id="err_month" class="text-danger" style="display: none;"></span>
+      </div>
+
+      <div class="col">
+        <label for="year" class="form-label fb">Year</label>
+        <ng-select class="custom" id="year" [(ngModel)]="selectedFields.year" (change)="validateMonth($event, 'year')"
+          [clearable]="false">
+          <ng-option *ngFor="let year of years" [value]="year.id">{{year.name}}</ng-option>
+        </ng-select>
+        <span id="err_year" class="text-danger" style="display: none;"></span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <hr />
+      </div>
+    </div>
+
+    <div class="row claim-frm">
+      <form [formGroup]="claimForm" enctype="multipart/form-data" autocomplete="off">
+        <div class="row">
+          <div class="col-sm-12 col-md-12">
+            <div class="table-responsive">
+              <table class="table" id="table1">
+                <tr>
+                  <td class="td-head required"><label class="form-label grid-label">Invoice No</label></td>
+                  <td class="td-head">Division</td>
+                  <td class="td-head"><label class="form-label grid-label">Product</label></td>
+                  <td class="td-head required"><label class="form-label grid-label">Batch</label></td>
+                  <!-- <td class="td-head">Particulars</td> -->
+                  <td class="td-head">MRP</td>
+                  <td class="td-head">PTS</td>
+                  <!-- <td class="td-head">Margin (%)</td> -->
+                  <td class="td-head required"><label class="form-label grid-label">Billing Rate</label></td>
+                  <td class="td-head required"><label class="form-label grid-label">Free QTY</label></td>
+                  <td class="td-head required"><label class="form-label grid-label">Sale QTY</label></td>
+                  <td class="td-head">Difference</td>
+                  <td class="td-head" *ngIf="sessionData.type != 'stockist'">Total Diff.</td>
+                  <td class="td-head">Amount</td>
+                  <td class="td-head">Image</td>
+                  <td class="td-head">Attachments</td>
+                  <td class="td-head">Options</td>
+                </tr>
+
+                <!-- DEFAULT / FIRST ROW OF THE COLUMNS -->
+                <tr style="position: relative;">
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_invoice" id="invoice_def"
+                      [tabIndex]="1" />
+                  </td>
+
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def dpdown" formControlName="def_division"
+                      id="division_def" (keyup)="searchDivision($event, -1)" [tabIndex]="2" />
+
+                    <img style="float:right;" id="division_loader_def" src="./../../../assets/images/btn_loader.gif"
+                      style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                    <div class="suggestions" id="division_suggestion_def" (click)="divisionSelection($event, -1)"
+                      style="display: none;">
+                      <ul></ul>
+                    </div>
+
+                    <input type="hidden" class="form-control" formControlName="def_divisionId" id="division_id_def" />
+                    <input type="hidden" class="form-control" formControlName="def_plantId" id="plant_id_def" />
+                  </td>
+
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_product" id="product_def"
+                      (keyup)="searchProduct($event, -1)" [tabIndex]="3" />
+
+                    <img style="float:right;" id="product_loader_def" src="./../../../assets/images/btn_loader.gif"
+                      style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                    <div class="suggestions" id="product_suggestion_def" (click)="productSelection($event, -1)"
+                      style="display: none;">
+                      <ul></ul>
+                    </div>
+
+                    <input type="hidden" class="form-control" formControlName="def_productId" id="product_id_def" />
+                    <input type="hidden" class="form-control" id="product_id_temp_def" />
+                  </td>
+
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_batch" id="batch_def"
+                      (keyup)="searchBatch($event, -1)" [tabIndex]="4" />
+
+                    <img style="float:right;" id="batch_loader_def" src="./../../../assets/images/btn_loader.gif"
+                      style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                    <div class="suggestions" id="batch_suggestion_def" (click)="batchSelection($event, -1)"
+                      style="display: none;">
+                      <ul></ul>
+                    </div>
+                  </td>
+
+                  <td class="tdpd1">
+                    <input type="text" class="form-control tc" formControlName="def_mrp" id="mrp_def" readonly />
+                  </td>
+                  <td class="tdpd1">
+                    <input type="text" class="form-control tc" formControlName="def_pts" id="pts_def" readonly />
+                    <input type="hidden" id="ptr_def" />
+                    <input type="hidden" id="ptd_def" />
+                  </td>
+                  <!-- <td class="tdpd1">
+                    <input type="text" class="form-control tc" formControlName="def_margin" id="margin_def" readonly />
+                  </td> -->
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_billingRate"
+                      id="billingRate_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="5" />
+                  </td>
+
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_freeQuantity"
+                      id="freeQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="6" />
+                  </td>
+                  <td class="tdpd1">
+                    <input type="text" class="form-control grf-def" formControlName="def_saleQuantity"
+                      id="saleQuantity_def" (keyup)="changeCalculation($event, -1)" [tabIndex]="7" />
+                  </td>
+                  <td class="tdpd1">
+                    <input type="text" class="form-control tc" formControlName="def_difference" id="difference_def"
+                      readonly />
+                  </td>
+                  <td class="tdpd1" *ngIf="sessionData.type != 'stockist'">
+                    <input type="text" class="form-control tc" formControlName="def_totalDifference"
+                      id="totalDifference_def" readonly />
+                  </td>
+                  <input type="hidden" *ngIf="sessionData.type == 'stockist'" class="form-control tc" formControlName="def_totalDifference"
+                      id="totalDifference_def" readonly />
+                  <td class="tdpd1">
+                    <input type="text" class="form-control tc  grf-def" formControlName="def_amount" id="amount_def"
+                      readonly />
+                  </td>
+                  <!-- <td class="tc">
+                    <div style="text-align:center">
+                      <h1>
+                        Ngx-Webcam Demo
+                      </h1>
+
+                      <div>
+                        <webcam [height]="500" [width]="500" [trigger]="triggerObservable"
+                          (imageCapture)="handleImage($event)" *ngIf="showWebcam"
+                          [allowCameraSwitch]="allowCameraSwitch" [switchCamera]="nextWebcamObservable"
+                          [videoOptions]="videoOptions" [imageQuality]="1" (cameraSwitched)="cameraWasSwitched($event)"
+                          (initError)="handleInitError($event)"></webcam>
+                        <br />
+                        <button class="actionBtn" (click)="triggerSnapshot();">Take A Snapshot</button>
+                        <button class="actionBtn" (click)="toggleWebcam();">Toggle Webcam</button>
+                        <br />
+                        <button class="actionBtn" (click)="showNextWebcam(true);"
+                          [disabled]="!multipleWebcamsAvailable">Next Webcam</button>
+                        <input id="cameraSwitchCheckbox" type="checkbox" [(ngModel)]="allowCameraSwitch"><label
+                          for="cameraSwitchCheckbox">Allow Camera Switch</label>
+                        <br />
+                        DeviceId: <input id="deviceId" type="text" [(ngModel)]="deviceId" style="width: 500px">
+                        <button (click)="showNextWebcam(deviceId);">Activate</button>
+                      </div>
+                    </div>
+
+                    <div class="snapshot" *ngIf="webcamImage">
+                      <h2>Nice one!</h2>
+                      <img [src]="webcamImage.imageAsDataUrl" />
+                    </div>
+                  </td> -->
+                  <td class="tc">
+                    <input type="file" class="file-input" [accept]="requiredFileType"
+                      (change)="onFileSelected($event, -1)" #fileUpload multiple style="display: none;">
+                    <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="8"></i>
+                    <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, -1, webcammodal)" [tabIndex]="8"></i>
+                    <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
+                      [tabIndex]="8">Attach File</button> -->
+                  </td>
+                  <td class="tc">
+                    <div *ngIf="fileNames[-1]">
+                      <span *ngFor="let fn of fileNames[-1]">
+                        <i class="pe-7s-paperclip" placement="bottom" ngbTooltip="{{fn.originalname}}"></i>
+                      </span>
+                    </div>
+                  </td>
+                  <td class="tdpd1" style="text-align: center;">
+                    <span title="Add to this invoice" [tabIndex]="9" (click)="addSameInvoice(-1)"
+                      (keyup.enter)="addSameInvoice(-1)">
+                      <i class="vsm-icon pe-7s-copy-file"></i>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- ADD MORE FUNCTIONALITY -->
+                <div formArrayName="claims" style="position:relative;">
+                  <tr *ngFor="let claim of claims().controls; let i=index" [formGroupName]="i">
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="invoice" id="invoice_{{i}}"
+                        [tabIndex]="(10*i)+11" />
+                    </td>
+                    <td class="tdpd">
+                      <!-- <input type="text" class="form-control" formControlName="division" id="division_{{i}}" readonly /> -->
+
+                      <input type="text" class="form-control" formControlName="division" id="division_{{i}}"
+                        (keyup)="searchDivision($event, i)" [tabIndex]="(10*i)+12" />
+
+                      <img style="float:right;" id="division_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
+
+                      <div class="suggestions" id="division_suggestion_{{i}}" (click)="divisionSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+
+                      <input type="hidden" class="form-control" formControlName="divisionId" id="division_id_{{i}}" />
+                      <input type="hidden" class="form-control" formControlName="plantId" id="plant_id_{{i}}" />
+                    </td>
+                    <td class="tdpd">
+                      <!-- <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
+                        readonly /> -->
+
+                      <input type="text" class="form-control grf-am" formControlName="product" id="product_{{i}}"
+                        (keyup)="searchProduct($event, i)" [tabIndex]="(10*i)+13" />
+
+                      <img style="float:right;" id="product_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -35px 0 0 65px; display: none;" />
+
+                      <div class="suggestions" id="product_suggestion_{{i}}" (click)="productSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+
+                      <input type="hidden" class="form-control" formControlName="productId" id="product_id_{{i}}" />
+                      <input type="hidden" class="form-control" id="product_id_temp_{{i}}" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="batch" id="batch_{{i}}"
+                        (keyup)="searchBatch($event, i)" [tabIndex]="(10*i)+14" />
+
+                      <img style="float:right;" id="batch_loader_{{i}}" src="./../../../assets/images/btn_loader.gif"
+                        style="position: absolute; margin: -27px 0 0 73px; display: none;" />
+
+                      <div class="suggestions" id="batch_suggestion_{{i}}" (click)="batchSelection($event, i)"
+                        style="display: none;">
+                        <ul></ul>
+                      </div>
+                    </td>
+                    <!-- <td class="tdpd">
+                      <input type="text" class="form-control" formControlName="particulars" id="particulars_{{i}}"
+                        [tabIndex]="(10*i)+15" />
+                    </td> -->
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="mrp" id="mrp_{{i}}" readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="pts" id="pts_{{i}}" readonly />
+                      <input type="hidden" id="ptr_{{i}}" />
+                      <input type="hidden" id="ptd_{{i}}" />
+                    </td>
+                    <!-- <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="margin" id="margin_{{i}}" readonly />
+                    </td> -->
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="billingRate"
+                        id="billingRate_{{i}}" (keyup)="changeCalculation($event, i)" [tabIndex]="(10*i)+15" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="freeQuantity"
+                        id="freeQuantity_{{i}}" (keyup)="changeCalculation($event, i)" [tabIndex]="(10*i)+16" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am" formControlName="saleQuantity"
+                        id="saleQuantity_{{i}}" (keyup)="changeCalculation($event, i)" [tabIndex]="(10*i)+17" />
+                    </td>
+                    <td class="tdpd">
+                      <input type="text" class="form-control tc" formControlName="difference" id="difference_{{i}}"
+                        readonly />
+                    </td>
+                    <td class="tdpd" *ngIf="sessionData.type != 'stockist'">
+                      <input type="text" class="form-control tc" formControlName="totalDifference"
+                        id="totalDifference_{{i}}" readonly />
+                    </td>
+                    <input type="hidden" *ngIf="sessionData.type == 'stockist'" class="form-control tc" formControlName="totalDifference"
+                      id="totalDifference_{{i}}" readonly />
+                    <td class="tdpd">
+                      <input type="text" class="form-control grf-am tc" formControlName="amount" id="amount_{{i}}"
+                        readonly />
+                    </td>
+                    <td class="tdpd">
+                      <input type="file" class="file-input" [accept]="requiredFileType"
+                        (change)="onFileSelected($event, i)" #fileUpload multiple style="display: none;">
+                      <i class="pe-7s-cloud-upload" (click)="fileUpload.click()" [tabIndex]="(10*i)+18"></i> &nbsp;
+                      <i class="vsm-icon pe-7s-camera" (click)="openWebcam($event, i,webcammodal)"
+                        [tabIndex]="(10*i)+18"></i>
+                      <!-- <button type="button" class="btn-transition btn btn-outline-focus" (click)="fileUpload.click()"
+                        [tabIndex]="(10*i)+18">Attach File</button> -->
+                    </td>
+                    <td class="tc">
+                      <div *ngIf="fileNames[i]">
+                        <span *ngFor="let fn of fileNames[i]">
+                          <i class="pe-7s-paperclip" placement="bottom" ngbTooltip="{{fn.originalname}}"></i>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="tdpd tc">
+                      <span title="Add to this invoice" [tabIndex]="(10*i)+19" (click)="addSameInvoice(i)"
+                        (keyup.enter)="addSameInvoice(i)">
+                        <i class="vsm-icon pe-7s-copy-file"></i>
+                      </span>
+
+                      <span title="Delete this row" style="color:red;">
+                        <i class="vsm-icon pe-7s-trash" (click)="removeClaim(i)"></i>
+                      </span>
+
+                      <input type="hidden" class="count" value="{{i}}">
+                    </td>
+                  </tr>
+
+                </div>
+
+                <!-- <tr>
+                  <td rowspan="16"></td>
+                </tr> -->
+                <div style="height: 108px;">&nbsp;</div>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!--webcam modal-->
+        <div class="col-md-4">
+          <div class="card-body">
+            <ng-template #webcammodal let-c="close" let-d="dismiss">
+              <div class="modal-header">
+                <h4 class="modal-title">Snapshot</h4>
+                <button type="button" class="btn-close" aria-label="Close" (click)="d('Cross click')">
+                </button>
+              </div>
+              <div class="modal-body" id="content">
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div id="left">
+                      <!-- <div style="text-align:center"> -->
+
+
+
+                      <webcam [height]="376" [width]="376" [trigger]="triggerObservable"
+                        (imageCapture)="handleImage($event)" *ngIf="showWebcam" [allowCameraSwitch]="allowCameraSwitch"
+                        [switchCamera]="nextWebcamObservable" [videoOptions]="videoOptions" [imageQuality]="1"
+                        (cameraSwitched)="cameraWasSwitched($event)" (initError)="handleInitError($event)"></webcam>
+
+
+
+
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div id="right">
+
+                      <div class="snapshot" *ngIf="webcamImage">
+
+                        <img [src]="webcamImage.imageAsDataUrl" />
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+                <button type="button" class="btn btn-primary" (click)="triggerSnapshot();">Take A Snapshot</button>
+              </div>
+            </ng-template>
+
+
+          </div>
+
+        </div>
+        <!--webcam modal end-->
+        <div class="row">
+          <div class="col-md-6" style="font-weight: 600;">
+            Total Amount: {{totalAmount}}
+          </div>
+          <div class="col-md-6 tar">
+            <button type="button" class="mt-1 btn btn-info m_lr" (click)="addNewInvoice()" [tabIndex]="100000">
+              Add New Invoice
+            </button>
+            <button *ngIf="!btnLoader" type="button" class="mt-1 btn btn-success m_lr" style="padding: 6px 30px;"
+              (click)="onSubmit()">
+              Save as Draft
+            </button>
+            <button *ngIf="btnLoader" type="button" class="mt-1 btn btn-transition m_lr"
+              style="color: #033C73; border-color: #73A839; cursor:inherit; font-weight: 600;">
+              <span class="me-2 opacity-7"><img src="./../../assets/images/btn_loader.gif"></span>
+              <span class="me-1">Please Wait ...</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="row special-frm" style="display: none;">
+      <div class="row" style="margin: 3px 0 3px 0;">
+        <div class="col-md-4" style="text-align: right;">
+          <label class="form-label fb" style="margin-top: 6px;">Division</label>
+        </div>
+        <div class="col-md-4">
+          <ng-select class="custom" id="division" [(ngModel)]="selectedFields.division" [clearable]="false">
+            <ng-option *ngFor="let division of divisions" [value]="division.division">
+              {{division.name | titlecase}}
+            </ng-option>
+          </ng-select>
+        </div>
+      </div>
+
+      <div class="row" style="margin: 3px 0 3px 0;">
+        <div class="col-md-4" style="text-align: right;">
+          <label class="form-label fb" style="margin-top: 6px;">Value / Amount</label>
+        </div>
+        <div class="col-md-4">
+          <input type="text" class="form-control" id="special_amount" />
+        </div>
+      </div>
+
+      <div class="row" style="margin: 3px 0 3px 0;">
+        <div class="col-md-4" style="text-align: right;">
+          <label class="form-label fb" style="margin-top: 6px;">Reason</label>
+        </div>
+        <div class="col-md-4">
+          <textarea class="form-control"></textarea>
+        </div>
+      </div>
+
+      <div class="row" style="margin: 3px 0 3px 0;">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+          <button *ngIf="!btnLoader" type="button" class="btn btn-success" style="padding: 6px 30px;">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
