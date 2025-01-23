@@ -209,11 +209,16 @@ export class ClaimStatusComponent implements OnInit {
               $('#distributor_loader').hide();
               $('#distributor').show();
 
-              // $("#stockiest").val($("#stockiest option:eq(1)").val());
-              // $('#stockiest_loader').hide();
-              // $('#stockiest').show();
-
-              this.getStockiest();
+              const self = {
+                customerId: 1,
+                organization: '-- SELF --'
+              }
+              this.stockiests.push(self);
+  
+              this.selectedFields['stockiest'] = parseInt(this.stockiests[0].customerId);
+              $('#stockiest_loader').hide();
+              $('#stockiest').show();
+  
               this.getDivisions();
             });
           }

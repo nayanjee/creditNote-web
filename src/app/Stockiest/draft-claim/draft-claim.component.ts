@@ -820,6 +820,7 @@ export class DraftClaimComponent implements OnInit {
           }
         });
 
+        /* To check whether the file is uploaded with each invoice or not. */
         const uniqueAuthors = [...new Map(invoiceFiles.map(v => [v.invoice, v])).values()]; // Remove duplicate invoices
         const remainInvoices = this.records.filter(({ invoice: id1 }) => !uniqueAuthors.some(({ invoice: id2 }) => id2 === id1));
         const uniqueremainInvoices = [...new Map(remainInvoices.map(v => [v.invoice, v])).values()]; // Remove duplicate invoices
@@ -830,6 +831,7 @@ export class DraftClaimComponent implements OnInit {
             this.toast('error', 'All invoices must have at least one file uploaded.');
           });
         }
+        /* EOF To check whether the file is uploaded with each invoice or not. */
 
         if (this.tempRecords.length <= 0) {
           error = 1;
@@ -850,13 +852,13 @@ export class DraftClaimComponent implements OnInit {
               isDraft: false,
               isSubmit: true,
               submittedBy: this.sessionData.id,
-              submittedOn: moment().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+              submittedOn: moment().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+              ftStatus: 1,  //Temporarily (FT and SUH need not approval)
+              suhStatus: 1  //Temporarily (FT and SUH need not approval)
             };
-            reqData.push(temp);
-            // reqData[index]['submittedBy'] = this.sessionData.id;
-          });
 
-          console.log(reqData);
+            reqData.push(temp);
+          });
 
           const uniqueStockist = [];
           const map = new Map();
@@ -873,8 +875,6 @@ export class DraftClaimComponent implements OnInit {
               });
             }
           }
-
-
 
           this.apiService.post('/api/claim/submit', reqData).subscribe((response: any) => {
             if (response.status === 200) {

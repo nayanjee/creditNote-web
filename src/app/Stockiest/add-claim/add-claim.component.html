@@ -91,11 +91,11 @@
         <table class="row-border hover">
           <tr>
             <td>
-              <div style="width: 1418px;">
+              <div style="width: 1672px;">
                 <div class="td-head" style="width: 99px;">Invoice No</div>
                 <div class="td-head" style="width: 132px;">Division</div>
-                <div class="td-head" style="width: 153px;">Product</div>
-                <div class="td-head" style="width: 124px;">Batch</div>
+                <div class="td-head2" style="width: 368px;">Product</div>
+                <div class="td-head" style="width: 164px;">Batch</div>
                 <div class="td-head" style="width: 88px;">MRP</div>
                 <div class="td-head" style="width: 88px;">PTS</div>
                 <div class="td-head" style="width: 88px;">Billing Rate</div>
@@ -116,6 +116,8 @@
                 <div formArrayName="claims" style="overflow-y: auto; max-height: 450px;">
                   <tr *ngFor="let claim of claims().controls; let i=index" [formGroupName]="i">
                     <td>
+                      <input type="hidden" formControlName="sequence" [(ngModel)]="formItems.sequence[i]" />
+
                       <input type="text" id="invoice_{{i}}" formControlName="invoice" [(ngModel)]="formItems.invoice[i]"
                         class="form-control" style="width: 95px;" />
                     </td>
@@ -132,17 +134,23 @@
                       <input type="hidden" formControlName="divisionId" [(ngModel)]="formItems.divisionId[i]" />
                     </td>
                     <td>
+                      <!-- <ng-select [items]="divisionProducts[i]" bindLabel="materialName" bindValue="materialName">
+                        <ng-template ng-option-tmp let-item="item">
+                          <span [title]="item.materialName">{{ item.materialName }}</span>
+                        </ng-template>
+                      </ng-select> -->
+
                       <ng-select *ngIf="!ngLoader.product[i]" [items]="divisionProducts[i]" id="product_{{i}}"
                         formControlName="product" bindLabel="materialName" bindValue="materialName"
                         [closeOnSelect]="true" [clearable]="false" [(ngModel)]="formItems.product[i]"
-                        placeholder="Material" appendTo="body" style="width: 150px;" (change)="searchBatch($event, i)"
+                        placeholder="Material" appendTo="body" style="width: 365px;" (change)="searchBatch($event, i)"
                         class="ngscustom">
                         <ng-option *ngFor="let product of divisionProducts[i]" [value]="product.material">
                           {{product.materialName}}
                         </ng-option>
                       </ng-select>
 
-                      <div class="ng_loader" *ngIf="ngLoader.product[i]" style="width: 150px;">
+                      <div class="ng_loader" *ngIf="ngLoader.product[i]" style="width: 365px;">
                         <img src="./../../../assets/images/btn_loader.gif">
                       </div>
 
@@ -152,13 +160,13 @@
                       <ng-select *ngIf="!ngLoader.batch[i]" [items]="batches[i]" id="batch_{{i}}"
                         formControlName="batch" bindLabel="batch" bindValue="batch" [closeOnSelect]="true"
                         [clearable]="false" [(ngModel)]="formItems.batch[i]" placeholder="Batch" appendTo="body"
-                        style="width: 120px;" (change)="searchBatchPrice($event, i)" class="ngscustom">
+                        style="width: 160px;" (change)="searchBatchPrice($event, i)" class="ngscustom">
                         <ng-option *ngFor="let batch of batches[i]" [value]="batch.batch">
                           {{batch.batch}}
                         </ng-option>
                       </ng-select>
 
-                      <div class="ng_loader" *ngIf="ngLoader.batch[i]" style="width: 120px;">
+                      <div class="ng_loader" *ngIf="ngLoader.batch[i]" style="width: 160px;">
                         <img src="./../../../assets/images/btn_loader.gif">
                       </div>
                     </td>
