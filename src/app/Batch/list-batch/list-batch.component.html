@@ -92,25 +92,27 @@
 			<thead>
 				<tr>
 					<th class="border-right">S.No.</th>
-					<th class="border-right">Plant</th>
+					<!-- <th class="border-right">Plant</th> -->
 					<th class="border-right">Material</th>
 					<th class="border-right">Batch</th>
 					<th class="border-right">Expire On</th>
 					<th class="border-right">MRP</th>
 					<th class="border-right">PTS</th>
-					<th class="border-right" style="width: 110px;">Multiple MRP?</th>
+					<th class="border-right">PTD/PTR</th>
+					<th class="border-right" style="width: 110px;">Multiple Rate?</th>
 					<!-- <th class="border-right">Options</th> -->
 				</tr>
 			</thead>
 			<tbody>
 				<tr class="border-bottom" style="height: 35px;" *ngFor="let record of records; let i=index">
 					<td class="border-right">{{i+1}}</td>
-					<td class="border-right">{{record.plant}}</td>
+					<!-- <td class="border-right">{{record.plant}}</td> -->
 					<td class="border-right">{{record.material}}</td>
 					<td class="border-right">{{record.batch}}</td>
 					<td class="border-right">{{record.expireOn | date: 'yyyy-MM-dd'}}</td>
 					<td class="border-right">{{record.mrp | number : '1.2-2'}}</td>
 					<td class="border-right">{{record.pts | number : '1.2-2'}}</td>
+					<td class="border-right">{{record.ptd | number : '1.2-2'}}</td>
 					<td class="border-right">
 						<div *ngIf="record.mrp2" class="icon-wrapper rounded-circle">
 							<div class="icon-wrapper-bg opacity-9 bg-success"></div>

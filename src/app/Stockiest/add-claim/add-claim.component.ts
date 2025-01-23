@@ -86,6 +86,7 @@ export class AddClaimComponent implements OnInit {
   };
 
   formItems: any = {
+    sequence: [],
     invoice: [],
     division: [],
     divisionId: [],
@@ -472,6 +473,7 @@ export class AddClaimComponent implements OnInit {
 
   newClaim(): FormGroup {
     return this.fb.group({
+      sequence: '',
       invoice: '',
       batch: '',
       division: '',
@@ -493,6 +495,7 @@ export class AddClaimComponent implements OnInit {
   searchProduct(e, i) {
     const divisionId = e.division;
     this.ngLoader.product[i] = true;
+    this.formItems.sequence[i] = i;
     this.formItems.divisionId[i] = divisionId;
 
 
@@ -921,6 +924,7 @@ export class AddClaimComponent implements OnInit {
     this.apiService.post('/api/getTempClaim', requestData).subscribe((response: any) => {
       if (response.status === 200) {
         if (response.data.length) {
+          console.log('response.data--', response.data);
           //response.data.sort((a, b) => a.invoice - b.invoice);
           this.records = response.data;
 
@@ -945,6 +949,7 @@ export class AddClaimComponent implements OnInit {
               this.ngLoader.freeQuantity[index] = false;
             }
 
+            this.formItems.sequence[index] = element.sequence;
             this.formItems.invoice[index] = element.invoice;
             this.formItems.division[index] = element.divisionName;
             this.formItems.divisionId[index] = element.divisionId;
@@ -961,6 +966,7 @@ export class AddClaimComponent implements OnInit {
 
             this.claims().push(
               this.fb.group({
+                sequence: element.sequence,
                 invoice: element.invoice,
                 division: element.divisionName,
                 divisionId: element.divisionId,
